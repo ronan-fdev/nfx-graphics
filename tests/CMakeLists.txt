@@ -24,3 +24,4 @@ include(doctest)
 #----------------------------------------------
 
 add_subdirectory(gl)
+add_subdirectory(math)

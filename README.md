@@ -36,16 +36,17 @@ nfx-graphics/
 │   ├── Graphics.h                    # top-level nfx::graphics API entry point
 │   ├── Gl.h                          # low-level nfx::graphics::gl API entry point
 │   └── graphics
-│       └── gl/
-│           └── core/
-│               ├── buffers/          # Buffer wrappers
-│               ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
-│               ├── Context.h         # Per-thread GL function table initialization
-│               ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
-│               ├── shaders/          # Shader program wrappers and typed uniforms
-│               ├── textures/         # Texture wrappers
-│               ├── GlDefinitions.h   # All GL constants
-│               └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       ├── gl/
+│       │   └── core/
+│       │       ├── buffers/          # Buffer wrappers
+│       │       ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
+│       │       ├── Context.h         # Per-thread GL function table initialization
+│       │       ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
+│       │       ├── shaders/          # Shader program wrappers and typed uniforms
+│       │       ├── textures/         # Texture wrappers
+│       │       ├── GlDefinitions.h   # All GL constants
+│       │       └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       └── math/                     # Matrices, vectors
 ├── samples/                          # Sample applications and shared sample framework
 ├── src/                              # Implementation
 └── tests/                            # Unit tests

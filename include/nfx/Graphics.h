@@ -9,3 +9,7 @@
 
 // Core
 #include "Gl.h"
+
+// Math
+#include "nfx/graphics/math/Mat4.h"
+#include "nfx/graphics/math/Vec3.h"

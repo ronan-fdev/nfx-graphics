@@ -19,12 +19,22 @@
 - `Uniforms`: typed helper aliases for scalar/vector/matrix uniform values
 - `Texture2D`: RAII wrapper for 2D texture allocation/upload and sampling parameters
 
+#### Math library
+
+- `nfx::graphics::math` interface target: lightweight Vec3 and Mat4 helpers
+
+- `Mat4`: helpers for 4x4 matrix transforms, projection, view, and multiplication
+- `Vec3`: helpers for length, dot/cross products, normalization, and subtraction
+
 #### Tests
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency
 - `gl/core/tests_ShaderProgram`: validates pipeline validation rules and file-loading error paths
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
+
+- `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior
+- `math/tests_Vec3`: validates length, dot/cross, normalization, and vector subtraction helpers
 
 #### Samples
 
