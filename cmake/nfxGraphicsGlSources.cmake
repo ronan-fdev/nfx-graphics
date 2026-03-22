@@ -5,6 +5,7 @@
 set(NFX_GRAPHICS_GL_SOURCES
     # Buffers
     src/gl/core/buffers/Buffer.cpp
+    src/gl/core/buffers/VertexArray.cpp
 
     # Functions
     $<$<PLATFORM_ID:Linux>:src/gl/core/functions/loader/X11FunctionLoader.cpp>

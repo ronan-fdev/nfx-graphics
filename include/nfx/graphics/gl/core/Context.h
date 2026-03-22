@@ -73,6 +73,11 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] int maxTextureImageUnits() const noexcept { return m_maxTextureImageUnits; }
 
+        /**
+         * \brief Returns the maximum number of vertex attribute locations.
+         */
+        [[nodiscard]] int maxVertexAttribs() const noexcept { return m_maxVertexAttribs; }
+
     private:
         Context() = default;
         ~Context() = default;
@@ -84,5 +89,6 @@ namespace nfx::graphics::gl
         int m_major = 0;
         int m_minor = 0;
         int m_maxTextureImageUnits = 16;
+        int m_maxVertexAttribs = 16;
     };
 } // namespace nfx::graphics::gl

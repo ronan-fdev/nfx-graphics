@@ -13,6 +13,8 @@
 - Khronos extension headers (downloaded at build-time on Windows)
 
 - `Buffer`: RAII wrapper for OpenGL buffer objects (bind/upload/subrange/indexed binding)
+- `VertexArray`: RAII wrapper for OpenGL vertex array objects
+- `VertexLayout`: descriptor for vertex attribute formats and stride/offset metadata
 - `ShaderProgram`: RAII wrapper for shader compile/link/bind and uniform updates
 - `Uniforms`: typed helper aliases for scalar/vector/matrix uniform values
 - `Texture2D`: RAII wrapper for 2D texture allocation/upload and sampling parameters
@@ -22,6 +24,7 @@
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency
 - `gl/core/tests_ShaderProgram`: validates pipeline validation rules and file-loading error paths
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
+- `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
 
 #### Samples
 

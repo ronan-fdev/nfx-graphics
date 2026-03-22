@@ -347,7 +347,11 @@ namespace nfx::samples
         std::fprintf(stdout, "OpenGL vendor  : %s\n", vendor ? vendor : "<unavailable>");
         std::fprintf(stdout, "OpenGL renderer: %s\n", renderer ? renderer : "<unavailable>");
         std::fprintf(stdout, "OpenGL version : %s\n", version ? version : "<unavailable>");
-        std::fprintf(stdout, "nfx::graphics ctx limits : textureUnits=%d\n", ctxInfo.maxTextureImageUnits());
+        std::fprintf(
+            stdout,
+            "nfx::graphics ctx limits : textureUnits=%d, vertexAttribs=%d\n",
+            ctxInfo.maxTextureImageUnits(),
+            ctxInfo.maxVertexAttribs());
 
         if (onInit)
         {
