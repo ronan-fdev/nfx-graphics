@@ -12,13 +12,14 @@ A lightweight, zero-dependency C++20 OpenGL graphics library. Provides the full 
 
 ### CMake options
 
-| Option                     | Default | Description      |
-| -------------------------- | ------- | ---------------- |
-| `NFX_GRAPHICS_BUILD_TESTS` | `OFF`   | Build unit tests |
+| Option                       | Default | Description              |
+| ---------------------------- | ------- | ------------------------ |
+| `NFX_GRAPHICS_BUILD_TESTS`   | `OFF`   | Build unit tests         |
+| `NFX_GRAPHICS_BUILD_SAMPLES` | `OFF`   | Build sample executables |
 
 Example - build everything in debug:
 ```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Debug -DNFX_GRAPHICS_BUILD_TESTS=ON
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DNFX_GRAPHICS_BUILD_TESTS=ON -DNFX_GRAPHICS_BUILD_SAMPLES=ON
 cmake --build build
 ```
 
@@ -42,6 +43,7 @@ nfx-graphics/
 │               ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
 │               ├── GlDefinitions.h   # All GL constants
 │               └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+├── samples/                          # Sample applications and shared sample framework
 ├── src/                              # Implementation
 └── tests/                            # Unit tests
 ```

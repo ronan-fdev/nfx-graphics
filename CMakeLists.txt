@@ -32,7 +32,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Build options
 #----------------------------------------------
 
-option(NFX_GRAPHICS_BUILD_TESTS "Build nfx-graphics tests" OFF)
+option(NFX_GRAPHICS_BUILD_TESTS   "Build nfx-graphics tests"               OFF)
+option(NFX_GRAPHICS_BUILD_SAMPLES "Build nfx::graphics sample executables" OFF)
 
 #----------------------------------------------
 # Build type
@@ -70,4 +71,12 @@ include(nfxGraphicsGlTarget)
 if(NFX_GRAPHICS_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+#----------------------------------------------
+# Samples
+#----------------------------------------------
+
+if(NFX_GRAPHICS_BUILD_SAMPLES)
+    add_subdirectory(samples)
 endif()
