@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 3.25)
 
 project(nfx-graphics
     VERSION 0.0.0
+    DESCRIPTION "A lightweight, zero-dependency C++20 OpenGL graphics library."
     LANGUAGES CXX
 )
 
@@ -48,22 +49,10 @@ target_compile_options(nfx-graphics-warnings
 )
 
 #----------------------------------------------
-# Application sources
+# CMake modules configuration
 #----------------------------------------------
 
-set(APP_SOURCES
-    src/main.cpp
-)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-#----------------------------------------------
-# Executable target
-#----------------------------------------------
-
-add_executable(${PROJECT_NAME}
-    ${APP_SOURCES}
-)
-
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        nfx-graphics-warnings
-)
+include(nfxGraphicsGlSources)
+include(nfxGraphicsGlTarget)
