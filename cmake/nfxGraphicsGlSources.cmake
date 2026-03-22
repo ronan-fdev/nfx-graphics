@@ -29,4 +29,7 @@ set(NFX_GRAPHICS_GL_SOURCES
     src/gl/core/functions/Functions_4_5.cpp
     src/gl/core/functions/Functions_4_6.cpp
     src/gl/core/Context.cpp
+
+    # Textures
+    src/gl/core/textures/Texture2D.cpp
 )

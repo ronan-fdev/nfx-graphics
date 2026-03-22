@@ -68,6 +68,11 @@ namespace nfx::graphics::gl
             return m_major > major || (m_major == major && m_minor >= minor);
         }
 
+        /**
+         * \brief Returns the maximum number of texture image units available to fragment shaders.
+         */
+        [[nodiscard]] int maxTextureImageUnits() const noexcept { return m_maxTextureImageUnits; }
+
     private:
         Context() = default;
         ~Context() = default;
@@ -78,5 +83,6 @@ namespace nfx::graphics::gl
         bool m_initialized = false;
         int m_major = 0;
         int m_minor = 0;
+        int m_maxTextureImageUnits = 16;
     };
 } // namespace nfx::graphics::gl

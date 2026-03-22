@@ -20,6 +20,11 @@ namespace nfx::graphics::gl
         ::glGetIntegerv(GL_MINOR_VERSION, &s_instance.m_minor);
 
         s_instance.m_initialized = s_instance.m_functions.initialize();
+        if (s_instance.m_initialized)
+        {
+            const auto& f = s_instance.m_functions;
+            f.glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s_instance.m_maxTextureImageUnits);
+        }
 
         return s_instance.m_initialized;
     }

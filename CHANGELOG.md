@@ -13,10 +13,12 @@
 - Khronos extension headers (downloaded at build-time on Windows)
 
 - `Buffer`: RAII wrapper for OpenGL buffer objects (bind/upload/subrange/indexed binding)
+- `Texture2D`: RAII wrapper for 2D texture allocation/upload and sampling parameters
 
 #### Tests
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency
+- `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
 
 #### Samples
 

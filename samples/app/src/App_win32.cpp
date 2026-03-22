@@ -339,13 +339,15 @@ namespace nfx::samples
             return 1;
         }
 
-        const auto& gl = nfx::graphics::gl::Context::current().functions();
+        const auto& ctxInfo = nfx::graphics::gl::Context::current();
+        const auto& gl = ctxInfo.functions();
         const char* vendor = reinterpret_cast<const char*>(gl.glGetString(GL_VENDOR));
         const char* renderer = reinterpret_cast<const char*>(gl.glGetString(GL_RENDERER));
         const char* version = reinterpret_cast<const char*>(gl.glGetString(GL_VERSION));
         std::fprintf(stdout, "OpenGL vendor  : %s\n", vendor ? vendor : "<unavailable>");
         std::fprintf(stdout, "OpenGL renderer: %s\n", renderer ? renderer : "<unavailable>");
         std::fprintf(stdout, "OpenGL version : %s\n", version ? version : "<unavailable>");
+        std::fprintf(stdout, "nfx::graphics ctx limits : textureUnits=%d\n", ctxInfo.maxTextureImageUnits());
 
         if (onInit)
         {
