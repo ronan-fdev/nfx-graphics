@@ -38,6 +38,7 @@ nfx-graphics/
 │   └── graphics
 │       └── gl/
 │           └── core/
+│               ├── buffers/          # Buffer wrappers
 │               ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
 │               ├── Context.h         # Per-thread GL function table initialization
 │               ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper

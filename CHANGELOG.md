@@ -12,6 +12,8 @@
 - Platform support: Linux (GLX) and Windows (WGL)
 - Khronos extension headers (downloaded at build-time on Windows)
 
+- `Buffer`: RAII wrapper for OpenGL buffer objects (bind/upload/subrange/indexed binding)
+
 #### Tests
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency

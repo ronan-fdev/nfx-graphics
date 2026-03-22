@@ -3,6 +3,9 @@
 #==============================================================================
 
 set(NFX_GRAPHICS_GL_SOURCES
+    # Buffers
+    src/gl/core/buffers/Buffer.cpp
+
     # Functions
     $<$<PLATFORM_ID:Linux>:src/gl/core/functions/loader/X11FunctionLoader.cpp>
     $<$<PLATFORM_ID:Windows>:src/gl/core/functions/loader/Win32FunctionLoader.cpp>
