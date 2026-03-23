@@ -47,6 +47,7 @@
 - `nfx-sample-common` shared library: sample framework with X11/GLX and Win32/WGL backends
 
 - `basic-hello-triangle`: colored triangle demo
+- `basic-textured-cube`: textured rotating cube with embedded resources
 
 ### Changed
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Clock.h"
+#include "TextureLoader.h"
+
 #include <functional>
 
 namespace nfx::samples

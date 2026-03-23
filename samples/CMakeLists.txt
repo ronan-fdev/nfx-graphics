@@ -59,3 +59,46 @@ if(NOT EXISTS "${NFX_GRAPHICS_SAMPLE_STB_IMAGE_HEADER}")
         message(WARNING "[nfx] Failed to download stb_image.h: ${_stb_image_dl_err}")
     endif()
 endif()
+
+#----------------------------------------------
+# Embedded resources
+#----------------------------------------------
+
+function(nfx_graphics_download_assets)
+    cmake_parse_arguments(PARSE_ARGV 0 ARG "" "DIR;BASE_URL" "FILES")
+    foreach(_asset ${ARG_FILES})
+        if(NOT EXISTS "${ARG_DIR}/${_asset}")
+            message(STATUS "[nfx] Downloading ${_asset} ...")
+            file(DOWNLOAD
+                "${ARG_BASE_URL}/${_asset}"
+                "${ARG_DIR}/${_asset}"
+                SHOW_PROGRESS
+                STATUS _dl_status
+            )
+            list(GET _dl_status 0 _dl_code)
+            if(NOT _dl_code EQUAL 0)
+                list(GET _dl_status 1 _dl_err)
+                message(WARNING "[nfx] Failed to download ${_asset}: ${_dl_err}")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
+# LearnOpenGL resources (Joey de Vries) - MIT License
+# Source: https://github.com/JoeyDeVries/LearnOpenGL/tree/master/resources/textures
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/container"
+    BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/textures"
+    FILES
+        container.jpg
+)
+
+nfx_graphics_embed_resources(
+    TARGET          nfx-sample-common
+    RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures
+    OUTPUT_DIR      ${CMAKE_BINARY_DIR}/gen/samples/textures
+    NAMESPACE       nfx::samples::textures
+    REGISTRY_NAME   embedded_textures
+    PATTERN         "*.jpg"
+    RECURSE
+)
