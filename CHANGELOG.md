@@ -26,6 +26,12 @@
 - `Mat4`: helpers for 4x4 matrix transforms, projection, view, and multiplication
 - `Vec3`: helpers for length, dot/cross products, normalization, and subtraction
 
+#### Embedded resources & build tooling
+
+- `nfx-graphics-resourcegen`: CLI tool that converts binary files into C++ `uint8_t[]` arrays with name and size metadata
+- `nfx::graphics::EmbeddedResource`: lightweight runtime view (`name`, `data`, `size`) with `str()`, `bytes()`, `empty()`, and templated `find()`
+- `nfx_graphics_embed_resources()`: CMake helper that embeds resource directories and auto-generates typed `.h`/`.cpp` registries
+
 #### Tests
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency

@@ -13,3 +13,6 @@
 // Math
 #include "nfx/graphics/math/Mat4.h"
 #include "nfx/graphics/math/Vec3.h"
+
+// Tools
+#include "nfx/graphics/EmbeddedResource.h"

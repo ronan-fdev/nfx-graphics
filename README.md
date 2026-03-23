@@ -46,10 +46,12 @@ nfx-graphics/
 │       │       ├── textures/         # Texture wrappers
 │       │       ├── GlDefinitions.h   # All GL constants
 │       │       └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
-│       └── math/                     # Matrices, vectors
+│       ├── math/                     # Matrices, vectors
+│       └── EmbeddedResource.h        # Runtime access to resources embedded at build time
 ├── samples/                          # Sample applications and shared sample framework
 ├── src/                              # Implementation
-└── tests/                            # Unit tests
+├── tests/                            # Unit tests
+└── tools/                            # Build tools and resource generator
 ```
 
 The function loader resolves GL 1.2+ entry points via `glXGetProcAddress` (X11) or `wglGetProcAddress` (Win32).
