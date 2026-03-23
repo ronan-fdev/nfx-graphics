@@ -59,6 +59,7 @@
 
 - `basic-hello-triangle`: colored triangle demo
 - `basic-textured-cube`: textured rotating cube with embedded resources
+- `basic-offscreen-cube`: renders a textured cube to an offscreen target and presents it with a grayscale post-process pass
 
 ### Changed
 

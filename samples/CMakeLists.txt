@@ -28,7 +28,7 @@ target_include_directories(nfx-sample-common
 
 target_link_libraries(nfx-sample-common
     PUBLIC
-        nfx::graphics::gl
+        nfx::graphics
         nfx-graphics-warnings
     PRIVATE
         $<$<PLATFORM_ID:Linux>:X11>
