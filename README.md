@@ -68,3 +68,6 @@ MIT - see [LICENSE](LICENSE).
 
 - [doctest](https://github.com/doctest/doctest) (MIT) - test framework, not shipped with the library.
 
+## Third-party sample dependencies
+
+- [stb_image](https://github.com/nothings/stb) by Sean Barrett and contributors (MIT)
