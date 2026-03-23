@@ -69,6 +69,11 @@ namespace nfx::graphics::gl
         }
 
         /**
+         * \brief Returns the maximum number of color attachments supported by a framebuffer.
+         */
+        [[nodiscard]] int maxColorAttachments() const noexcept { return m_maxColorAttachments; }
+
+        /**
          * \brief Returns the maximum number of texture image units available to fragment shaders.
          */
         [[nodiscard]] int maxTextureImageUnits() const noexcept { return m_maxTextureImageUnits; }
@@ -88,6 +93,7 @@ namespace nfx::graphics::gl
         bool m_initialized = false;
         int m_major = 0;
         int m_minor = 0;
+        int m_maxColorAttachments = 8;
         int m_maxTextureImageUnits = 16;
         int m_maxVertexAttribs = 16;
     };

@@ -7,6 +7,10 @@ set(NFX_GRAPHICS_GL_SOURCES
     src/gl/core/buffers/Buffer.cpp
     src/gl/core/buffers/VertexArray.cpp
 
+    # Framebuffers
+    src/gl/core/framebuffers/Framebuffer.cpp
+    src/gl/core/framebuffers/Renderbuffer.cpp
+
     # Functions
     $<$<PLATFORM_ID:Linux>:src/gl/core/functions/loader/X11FunctionLoader.cpp>
     $<$<PLATFORM_ID:Windows>:src/gl/core/functions/loader/Win32FunctionLoader.cpp>
