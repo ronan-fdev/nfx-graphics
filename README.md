@@ -37,16 +37,17 @@ nfx-graphics/
 │   ├── Gl.h                          # low-level nfx::graphics::gl API entry point
 │   └── graphics
 │       ├── gl/
-│       │   └── core/
-│       │       ├── buffers/          # Buffer wrappers
-│       │       ├── framebuffers/     # Framebuffer and renderbuffer wrappers
-│       │       ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
-│       │       ├── Context.h         # Per-thread GL function table initialization
-│       │       ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
-│       │       ├── shaders/          # Shader program wrappers and typed uniforms
-│       │       ├── textures/         # Texture wrappers
-│       │       ├── GlDefinitions.h   # All GL constants
-│       │       └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       │   ├── core/
+│       │   │   ├── buffers/          # Buffer wrappers
+│       │   │   ├── framebuffers/     # Framebuffer and renderbuffer wrappers
+│       │   │   ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
+│       │   │   ├── Context.h         # Per-thread GL function table initialization
+│       │   │   ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
+│       │   │   ├── shaders/          # Shader program wrappers and typed uniforms
+│       │   │   ├── textures/         # Texture wrappers
+│       │   │   ├── GlDefinitions.h   # All GL constants
+│       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       │   └── pipeline/             # High-level wrappers
 │       ├── math/                     # Matrices, vectors
 │       └── EmbeddedResource.h        # Runtime access to resources embedded at build time
 ├── samples/                          # Sample applications and shared sample framework

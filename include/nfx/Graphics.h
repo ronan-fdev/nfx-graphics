@@ -10,6 +10,9 @@
 // Core
 #include "Gl.h"
 
+// Pipeline
+#include "nfx/graphics/gl/pipeline/RenderTarget.h"
+
 // Math
 #include "nfx/graphics/math/Mat4.h"
 #include "nfx/graphics/math/Vec3.h"

@@ -21,6 +21,14 @@
 - `Uniforms`: typed helper aliases for scalar/vector/matrix uniform values
 - `Texture2D`: RAII wrapper for 2D texture allocation/upload and sampling parameters
 
+#### High-level graphics wrappers (renderer/pipeline/materials on top of the low-level GL library)
+
+- `nfx::graphics` shared library: high-level rendering wrappers built on top of `nfx::graphics::gl`
+
+##### Pipeline
+
+- `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
+
 #### Math library
 
 - `nfx::graphics::math` interface target: lightweight Vec3 and Mat4 helpers

@@ -44,18 +44,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 #----------------------------------------------
-# Warning policy
-#----------------------------------------------
-
-add_library(nfx-graphics-warnings INTERFACE)
-
-target_compile_options(nfx-graphics-warnings
-    INTERFACE
-        $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
-        $<$<CXX_COMPILER_ID:MSVC>:/W4>
-)
-
-#----------------------------------------------
 # CMake modules configuration
 #----------------------------------------------
 
@@ -65,6 +53,8 @@ include(nfxGraphicsGlSources)
 include(nfxGraphicsGlTarget)
 include(nfxGraphicsMathTarget)
 include(nfxGraphicsEmbedResources)
+include(nfxGraphicsSources)
+include(nfxGraphicsTarget)
 
 #----------------------------------------------
 # Tests
