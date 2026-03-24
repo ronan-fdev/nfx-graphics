@@ -74,6 +74,7 @@
 - `basic-textured-cube`: textured rotating cube with embedded resources
 - `basic-offscreen-cube`: renders a textured cube to an offscreen target and presents it with a grayscale post-process pass
 - `basic-skybox`: skybox scene with a textured spinning box and mouse-driven orbit camera controls
+- `basic-sampler-showcase`: compares sampler state behavior side-by-side (`ClampToEdge + Nearest` vs `Repeat + LinearMipmapLinear`)
 
 ### Changed
 
