@@ -17,7 +17,10 @@ namespace nfx::samples
         const AppConfig& config,
         std::function<void()> onInit,
         std::function<void(int width, int height)> onRender,
-        std::function<void()> onShutdown)
+        std::function<void()> onShutdown,
+        std::function<void(int x, int y)> onMouseMove,
+        std::function<void(int button, bool pressed)> onMouseButton,
+        std::function<void(float delta)> onScroll)
     {
         if (!onRender)
         {
@@ -115,7 +118,8 @@ namespace nfx::samples
         }
 
         swa.colormap = colormap;
-        swa.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask;
+        swa.event_mask =
+            ExposureMask | KeyPressMask | StructureNotifyMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
 
         win = XCreateWindow(
             display,
@@ -246,6 +250,21 @@ namespace nfx::samples
                 {
                     winWidth = ev.xconfigure.width;
                     winHeight = ev.xconfigure.height;
+                }
+                if (ev.type == MotionNotify && onMouseMove)
+                {
+                    onMouseMove(ev.xmotion.x, ev.xmotion.y);
+                }
+                if (ev.type == ButtonPress && (ev.xbutton.button == 4 || ev.xbutton.button == 5))
+                {
+                    if (onScroll)
+                    {
+                        onScroll(ev.xbutton.button == 4 ? 1.f : -1.f);
+                    }
+                }
+                else if ((ev.type == ButtonPress || ev.type == ButtonRelease) && onMouseButton)
+                {
+                    onMouseButton(static_cast<int>(ev.xbutton.button), ev.type == ButtonPress);
                 }
             }
 

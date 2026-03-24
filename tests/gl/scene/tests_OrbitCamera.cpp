@@ -38,7 +38,7 @@ TEST_SUITE("Camera")
             CHECK(gpu.proj[i] == doctest::Approx(proj[i]));
         }
 
-        // viewProj must equal proj * view - verifies the caller's precomputation contract
+        // viewProj must equal proj * view: verifies the caller's precomputation contract
         float expected[16];
         math::mat4Mul(expected, proj, view);
         for (int i = 0; i < 16; ++i)

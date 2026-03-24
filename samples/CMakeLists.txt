@@ -93,6 +93,18 @@ nfx_graphics_download_assets(
         container.jpg
 )
 
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/skyboxes/fjords"
+    BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/textures/skybox"
+    FILES
+        back.jpg
+        bottom.jpg
+        front.jpg
+        left.jpg
+        right.jpg
+        top.jpg
+)
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures

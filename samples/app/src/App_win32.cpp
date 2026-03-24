@@ -43,6 +43,9 @@ namespace nfx::samples
         bool s_running = true;
         int s_width = 800;
         int s_height = 600;
+        std::function<void(int, int)> s_onMouseMove;
+        std::function<void(int, bool)> s_onMouseButton;
+        std::function<void(float)> s_onScroll;
 
         LRESULT CALLBACK wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
@@ -64,6 +67,54 @@ namespace nfx::samples
                     s_width = LOWORD(lParam);
                     s_height = HIWORD(lParam);
                     return 0;
+                case WM_MOUSEMOVE:
+                    if (s_onMouseMove)
+                    {
+                        s_onMouseMove(LOWORD(lParam), HIWORD(lParam));
+                    }
+                    return 0;
+                case WM_LBUTTONDOWN:
+                    if (s_onMouseButton)
+                    {
+                        s_onMouseButton(1, true);
+                    }
+                    return 0;
+                case WM_LBUTTONUP:
+                    if (s_onMouseButton)
+                    {
+                        s_onMouseButton(1, false);
+                    }
+                    return 0;
+                case WM_RBUTTONDOWN:
+                    if (s_onMouseButton)
+                    {
+                        s_onMouseButton(3, true);
+                    }
+                    return 0;
+                case WM_RBUTTONUP:
+                    if (s_onMouseButton)
+                    {
+                        s_onMouseButton(3, false);
+                    }
+                    return 0;
+                case WM_MBUTTONDOWN:
+                    if (s_onMouseButton)
+                    {
+                        s_onMouseButton(2, true);
+                    }
+                    return 0;
+                case WM_MBUTTONUP:
+                    if (s_onMouseButton)
+                    {
+                        s_onMouseButton(2, false);
+                    }
+                    return 0;
+                case WM_MOUSEWHEEL:
+                    if (s_onScroll)
+                    {
+                        s_onScroll(static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA);
+                    }
+                    return 0;
                 default:
                     return DefWindowProcA(hwnd, msg, wParam, lParam);
             }
@@ -74,7 +125,10 @@ namespace nfx::samples
         const AppConfig& config,
         std::function<void()> onInit,
         std::function<void(int width, int height)> onRender,
-        std::function<void()> onShutdown)
+        std::function<void()> onShutdown,
+        std::function<void(int x, int y)> onMouseMove,
+        std::function<void(int button, bool pressed)> onMouseButton,
+        std::function<void(float delta)> onScroll)
     {
         if (!onRender)
         {
@@ -87,6 +141,9 @@ namespace nfx::samples
         s_running = true;
         s_width = config.width;
         s_height = config.height;
+        s_onMouseMove = onMouseMove;
+        s_onMouseButton = onMouseButton;
+        s_onScroll = onScroll;
 
         HINSTANCE hInstance = GetModuleHandle(nullptr);
         if (!hInstance)
