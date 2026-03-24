@@ -15,6 +15,7 @@
 
 // Math
 #include "nfx/graphics/math/Mat4.h"
+#include "nfx/graphics/math/Quat.h"
 #include "nfx/graphics/math/Vec3.h"
 
 // Tools

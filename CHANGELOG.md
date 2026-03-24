@@ -35,6 +35,7 @@
 - `nfx::graphics::math` interface target: lightweight Vec3 and Mat4 helpers
 
 - `Mat4`: helpers for 4x4 matrix transforms, projection, view, and multiplication
+- `Quat`: quaternion type with angle-axis construction, multiplication, normalization, and vector rotation
 - `Vec3`: helpers for length, dot/cross products, normalization, and subtraction
 
 #### Embedded resources & build tooling
@@ -53,6 +54,7 @@
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
 
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior
+- `math/tests_Quat`: quaternion construction/normalization/composition/vector-rotation checks
 - `math/tests_Vec3`: validates length, dot/cross, normalization, and vector subtraction helpers
 
 #### Samples

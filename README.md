@@ -48,7 +48,7 @@ nfx-graphics/
 │       │   │   ├── GlDefinitions.h   # All GL constants
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
 │       │   └── pipeline/             # High-level wrappers
-│       ├── math/                     # Matrices, vectors
+│       ├── math/                     # Matrices, vectors, quaternions
 │       └── EmbeddedResource.h        # Runtime access to resources embedded at build time
 ├── samples/                          # Sample applications and shared sample framework
 ├── src/                              # Implementation
