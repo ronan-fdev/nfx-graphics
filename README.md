@@ -47,7 +47,9 @@ nfx-graphics/
 │       │   │   ├── textures/         # Texture wrappers
 │       │   │   ├── GlDefinitions.h   # All GL constants
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
-│       │   └── pipeline/             # High-level wrappers
+│       │   ├── pipeline/             # High-level wrappers
+│       │   └── scene/
+│       │       └── cameras/          # Camera types and orbit camera
 │       ├── math/                     # Matrices, vectors, quaternions
 │       └── EmbeddedResource.h        # Runtime access to resources embedded at build time
 ├── samples/                          # Sample applications and shared sample framework

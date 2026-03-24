@@ -9,6 +9,8 @@ add_executable(nfx-graphics-gl-tests
     core/tests_Texture2D.cpp
     core/tests_TextureCube.cpp
     core/tests_VertexLayout.cpp
+
+    scene/tests_OrbitCamera.cpp
 )
 
 set_target_properties(nfx-graphics-gl-tests PROPERTIES DEBUG_POSTFIX "-d")

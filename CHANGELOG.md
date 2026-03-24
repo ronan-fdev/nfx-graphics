@@ -30,6 +30,11 @@
 
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
+##### Scene
+
+- `Camera`: descriptor with CPU-side state (`view`, `proj`, `viewProj`, `position`, `direction`) and std140-compatible `GpuData` packing helpers
+- `OrbitCamera`: quaternion-based Y-up orbit camera with orbit, proportional zoom, view-plane pan, and `Camera::GpuData` export
+
 #### Math library
 
 - `nfx::graphics::math` interface target: lightweight Vec3 and Mat4 helpers
@@ -52,6 +57,8 @@
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
 - `gl/core/tests_TextureCube`: validates non-square face rejection and unsupported upload format guards
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
+
+- `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry
 
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior
 - `math/tests_Quat`: quaternion construction/normalization/composition/vector-rotation checks
