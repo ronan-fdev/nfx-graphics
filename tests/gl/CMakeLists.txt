@@ -7,6 +7,7 @@ add_executable(nfx-graphics-gl-tests
     core/tests_Renderbuffer.cpp
     core/tests_ShaderProgram.cpp
     core/tests_Texture2D.cpp
+    core/tests_TextureCube.cpp
     core/tests_VertexLayout.cpp
 )
 

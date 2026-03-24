@@ -6,6 +6,7 @@
  */
 
 #include "nfx/graphics/gl/core/textures/Texture2D.h"
+#include "nfx/graphics/gl/core/textures/TextureCube.h"
 #include "Renderbuffer.h"
 
 namespace nfx::graphics::gl
@@ -91,6 +92,23 @@ namespace nfx::graphics::gl
         void attachDepthStencilRenderbuffer(GLuint renderbufferId);
 
         /**
+         * \brief Attaches one face of a cube map texture to the depth attachment.
+         * \param cubeTexId OpenGL cube map texture object id.
+         * \param face Face index in [0,5] mapped to +X, -X, +Y, -Y, +Z, -Z.
+         * \pre This framebuffer must be currently bound with bind().
+         */
+        void attachDepthCubeFace(GLuint cubeTexId, int face);
+
+        /**
+         * \brief Attaches all faces of a cube map texture to the depth attachment for layered rendering.
+         *
+         * Required for geometry-shader-based cube map rendering where gl_Layer selects the face.
+         * \param cubeTexId OpenGL cube map texture object id.
+         * \pre This framebuffer must be currently bound with bind().
+         */
+        void attachDepthCubemap(GLuint cubeTexId);
+
+        /**
          * \brief Attaches a Texture2D wrapper to a color attachment slot.
          * \param texture Texture wrapper owning the OpenGL texture object.
          * \param attachmentIndex Zero-based color attachment index.
@@ -132,6 +150,23 @@ namespace nfx::graphics::gl
          * \pre This framebuffer must be currently bound with bind().
          */
         void attachDepthStencilRenderbuffer(const Renderbuffer& renderbuffer);
+
+        /**
+         * \brief Attaches one face of a TextureCube wrapper to the depth attachment.
+         * \param texture Cube map texture wrapper owning the OpenGL texture object.
+         * \param face Face to attach.
+         * \pre This framebuffer must be currently bound with bind().
+         */
+        void attachDepthCubeFace(const TextureCube& texture, TextureCube::Face face);
+
+        /**
+         * \brief Attaches all faces of a TextureCube wrapper to the depth attachment for layered rendering.
+         *
+         * Required for geometry-shader-based cube map rendering where gl_Layer selects the face.
+         * \param texture Cube map texture wrapper owning the OpenGL texture object.
+         * \pre This framebuffer must be currently bound with bind().
+         */
+        void attachDepthCubemap(const TextureCube& texture);
 
         /**
          * \brief Returns whether the framebuffer is complete for rendering.

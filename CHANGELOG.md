@@ -20,6 +20,7 @@
 - `ShaderProgram`: RAII wrapper for shader compile/link/bind and uniform updates
 - `Uniforms`: typed helper aliases for scalar/vector/matrix uniform values
 - `Texture2D`: RAII wrapper for 2D texture allocation/upload and sampling parameters
+- `TextureCube`: RAII cube map wrapper - allocate or upload 6 faces, configurable filter/wrap/mipmap, depth format support
 
 #### High-level graphics wrappers (renderer/pipeline/materials on top of the low-level GL library)
 
@@ -48,6 +49,7 @@
 - `gl/core/tests_Renderbuffer`: validates renderbuffer allocation and format rejection guards
 - `gl/core/tests_ShaderProgram`: validates pipeline validation rules and file-loading error paths
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
+- `gl/core/tests_TextureCube`: validates non-square face rejection and unsupported upload format guards
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
 
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior

@@ -79,6 +79,23 @@ namespace nfx::graphics::gl
             FRAMEBUFFER, DEPTH_STENCIL_ATTACHMENT, TEXTURE_2D, textureId, 0);
     }
 
+    void Framebuffer::attachDepthCubeFace(GLuint cubeTexId, int face)
+    {
+        if (face < 0 || face >= 6)
+        {
+            assert(face >= 0 && face < 6 && "Framebuffer::attachDepthCubeFace(): face must be in [0, 5]");
+            return;
+        }
+
+        Context::current().functions().glFramebufferTexture2D(
+            FRAMEBUFFER, DEPTH_ATTACHMENT, static_cast<GLenum>(TEXTURE_CUBE_MAP_POSITIVE_X + face), cubeTexId, 0);
+    }
+
+    void Framebuffer::attachDepthCubemap(GLuint cubeTexId)
+    {
+        Context::current().functions().glFramebufferTexture(FRAMEBUFFER, DEPTH_ATTACHMENT, cubeTexId, 0);
+    }
+
     void Framebuffer::attachDepthRenderbuffer(GLuint renderbufferId)
     {
         Context::current().functions().glFramebufferRenderbuffer(
@@ -119,6 +136,16 @@ namespace nfx::graphics::gl
     void Framebuffer::attachDepthStencilRenderbuffer(const Renderbuffer& renderbuffer)
     {
         attachDepthStencilRenderbuffer(renderbuffer.id());
+    }
+
+    void Framebuffer::attachDepthCubeFace(const TextureCube& texture, TextureCube::Face face)
+    {
+        attachDepthCubeFace(texture.id(), static_cast<int>(face));
+    }
+
+    void Framebuffer::attachDepthCubemap(const TextureCube& texture)
+    {
+        attachDepthCubemap(texture.id());
     }
 
     bool Framebuffer::isComplete() const

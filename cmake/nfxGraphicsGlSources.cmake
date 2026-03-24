@@ -40,4 +40,5 @@ set(NFX_GRAPHICS_GL_SOURCES
 
     # Textures
     src/gl/core/textures/Texture2D.cpp
+    src/gl/core/textures/TextureCube.cpp
 )
