@@ -19,6 +19,7 @@
 - `Renderbuffer`: RAII wrapper for framebuffer renderbuffer storage
 - `ShaderProgram`: RAII wrapper for shader compile/link/bind and uniform updates
 - `Uniforms`: typed helper aliases for scalar/vector/matrix uniform values
+- `Sampler`: RAII wrapper for OpenGL sampler objects (filter, wrap, and compare state independent from textures)
 - `Texture2D`: RAII wrapper for 2D texture allocation/upload and sampling parameters
 - `TextureCube`: RAII cube map wrapper - allocate or upload 6 faces, configurable filter/wrap/mipmap, depth format support
 
@@ -53,6 +54,7 @@
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency
 - `gl/core/tests_Renderbuffer`: validates renderbuffer allocation and format rejection guards
+- `gl/core/tests_Sampler`: validates mipmap magnification filter rejection
 - `gl/core/tests_ShaderProgram`: validates pipeline validation rules and file-loading error paths
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
 - `gl/core/tests_TextureCube`: validates non-square face rejection and unsupported upload format guards

@@ -39,6 +39,7 @@ set(NFX_GRAPHICS_GL_SOURCES
     src/gl/core/shaders/ShaderProgram.cpp
 
     # Textures
+    src/gl/core/textures/Sampler.cpp
     src/gl/core/textures/Texture2D.cpp
     src/gl/core/textures/TextureCube.cpp
 )

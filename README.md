@@ -44,7 +44,7 @@ nfx-graphics/
 │       │   │   ├── Context.h         # Per-thread GL function table initialization
 │       │   │   ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
 │       │   │   ├── shaders/          # Shader program wrappers and typed uniforms
-│       │   │   ├── textures/         # Texture wrappers
+│       │   │   ├── textures/         # Sampler and texture wrappers
 │       │   │   ├── GlDefinitions.h   # All GL constants
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
 │       │   ├── pipeline/             # High-level wrappers

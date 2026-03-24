@@ -12,6 +12,7 @@
 #include "nfx/graphics/gl/core/framebuffers/Framebuffer.h"
 #include "nfx/graphics/gl/core/framebuffers/Renderbuffer.h"
 #include "nfx/graphics/gl/core/shaders/ShaderProgram.h"
+#include "nfx/graphics/gl/core/textures/Sampler.h"
 #include "nfx/graphics/gl/core/textures/Texture2D.h"
 #include "nfx/graphics/gl/core/textures/TextureCube.h"
 #include "nfx/graphics/gl/core/Context.h"
