@@ -85,6 +85,8 @@
 - `basic-skybox`: skybox scene with a textured spinning box and mouse-driven orbit camera controls
 - `basic-sampler-showcase`: compares sampler state behavior side-by-side (`ClampToEdge + Nearest` vs `Repeat + LinearMipmapLinear`)
 - `basic-blinn-phong-directional-shadow`: directional-light shadow mapping sample with depth shadow map generation and PCF-filtered lookups
+- `basic-spot-shadow`: 3 orbiting RGB spot lights with per-light 1024×1024 depth shadow maps and PCF filtering
+- `basic-point-shadow`: omnidirectional point light shadow with depth cube map (512×512 per face) and PCF filtering
 
 ### Changed
 
