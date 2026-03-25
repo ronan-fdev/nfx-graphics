@@ -8,6 +8,7 @@
  */
 
 #include "nfx/graphics/gl/core/buffers/Buffer.h"
+#include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/core/framebuffers/Framebuffer.h"
 #include "nfx/graphics/gl/core/framebuffers/Renderbuffer.h"
