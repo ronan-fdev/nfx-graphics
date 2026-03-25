@@ -38,6 +38,9 @@
 - `OrbitCamera`: quaternion-based Y-up orbit camera with orbit, proportional zoom, view-plane pan, and `Camera::GpuData` export
 - `AmbientLight`: descriptor with std140 `GpuData` packing and raw/typed `toGpuData` overloads
 - `DirectionalLight`: descriptor with std140 `GpuData` packing and raw/typed `toGpuData` overloads
+- `PunctualLight`: punctual-light SSBO payload (`std430`) with shared `GpuData`/`GpuBlock` contracts
+- `PointLight`: descriptor with raw/typed `create()` and raw/typed `toGpuData()` overloads for SSBO packing
+- `SpotLight`: descriptor with raw/typed `create()` and raw/typed `toGpuData()` overloads for SSBO packing
 
 #### Math library
 

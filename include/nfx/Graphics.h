@@ -18,6 +18,9 @@
 #include "nfx/graphics/gl/scene/cameras/OrbitCamera.h"
 #include "nfx/graphics/gl/scene/lights/AmbientLight.h"
 #include "nfx/graphics/gl/scene/lights/DirectionalLight.h"
+#include "nfx/graphics/gl/scene/lights/PointLight.h"
+#include "nfx/graphics/gl/scene/lights/PunctualLight.h"
+#include "nfx/graphics/gl/scene/lights/SpotLight.h"
 
 // Math
 #include "nfx/graphics/math/Mat3.h"
