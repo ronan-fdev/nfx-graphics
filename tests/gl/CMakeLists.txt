@@ -11,6 +11,7 @@ add_executable(nfx-graphics-gl-tests
     core/tests_TextureCube.cpp
     core/tests_VertexLayout.cpp
 
+    scene/tests_lights.cpp
     scene/tests_OrbitCamera.cpp
 )
 

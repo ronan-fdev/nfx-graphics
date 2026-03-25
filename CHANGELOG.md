@@ -35,6 +35,8 @@
 
 - `Camera`: descriptor with CPU-side state (`view`, `proj`, `viewProj`, `position`, `direction`) and std140-compatible `GpuData` packing helpers
 - `OrbitCamera`: quaternion-based Y-up orbit camera with orbit, proportional zoom, view-plane pan, and `Camera::GpuData` export
+- `AmbientLight`: descriptor with std140 `GpuData` packing and raw/typed `toGpuData` overloads
+- `DirectionalLight`: descriptor with std140 `GpuData` packing and raw/typed `toGpuData` overloads
 
 #### Math library
 
@@ -60,6 +62,7 @@
 - `gl/core/tests_TextureCube`: validates non-square face rejection and unsupported upload format guards
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
 
+- `gl/scene/tests_lights`: ambient/directional defaults, raw/typed packing parity, and std140 GPU payload layout checks
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry
 
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior

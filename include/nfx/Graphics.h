@@ -16,6 +16,8 @@
 // Scene
 #include "nfx/graphics/gl/scene/cameras/Camera.h"
 #include "nfx/graphics/gl/scene/cameras/OrbitCamera.h"
+#include "nfx/graphics/gl/scene/lights/AmbientLight.h"
+#include "nfx/graphics/gl/scene/lights/DirectionalLight.h"
 
 // Math
 #include "nfx/graphics/math/Mat4.h"
