@@ -43,6 +43,7 @@
 
 - `nfx::graphics::math` interface target: lightweight Vec3 and Mat4 helpers
 
+- `Mat3`: helpers for 3x3 identity/scale/rotation and inverse-transpose normal matrix computation
 - `Mat4`: helpers for 4x4 matrix transforms, projection, view, and multiplication
 - `Quat`: quaternion type with angle-axis construction, multiplication, normalization, and vector rotation
 - `Vec3`: helpers for length, dot/cross products, normalization, and subtraction
@@ -66,6 +67,7 @@
 - `gl/scene/tests_lights`: ambient/directional defaults, raw/typed packing parity, and std140 GPU payload layout checks
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry
 
+- `math/tests_Mat3`: validates mat3 identity/scale/rotation helpers and inverse-transpose normal-matrix behavior
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior
 - `math/tests_Quat`: quaternion construction/normalization/composition/vector-rotation checks
 - `math/tests_Vec3`: validates length, dot/cross, normalization, and vector subtraction helpers
