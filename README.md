@@ -49,6 +49,7 @@ nfx-graphics/
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
 │       │   ├── mesh/                 # Mesh data, primitives
 │       │   ├── pipeline/             # High-level wrappers
+│       │   ├── resources/            # Resource caches (meshes, shaders, textures)
 │       │   └── scene/
 │       │       ├── cameras/          # Camera types and orbit camera
 │       │       └── lights/           # Camera Light descriptors

@@ -18,6 +18,15 @@
 // Pipeline
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 
+// Resources
+#include "nfx/graphics/gl/resources/Handle.h"
+#include "nfx/graphics/gl/resources/MeshCache.h"
+#include "nfx/graphics/gl/resources/ResourceCache.h"
+#include "nfx/graphics/gl/resources/SamplerCache.h"
+#include "nfx/graphics/gl/resources/ShaderCache.h"
+#include "nfx/graphics/gl/resources/Texture2DCache.h"
+#include "nfx/graphics/gl/resources/TextureCubeCache.h"
+
 // Scene
 #include "nfx/graphics/gl/scene/cameras/Camera.h"
 #include "nfx/graphics/gl/scene/cameras/OrbitCamera.h"

@@ -38,6 +38,16 @@
 
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
+##### Resources
+
+- `Handle<Tag>`: strongly typed opaque resource handle (64-bit id, `std::hash` support)
+- `ResourceCache<Tag, T>`: generic cache - add/get/remove/contains/clear/forEach by typed handle
+- `MeshCache`: create mesh from `MeshData` or `Mesh::Desc`
+- `SamplerCache`: create sampler with default or explicit `Sampler::Params`
+- `ShaderCache`: compile shader program from in-memory sources
+- `Texture2DCache`: upload 2D texture from pixel data
+- `TextureCubeCache`: upload cube map from 6 face descriptors
+
 ##### Scene
 
 - `Camera`: descriptor with CPU-side state (`view`, `proj`, `viewProj`, `position`, `direction`) and std140-compatible `GpuData` packing helpers
@@ -76,6 +86,8 @@
 - `gl/mesh/tests_Mesh`: validates invalid-instance-data no-op behavior on default meshes
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
 - `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
+
+- `gl/resources/tests_ResourceCache`: validates typed handle/cache behavior and failure-path cache invariants
 
 - `gl/scene/tests_lights`: ambient/directional defaults, raw/typed packing parity, and std140 GPU payload layout checks
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry

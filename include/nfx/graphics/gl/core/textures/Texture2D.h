@@ -69,6 +69,17 @@ namespace nfx::graphics::gl
         };
         // clang-format on
 
+        /**
+         * \brief Describes a block of pixels together with the parameters used to create a texture.
+         */
+        struct Data
+        {
+            const unsigned char* pixels = nullptr;
+            int width = 0;
+            int height = 0;
+            Params params;
+        };
+
         Texture2D() = default;
 
         /**

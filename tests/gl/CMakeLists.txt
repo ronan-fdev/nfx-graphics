@@ -15,6 +15,8 @@ add_executable(nfx-graphics-gl-tests
     mesh/tests_MeshData.cpp
     mesh/tests_Primitive.cpp
 
+    resources/tests_ResourceCache.cpp
+
     scene/tests_lights.cpp
     scene/tests_OrbitCamera.cpp
 )
