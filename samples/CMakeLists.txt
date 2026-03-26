@@ -102,6 +102,15 @@ nfx_graphics_download_assets(
 )
 
 nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/toybox"
+    BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/textures"
+    FILES
+        toy_box_diffuse.png
+        toy_box_disp.png
+        toy_box_normal.png
+)
+
+nfx_graphics_download_assets(
     DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/skyboxes/fjords"
     BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/textures/skybox"
     FILES
@@ -119,6 +128,6 @@ nfx_graphics_embed_resources(
     OUTPUT_DIR      ${CMAKE_BINARY_DIR}/gen/samples/textures
     NAMESPACE       nfx::samples::textures
     REGISTRY_NAME   embedded_textures
-    PATTERN         "*.jpg"
+    PATTERN         "*.jpg" "*.png"
     RECURSE
 )
