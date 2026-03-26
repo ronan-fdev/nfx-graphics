@@ -98,6 +98,7 @@
 - `basic-spot-shadow`: 3 orbiting RGB spot lights with per-light 1024×1024 depth shadow maps and PCF filtering
 - `basic-point-shadow`: omnidirectional point light shadow with depth cube map (512×512 per face) and PCF filtering
 - `basic-instanced`: draws many spheres in one call using per-instance model matrix and color attributes
+- `basic-primitive-showcase`: brickwall normal-mapped cube with flat Blinn-Phong sphere, plane, and quad
 
 ### Changed
 

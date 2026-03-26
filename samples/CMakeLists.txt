@@ -94,6 +94,14 @@ nfx_graphics_download_assets(
 )
 
 nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/brickwall"
+    BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/textures"
+    FILES
+        brickwall.jpg
+        brickwall_normal.jpg
+)
+
+nfx_graphics_download_assets(
     DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/skyboxes/fjords"
     BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/textures/skybox"
     FILES
