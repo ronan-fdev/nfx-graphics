@@ -28,6 +28,12 @@
 
 - `nfx::graphics` shared library: high-level rendering wrappers built on top of `nfx::graphics::gl`
 
+##### Meshes
+
+- `Mesh`: runtime wrapper for vertex/index GPU buffers, VAO setup, and optional instance attribute streams
+- `MeshData`: CPU-side packed mesh container (`vertices`, `indices`, `layout`)
+- `Primitive`: mesh generators (`cube`, `uvSphere`, `plane`, `quad`) with tangent-ready layouts for lit primitives
+
 ##### Pipeline
 
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
@@ -66,6 +72,10 @@
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
 - `gl/core/tests_TextureCube`: validates non-square face rejection and unsupported upload format guards
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
+
+- `gl/mesh/tests_Mesh`: validates invalid-instance-data no-op behavior on default meshes
+- `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
+- `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
 
 - `gl/scene/tests_lights`: ambient/directional defaults, raw/typed packing parity, and std140 GPU payload layout checks
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry

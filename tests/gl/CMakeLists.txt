@@ -11,6 +11,10 @@ add_executable(nfx-graphics-gl-tests
     core/tests_TextureCube.cpp
     core/tests_VertexLayout.cpp
 
+    mesh/tests_Mesh.cpp
+    mesh/tests_MeshData.cpp
+    mesh/tests_Primitive.cpp
+
     scene/tests_lights.cpp
     scene/tests_OrbitCamera.cpp
 )
@@ -25,7 +29,7 @@ target_compile_definitions(nfx-graphics-gl-tests
 target_link_libraries(nfx-graphics-gl-tests
     PRIVATE
         doctest::doctest_with_main
-        nfx::graphics::gl
+        nfx::graphics
         nfx-graphics-warnings
 )
 

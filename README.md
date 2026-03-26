@@ -47,6 +47,7 @@ nfx-graphics/
 │       │   │   ├── textures/         # Sampler and texture wrappers
 │       │   │   ├── GlDefinitions.h   # All GL constants
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       │   ├── mesh/                 # Mesh data, primitives
 │       │   ├── pipeline/             # High-level wrappers
 │       │   └── scene/
 │       │       ├── cameras/          # Camera types and orbit camera

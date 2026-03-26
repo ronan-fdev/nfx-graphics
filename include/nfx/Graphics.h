@@ -10,6 +10,11 @@
 // Core
 #include "Gl.h"
 
+// Mesh
+#include "nfx/graphics/gl/mesh/Mesh.h"
+#include "nfx/graphics/gl/mesh/MeshData.h"
+#include "nfx/graphics/gl/mesh/Primitive.h"
+
 // Pipeline
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 
