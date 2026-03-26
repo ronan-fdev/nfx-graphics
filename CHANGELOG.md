@@ -36,6 +36,7 @@
 
 ##### Pipeline
 
+- `RenderState`: pipeline state descriptor with `apply()` helper (depth, blend, cull, raster state)
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
 ##### Resources
@@ -86,6 +87,8 @@
 - `gl/mesh/tests_Mesh`: validates invalid-instance-data no-op behavior on default meshes
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
 - `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
+
+- `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping
 
 - `gl/resources/tests_ResourceCache`: validates typed handle/cache behavior and failure-path cache invariants
 

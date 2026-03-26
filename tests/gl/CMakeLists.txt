@@ -11,6 +11,8 @@ add_executable(nfx-graphics-gl-tests
     core/tests_TextureCube.cpp
     core/tests_VertexLayout.cpp
 
+    pipeline/tests_RenderState.cpp
+
     mesh/tests_Mesh.cpp
     mesh/tests_MeshData.cpp
     mesh/tests_Primitive.cpp

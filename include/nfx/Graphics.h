@@ -16,6 +16,7 @@
 #include "nfx/graphics/gl/mesh/Primitive.h"
 
 // Pipeline
+#include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 
 // Resources
