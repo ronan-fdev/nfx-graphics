@@ -38,7 +38,7 @@ nfx-graphics/
 │   └── graphics
 │       ├── gl/
 │       │   ├── core/
-│       │   │   ├── buffers/          # Buffer wrappers
+│       │   │   ├── buffers/          # Buffer objects (VBO/SSBO/UBO wrappers)
 │       │   │   ├── framebuffers/     # Framebuffer and renderbuffer wrappers
 │       │   │   ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
 │       │   │   ├── Context.h         # Per-thread GL function table initialization

@@ -13,6 +13,7 @@
 - Khronos extension headers (downloaded at build-time on Windows)
 
 - `Buffer`: RAII wrapper for OpenGL buffer objects (bind/upload/subrange/indexed binding)
+- `ShaderStorageBuffer<T>`: typed SSBO wrapper for single/array uploads, subrange updates, and indexed binding (std430)
 - `UniformBuffer<T>`: typed UBO wrapper for single value upload and indexed binding (std140)
 - `VertexArray`: RAII wrapper for OpenGL vertex array objects
 - `VertexLayout`: descriptor for vertex attribute formats and stride/offset metadata
