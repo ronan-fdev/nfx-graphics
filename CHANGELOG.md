@@ -125,6 +125,7 @@
 - `basic-instanced`: draws many spheres in one call using per-instance model matrix and color attributes
 - `basic-primitive-showcase`: brickwall normal-mapped cube with flat Blinn-Phong sphere, plane, and quad
 - `basic-normal-map`: cube with toybox diffuse and normal map, orbit camera, Blinn-Phong with TBN normal mapping
+- `basic-material-pipeline`: 3 objects sharing one shader with per-object material state and textures
 
 ### Changed
 
