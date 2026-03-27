@@ -14,6 +14,7 @@ endif()
 add_library(nfx-sample-common SHARED
     ${NFX_GRAPHICS_SAMPLE_APP_SRC}
     ${CMAKE_CURRENT_SOURCE_DIR}/app/src/StbImageImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/src/ObjLoader.cpp
 )
 
 if(WIN32)
@@ -24,6 +25,8 @@ target_include_directories(nfx-sample-common
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/app/3rdParty
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/src/gl/mesh
 )
 
 target_link_libraries(nfx-sample-common
@@ -122,6 +125,14 @@ nfx_graphics_download_assets(
         top.jpg
 )
 
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/models/obj/rock"
+    BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/objects/rock"
+    FILES
+        rock.obj
+        rock.png
+)
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures
@@ -129,5 +140,15 @@ nfx_graphics_embed_resources(
     NAMESPACE       nfx::samples::textures
     REGISTRY_NAME   embedded_textures
     PATTERN         "*.jpg" "*.png"
+    RECURSE
+)
+
+nfx_graphics_embed_resources(
+    TARGET          nfx-sample-common
+    RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/models
+    OUTPUT_DIR      ${CMAKE_BINARY_DIR}/gen/samples/models
+    NAMESPACE       nfx::samples::models
+    REGISTRY_NAME   embedded_objects
+    PATTERN         "*.obj" "*.png"
     RECURSE
 )

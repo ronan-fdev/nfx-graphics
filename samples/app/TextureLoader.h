@@ -5,6 +5,7 @@
 #include <stb/stb_image.h>
 
 #include <embedded_textures.h>
+#include <embedded_objects.h>
 
 #include <cstdio>
 
@@ -14,6 +15,10 @@ namespace nfx::samples
     inline graphics::gl::Texture2D loadEmbeddedTexture(const char* name, bool flipY = true, bool srgb = false)
     {
         const auto* res = textures::find(name);
+        if (!res)
+        {
+            res = models::find(name);
+        }
         if (!res)
         {
             std::fprintf(stderr, "loadEmbeddedTexture: texture not found: %s\n", name);

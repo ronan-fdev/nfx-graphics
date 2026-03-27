@@ -127,6 +127,7 @@
 - `basic-normal-map`: cube with toybox diffuse and normal map, orbit camera, Blinn-Phong with TBN normal mapping
 - `basic-material-pipeline`: 3 objects sharing one shader with per-object material state and textures
 - `basic-punctual-shadow`: point + spot shadow mapping with a geometry-shader layered cube-map depth pass
+- `basic-model-import`: embedded OBJ mesh import with `ObjLoader` and textured model rendering using orbit camera
 
 ### Changed
 
