@@ -28,6 +28,11 @@
 
 - `nfx::graphics` shared library: high-level rendering wrappers built on top of `nfx::graphics::gl`
 
+##### Materials
+
+- `Material`: high-level material combining shader, render state and named uniform/texture bindings
+- `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess)
+
 ##### Meshes
 
 - `Mesh`: runtime wrapper for vertex/index GPU buffers, VAO setup, and optional instance attribute streams
@@ -36,6 +41,7 @@
 
 ##### Pipeline
 
+- `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
 - `RenderState`: pipeline state descriptor with `apply()` helper (depth, blend, cull, raster state)
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
@@ -43,6 +49,7 @@
 
 - `Handle<Tag>`: strongly typed opaque resource handle (64-bit id, `std::hash` support)
 - `ResourceCache<Tag, T>`: generic cache - add/get/remove/contains/clear/forEach by typed handle
+- `MaterialCache`: create material from `ShaderHandle` + `RenderState`, stored by `MaterialHandle`
 - `MeshCache`: create mesh from `MeshData` or `Mesh::Desc`
 - `SamplerCache`: create sampler with default or explicit `Sampler::Params`
 - `ShaderCache`: compile shader program from in-memory sources
@@ -83,6 +90,8 @@
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions
 - `gl/core/tests_TextureCube`: validates non-square face rejection and unsupported upload format guards
 - `gl/core/tests_VertexLayout`: validates attribute layout stride/offset computation and type helper mapping
+
+- `gl/material/tests_Material`: material state, texture bindings, move semantics, and MaterialBlockData defaults
 
 - `gl/mesh/tests_Mesh`: validates invalid-instance-data no-op behavior on default meshes
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks

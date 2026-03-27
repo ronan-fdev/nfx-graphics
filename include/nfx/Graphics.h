@@ -10,17 +10,23 @@
 // Core
 #include "Gl.h"
 
+// Material
+#include "nfx/graphics/gl/material/Material.h"
+#include "nfx/graphics/gl/material/MaterialBlock.h"
+
 // Mesh
 #include "nfx/graphics/gl/mesh/Mesh.h"
 #include "nfx/graphics/gl/mesh/MeshData.h"
 #include "nfx/graphics/gl/mesh/Primitive.h"
 
 // Pipeline
+#include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 
 // Resources
 #include "nfx/graphics/gl/resources/Handle.h"
+#include "nfx/graphics/gl/resources/MaterialCache.h"
 #include "nfx/graphics/gl/resources/MeshCache.h"
 #include "nfx/graphics/gl/resources/ResourceCache.h"
 #include "nfx/graphics/gl/resources/SamplerCache.h"

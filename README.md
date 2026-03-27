@@ -47,8 +47,9 @@ nfx-graphics/
 │       │   │   ├── textures/         # Sampler and texture wrappers
 │       │   │   ├── GlDefinitions.h   # All GL constants
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       │   ├── material/             # Material system (shaders, render state, uniforms, textures)
 │       │   ├── mesh/                 # Mesh data, primitives
-│       │   ├── pipeline/             # High-level wrappers
+│       │   ├── pipeline/             # High-level pipeline descriptors (RenderState, RenderTarget, Bindings)
 │       │   ├── resources/            # Resource caches (meshes, shaders, textures)
 │       │   └── scene/
 │       │       ├── cameras/          # Camera types and orbit camera

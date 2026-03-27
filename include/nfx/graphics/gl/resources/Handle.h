@@ -28,6 +28,9 @@ namespace nfx::graphics::gl
         bool operator!=(const Handle&) const noexcept = default;
     };
 
+    struct MaterialTag ///< Marker type for material handles
+    {
+    };
     struct MeshTag ///< Marker type for mesh handles
     {
     };
@@ -44,6 +47,7 @@ namespace nfx::graphics::gl
     {
     };
 
+    using MaterialHandle = Handle<MaterialTag>;       ///< Opaque handle referencing a cached material resource
     using MeshHandle = Handle<MeshTag>;               ///< Opaque handle referencing a cached mesh resource
     using SamplerHandle = Handle<SamplerTag>;         ///< Opaque handle referencing a cached sampler resource
     using ShaderHandle = Handle<ShaderTag>;           ///< Opaque handle referencing a cached shader resource
