@@ -128,6 +128,7 @@
 - `basic-material-pipeline`: 3 objects sharing one shader with per-object material state and textures
 - `basic-punctual-shadow`: point + spot shadow mapping with a geometry-shader layered cube-map depth pass
 - `basic-model-import`: embedded OBJ mesh import with `ObjLoader` and textured model rendering using orbit camera
+- `basic-model-import-material-maps`: embedded OBJ model import with diffuse, normal, and specular texture maps
 
 ### Changed
 

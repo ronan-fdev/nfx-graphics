@@ -133,6 +133,17 @@ nfx_graphics_download_assets(
         rock.png
 )
 
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/models/obj/backpack"
+    BASE_URL "https://raw.githubusercontent.com/JoeyDeVries/LearnOpenGL/refs/heads/master/resources/objects/backpack"
+    FILES
+        backpack.obj
+        diffuse.jpg
+        normal.png
+        specular.jpg
+        source_attribution.txt
+)
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures
@@ -149,6 +160,6 @@ nfx_graphics_embed_resources(
     OUTPUT_DIR      ${CMAKE_BINARY_DIR}/gen/samples/models
     NAMESPACE       nfx::samples::models
     REGISTRY_NAME   embedded_objects
-    PATTERN         "*.obj" "*.png"
+    PATTERN         "*.obj" "*.jpg" "*.png"
     RECURSE
 )
