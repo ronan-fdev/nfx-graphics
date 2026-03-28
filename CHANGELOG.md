@@ -144,6 +144,8 @@
 - `basic-model-import-material-maps`: embedded OBJ model import with diffuse, normal, and specular texture maps
 - `basic-tessellation`: dynamic triangle patch tessellation sample using vertex + tessellation + fragment shaders
 
+- `direct-rendering-geometry-pass`: GeometryPass pipeline sample with 3 submitted commands, per-frame FrameData upload, and orbit camera controls
+
 ### Changed
 
 - NIL
