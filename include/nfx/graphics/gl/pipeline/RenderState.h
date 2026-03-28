@@ -118,5 +118,15 @@ namespace nfx::graphics::gl
          * \brief Applies the render state to the current OpenGL context.
          */
         void apply() const;
+
+        /**
+         * \brief Returns the default opaque rendering preset.
+         */
+        static RenderState opaque();
+
+        /**
+         * \brief Returns the default alpha-blended transparent rendering preset.
+         */
+        static RenderState transparent();
     };
 } // namespace nfx::graphics::gl

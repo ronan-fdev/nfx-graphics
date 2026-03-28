@@ -53,7 +53,7 @@
 - `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
 - `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding
 - `RenderMode`: primitive topology enum mapped to OpenGL draw modes
-- `RenderState`: pipeline state descriptor with `apply()` helper (depth, blend, cull, raster state)
+- `RenderState`: pipeline state descriptor with `apply()` helper, `opaque()` and `transparent()` presets
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
 ##### Resources
