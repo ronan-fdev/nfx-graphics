@@ -13,6 +13,8 @@ add_executable(nfx-graphics-gl-tests
 
     material/tests_Material.cpp
 
+    pipeline/tests_Renderer.cpp
+    pipeline/tests_RenderQueue.cpp
     pipeline/tests_RenderState.cpp
 
     mesh/tests_Mesh.cpp

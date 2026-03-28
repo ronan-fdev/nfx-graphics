@@ -42,7 +42,16 @@
 
 ##### Pipeline
 
+- `FrameData`: frame-scoped camera and light payloads uploaded once per frame by the Renderer
+- `RenderResources`: non-owning bundle of cache references used by the renderer to resolve handles
+
+- `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state and output accessors
+
+- `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
+- `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear
+
 - `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
+- `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding
 - `RenderMode`: primitive topology enum mapped to OpenGL draw modes
 - `RenderState`: pipeline state descriptor with `apply()` helper (depth, blend, cull, raster state)
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
@@ -99,6 +108,8 @@
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
 - `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
 
+- `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
+- `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping
 
 - `gl/resources/tests_ResourceCache`: validates typed handle/cache behavior and failure-path cache invariants

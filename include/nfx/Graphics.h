@@ -20,9 +20,14 @@
 #include "nfx/graphics/gl/mesh/Primitive.h"
 
 // Pipeline
+#include "nfx/graphics/gl/pipeline/frame/FrameData.h"
+#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
+#include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
+#include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
+#include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
+#include "nfx/graphics/gl/pipeline/Renderer.h"
 #include "nfx/graphics/gl/pipeline/RenderMode.h"
-#include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 
 // Resources

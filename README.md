@@ -49,7 +49,15 @@ nfx-graphics/
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
 │       │   ├── material/             # Material system (shaders, render state, uniforms, textures)
 │       │   ├── mesh/                 # Mesh data, primitives
-│       │   ├── pipeline/             # High-level pipeline descriptors (RenderState, RenderTarget, RenderMode, Bindings)
+│       │   ├── pipeline/             # High-level rendering pipeline
+│       │   │   ├── frame/            # FrameData, RenderResources (camera/light payloads)
+│       │   │   ├── passes/           # RenderPass base class for render pipeline stages
+│       │   │   ├── queue/            # RenderCommand, RenderQueue (draw commands)
+│       │   │   ├── Renderer.h        # Frame renderer orchestrating render passes
+│       │   │   ├── RenderMode.h      # Primitive topology enum
+│       │   │   ├── RenderState.h     # Pipeline state descriptor
+│       │   │   ├── RenderTarget.h    # High-level framebuffer wrapper
+│       │   │   └── Bindings.h        # Binding-point conventions
 │       │   ├── resources/            # Resource caches (meshes, shaders, textures)
 │       │   └── scene/
 │       │       ├── cameras/          # Camera types and orbit camera

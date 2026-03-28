@@ -1,0 +1,111 @@
+#pragma once
+
+/**
+ * \file RenderPass.h
+ * \brief Declares the abstract base class implemented by all rendering passes.
+ */
+
+#include "nfx/graphics/gl/core/framebuffers/Framebuffer.h"
+#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
+#include "nfx/graphics/gl/resources/Handle.h"
+
+#include <string>
+
+namespace nfx::graphics::gl
+{
+    /**
+     * \brief Abstract base class representing one stage of the renderer pipeline.
+     */
+    class RenderPass
+    {
+        friend class Renderer;
+
+    public:
+        /**
+         * \brief Releases the render pass instance.
+         */
+        virtual ~RenderPass() = default;
+
+        RenderPass(const RenderPass&) = delete;
+        RenderPass& operator=(const RenderPass&) = delete;
+        RenderPass(RenderPass&&) = delete;
+        RenderPass& operator=(RenderPass&&) = delete;
+
+        /**
+         * \brief Returns the color texture output produced by the pass, when applicable.
+         */
+        [[nodiscard]] virtual Texture2DHandle colorOutput() const noexcept { return {}; }
+
+        /**
+         * \brief Returns the depth texture output produced by the pass, when applicable.
+         */
+        [[nodiscard]] virtual Texture2DHandle depthOutput() const noexcept { return {}; }
+
+        /**
+         * \brief Returns the output framebuffer used by the pass, when applicable.
+         */
+        [[nodiscard]] virtual const Framebuffer* outputFramebuffer() const noexcept { return nullptr; }
+
+        /**
+         * \brief Returns the output width in pixels, when applicable.
+         */
+        [[nodiscard]] virtual int outputWidth() const noexcept { return 0; }
+
+        /**
+         * \brief Returns the output height in pixels, when applicable.
+         */
+        [[nodiscard]] virtual int outputHeight() const noexcept { return 0; }
+
+        /**
+         * \brief Returns the human-readable pass name.
+         */
+        [[nodiscard]] const std::string& name() const noexcept { return m_name; }
+
+        /**
+         * \brief Returns whether the pass is enabled.
+         */
+        [[nodiscard]] bool isEnabled() const noexcept { return m_enabled; }
+
+        /**
+         * \brief Enables or disables execution of the pass.
+         * \param enabled New enabled state.
+         */
+        void setEnabled(bool enabled) noexcept { m_enabled = enabled; }
+
+    protected:
+        /**
+         * \brief Creates a render pass with a fixed display name.
+         * \param name Human-readable pass name.
+         */
+        explicit RenderPass(std::string name)
+            : m_name{ std::move(name) }
+        {}
+
+        /**
+         * \brief Performs one-time initialization of GPU resources used by the pass.
+         * \return False when initialization failed, true otherwise.
+         */
+        virtual bool initialize() { return true; }
+
+        /**
+         * \brief Begins the pass and prepares its render targets or state.
+         */
+        virtual void begin() = 0;
+
+        /**
+         * \brief Executes the main rendering work of the pass.
+         * \param resources Cache bundle used to resolve mesh, material, shader and texture handles.
+         */
+        virtual void execute(RenderResources&) = 0;
+
+        /**
+         * \brief Ends the pass and restores any state it owns.
+         */
+        virtual void end() = 0;
+
+    private:
+        std::string m_name;
+        bool m_enabled = true;
+        bool m_initialized = false;
+    };
+} // namespace nfx::graphics::gl
