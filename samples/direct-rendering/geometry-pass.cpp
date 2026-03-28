@@ -102,6 +102,7 @@ struct Scene
 
     gl::Renderer renderer;
     gl::GeometryPass* geometryPass = nullptr;
+    gl::PresentPass* presentPass = nullptr;
 
     gl::ShaderHandle shaderHandle;
     gl::MeshHandle cubeHandle;
@@ -170,6 +171,7 @@ int main()
 
             // Pass
             scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
+            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
 
             scene->renderResources.emplace(gl::RenderResources{ scene->meshCache,
                                                                 scene->materialCache,
@@ -179,18 +181,24 @@ int main()
                                                                 scene->samplerCache });
             scene->renderer.initialize(*scene->renderResources);
 
+            scene->geometryPass->setOutputSize(scene->texture2DCache, 800, 600);
             scene->geometryPass->setClearColor(true, 0.08f, 0.10f, 0.14f, 1.0f);
             scene->geometryPass->setClearDepth(true, 1.0f);
             scene->geometryPass->setOrder(gl::RenderQueue::Order::BySortKey);
+
+            scene->presentPass->setInput(scene->geometryPass->colorOutput());
+            scene->presentPass->setTonemapEnabled(true);
+            scene->presentPass->setGammaEnabled(true);
 
             // Scene
             scene->orbitCamera.distance = 4.5f;
             scene->orbitCamera.target[1] = 0.25f;
 
-            scene->ready =
-                scene->shaderHandle.isValid() && scene->cubeHandle.isValid() && scene->sphereHandle.isValid() &&
-                scene->planeHandle.isValid() && scene->cubeMaterial.isValid() && scene->sphereMaterial.isValid() &&
-                scene->planeMaterial.isValid() && scene->geometryPass != nullptr && scene->renderResources.has_value();
+            scene->ready = scene->shaderHandle.isValid() && scene->cubeHandle.isValid() &&
+                           scene->sphereHandle.isValid() && scene->planeHandle.isValid() &&
+                           scene->cubeMaterial.isValid() && scene->sphereMaterial.isValid() &&
+                           scene->planeMaterial.isValid() && scene->geometryPass != nullptr &&
+                           scene->presentPass != nullptr && scene->renderResources.has_value();
         },
 
         // onRender
@@ -203,7 +211,11 @@ int main()
             const int safeW = (width > 0) ? width : 1;
             const int safeH = (height > 0) ? height : 1;
 
-            scene->geometryPass->setOutputSize(scene->texture2DCache, safeW, safeH);
+            if (scene->geometryPass->outputWidth() != safeW || scene->geometryPass->outputHeight() != safeH)
+            {
+                scene->geometryPass->setOutputSize(scene->texture2DCache, safeW, safeH);
+                scene->presentPass->setInput(scene->geometryPass->colorOutput());
+            }
 
             // Frame
             gl::FrameData frame;
@@ -267,17 +279,6 @@ int main()
             // Render
             scene->renderer.setFrameData(frame);
             scene->renderer.render();
-
-            // Blit geometry pass color output to the default framebuffer
-            const gl::Framebuffer* fbo = scene->geometryPass->outputFramebuffer();
-            if (fbo)
-            {
-                const auto& funcs = gl::Context::current().functions();
-                funcs.glBindFramebuffer(gl::READ_FRAMEBUFFER, fbo->id());
-                funcs.glBindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
-                funcs.glBlitFramebuffer(0, 0, safeW, safeH, 0, 0, safeW, safeH, gl::COLOR_BUFFER_BIT, gl::NEAREST);
-                funcs.glBindFramebuffer(gl::FRAMEBUFFER, 0);
-            }
         },
 
         // onShutdown
