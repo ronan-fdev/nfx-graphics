@@ -215,8 +215,9 @@ namespace nfx::samples
         std::fprintf(stdout, "OpenGL version : %s\n", version ? version : "<unavailable>");
         std::fprintf(
             stdout,
-            "nfx::graphics ctx limits : colorAttachments=%d, textureUnits=%d, vertexAttribs=%d\n",
+            "nfx::graphics ctx limits : colorAttachments=%d, patchVertices=%d, textureUnits=%d, vertexAttribs=%d\n",
             ctxInfo.maxColorAttachments(),
+            ctxInfo.maxPatchVertices(),
             ctxInfo.maxTextureImageUnits(),
             ctxInfo.maxVertexAttribs());
 

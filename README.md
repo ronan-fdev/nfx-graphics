@@ -49,7 +49,7 @@ nfx-graphics/
 │       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
 │       │   ├── material/             # Material system (shaders, render state, uniforms, textures)
 │       │   ├── mesh/                 # Mesh data, primitives
-│       │   ├── pipeline/             # High-level pipeline descriptors (RenderState, RenderTarget, Bindings)
+│       │   ├── pipeline/             # High-level pipeline descriptors (RenderState, RenderTarget, RenderMode, Bindings)
 │       │   ├── resources/            # Resource caches (meshes, shaders, textures)
 │       │   └── scene/
 │       │       ├── cameras/          # Camera types and orbit camera

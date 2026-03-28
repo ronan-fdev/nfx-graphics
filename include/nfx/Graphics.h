@@ -21,6 +21,7 @@
 
 // Pipeline
 #include "nfx/graphics/gl/pipeline/Bindings.h"
+#include "nfx/graphics/gl/pipeline/RenderMode.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 

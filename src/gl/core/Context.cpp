@@ -24,6 +24,7 @@ namespace nfx::graphics::gl
         {
             const auto& f = s_instance.m_functions;
             f.glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &s_instance.m_maxColorAttachments);
+            f.glGetIntegerv(GL_MAX_PATCH_VERTICES, &s_instance.m_maxPatchVertices);
             f.glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s_instance.m_maxTextureImageUnits);
             f.glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &s_instance.m_maxVertexAttribs);
         }

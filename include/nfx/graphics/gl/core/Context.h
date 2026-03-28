@@ -74,6 +74,11 @@ namespace nfx::graphics::gl
         [[nodiscard]] int maxColorAttachments() const noexcept { return m_maxColorAttachments; }
 
         /**
+         * \brief Returns the maximum number of vertices per tessellation patch.
+         */
+        [[nodiscard]] int maxPatchVertices() const noexcept { return m_maxPatchVertices; }
+
+        /**
          * \brief Returns the maximum number of texture image units available to fragment shaders.
          */
         [[nodiscard]] int maxTextureImageUnits() const noexcept { return m_maxTextureImageUnits; }
@@ -94,6 +99,7 @@ namespace nfx::graphics::gl
         int m_major = 0;
         int m_minor = 0;
         int m_maxColorAttachments = 8;
+        int m_maxPatchVertices = 1;
         int m_maxTextureImageUnits = 16;
         int m_maxVertexAttribs = 16;
     };
