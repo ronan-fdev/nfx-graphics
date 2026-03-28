@@ -64,6 +64,7 @@ nfx-graphics/
 │       │       └── lights/           # Camera Light descriptors
 │       ├── math/                     # Matrices, vectors, quaternions
 │       └── EmbeddedResource.h        # Runtime access to resources embedded at build time
+├── resources/                        # Pipeline GLSL sources
 ├── samples/                          # Sample applications and shared sample framework
 ├── src/                              # Implementation
 ├── tests/                            # Unit tests

@@ -29,6 +29,20 @@ set_target_properties(nfx-graphics PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_library(nfx::graphics ALIAS nfx-graphics)
 
 #----------------------------------------------
+# Library resources
+#----------------------------------------------
+
+nfx_graphics_embed_resources(
+    TARGET          nfx-graphics
+    RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/resources/glsl
+    OUTPUT_DIR      ${CMAKE_CURRENT_BINARY_DIR}/gen/shaders
+    NAMESPACE       nfx::graphics::shaders
+    REGISTRY_NAME   embedded_shaders
+    PATTERN         "*.vert" "*.frag"
+    RECURSE
+)
+
+#----------------------------------------------
 # Include directories
 #----------------------------------------------
 
