@@ -22,6 +22,7 @@
 // Pipeline
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
+#include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"

@@ -46,6 +46,7 @@
 - `RenderResources`: non-owning bundle of cache references used by the renderer to resolve handles
 
 - `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state and output accessors
+- `GeometryPass`: opaque geometry pass with queue submission, material/mesh/shader resolution, fallback material, render target, sort order, patch vertex count, and per-frame clear control
 
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
 - `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear
