@@ -54,6 +54,7 @@
 - `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, and target framebuffer compositing
 
 - `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
+- `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light
 
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
 - `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear
