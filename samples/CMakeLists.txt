@@ -145,6 +145,14 @@ nfx_graphics_download_assets(
         source_attribution.txt
 )
 
+# polyhaven.com resources - CC0
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/rocky_terrain_1k"
+    BASE_URL "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rocky_terrain"
+    FILES
+        rocky_terrain_diff_1k.jpg
+)
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures

@@ -90,3 +90,4 @@ MIT - see [LICENSE](LICENSE).
 
 - [stb_image](https://github.com/nothings/stb) by Sean Barrett and contributors (MIT)
 - [LearnOpenGL](https://github.com/JoeyDeVries/LearnOpenGL) resources by Joey de Vries (MIT)
+- [Polyhaven](https://polyhaven.com/) (CC0 / Public Domain)
