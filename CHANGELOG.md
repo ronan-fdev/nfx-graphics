@@ -151,6 +151,7 @@
 
 - `direct-rendering-geometry-pass`: GeometryPass pipeline sample with 3 submitted commands, per-frame FrameData upload, and orbit camera controls
 - `direct-rendering-viewport-overlays`: three-pass pipeline sample (GeometryPass + GridPass + AxesPass) with infinite grid and world-axes overlay
+- `direct-rendering-transparent-pass`: two-pass pipeline sample (GeometryPass + TransparentPass) with back-to-front sorted alpha-blended spheres
 
 ### Changed
 
