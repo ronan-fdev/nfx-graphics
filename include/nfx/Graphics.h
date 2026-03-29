@@ -23,6 +23,7 @@
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/passes/AxesPass.h"
+#include "nfx/graphics/gl/pipeline/passes/DirectionalShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GridPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"

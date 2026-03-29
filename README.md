@@ -53,6 +53,7 @@ nfx-graphics/
 │       │   │   ├── frame/            # FrameData, RenderResources (camera/light payloads)
 │       │   │   ├── passes/           # RenderPass base class for render pipeline stages
 │       │   │   ├── queue/            # RenderCommand, RenderQueue (draw commands)
+│       │   │   ├── shadows/          # Shadow map payloads
 │       │   │   ├── Renderer.h        # Frame renderer orchestrating render passes
 │       │   │   ├── RenderMode.h      # Primitive topology enum
 │       │   │   ├── RenderState.h     # Pipeline state descriptor

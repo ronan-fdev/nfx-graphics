@@ -53,13 +53,17 @@
 - `PresentPass`: final fullscreen pass for presentation (input color, optional tonemap, optional gamma)
 - `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, and target framebuffer compositing
 
+- `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
+
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
 - `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear
+
+- `ShadowMap`: directional/spot shadow map payload combining depth texture handle and light-space matrix
 
 - `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
 - `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding
 - `RenderMode`: primitive topology enum mapped to OpenGL draw modes
-- `RenderState`: pipeline state descriptor with `apply()` helper, `opaque()` and `transparent()` presets
+- `RenderState`: pipeline state descriptor with `apply()` helper and `opaque()` / `transparent()` / `shadowCaster()` presets
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
 ##### Resources

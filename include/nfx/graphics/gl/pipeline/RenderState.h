@@ -128,5 +128,10 @@ namespace nfx::graphics::gl
          * \brief Returns the default alpha-blended transparent rendering preset.
          */
         static RenderState transparent();
+
+        /**
+         * \brief Returns a preset suitable for shadow caster passes.
+         */
+        static RenderState shadowCaster();
     };
 } // namespace nfx::graphics::gl

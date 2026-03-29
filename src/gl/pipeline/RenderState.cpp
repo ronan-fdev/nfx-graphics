@@ -129,4 +129,37 @@ namespace nfx::graphics::gl
 
         return state;
     }
+
+    RenderState RenderState::shadowCaster()
+    {
+        RenderState state;
+
+        state.depthTest = true;
+        state.depthWrite = true;
+        state.depthFunc = DepthFunc::Less;
+
+        state.blend = false;
+        state.blendSrc = BlendFactor::SrcAlpha;
+        state.blendDst = BlendFactor::OneMinusSrcAlpha;
+        state.blendSrcAlpha = BlendFactor::SrcAlpha;
+        state.blendDstAlpha = BlendFactor::OneMinusSrcAlpha;
+        state.blendOp = BlendOp::Add;
+        state.blendOpAlpha = BlendOp::Add;
+
+        state.cullFace = false;
+        state.cullMode = CullFace::Back;
+        state.frontFace = FrontFace::CCW;
+
+        state.colorWrite = false;
+        state.colorWriteR = true;
+        state.colorWriteG = true;
+        state.colorWriteB = true;
+        state.colorWriteA = true;
+
+        state.polygonOffset = true;
+        state.polygonOffsetFactor = 2.0f;
+        state.polygonOffsetUnits = 4.0f;
+
+        return state;
+    }
 } // namespace nfx::graphics::gl
