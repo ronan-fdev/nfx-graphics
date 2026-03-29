@@ -10,6 +10,7 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/pipeline/passes/GeometryPass.cpp
     src/gl/pipeline/passes/GridPass.cpp
     src/gl/pipeline/passes/PresentPass.cpp
+    src/gl/pipeline/passes/TransparentPass.cpp
     src/gl/pipeline/Renderer.cpp
     src/gl/pipeline/RenderState.cpp
     src/gl/pipeline/RenderTarget.cpp

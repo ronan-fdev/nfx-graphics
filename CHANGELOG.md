@@ -51,6 +51,7 @@
 - `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state and output accessors
 - `GeometryPass`: opaque geometry pass with queue submission, material/mesh/shader resolution, fallback material, render target, sort order, patch vertex count, and per-frame clear control
 - `PresentPass`: final fullscreen pass for presentation (input color, optional tonemap, optional gamma)
+- `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, and target framebuffer compositing
 
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
 - `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear

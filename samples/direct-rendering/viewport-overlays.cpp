@@ -299,7 +299,7 @@ int main()
             }
         },
 
-        // onMouseButton - 2=middle, 3=right
+        // onMouseButton
         [&](int button, bool pressed) {
             if (!scene)
             {

@@ -27,6 +27,7 @@
 #include "nfx/graphics/gl/pipeline/passes/GridPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
+#include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
