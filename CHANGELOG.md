@@ -45,6 +45,9 @@
 - `FrameData`: frame-scoped camera and light payloads uploaded once per frame by the Renderer
 - `RenderResources`: non-owning bundle of cache references used by the renderer to resolve handles
 
+- `AxesPass`: world-axes overlay pass with embedded shader, configurable axis length/fade distance, and optional target framebuffer
+- `GridPass`: infinite anti-aliased ground grid overlay pass with configurable cell size, fade distance, and color
+
 - `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state and output accessors
 - `GeometryPass`: opaque geometry pass with queue submission, material/mesh/shader resolution, fallback material, render target, sort order, patch vertex count, and per-frame clear control
 - `PresentPass`: final fullscreen pass for presentation (input color, optional tonemap, optional gamma)
