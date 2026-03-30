@@ -158,6 +158,7 @@
 - `direct-rendering-viewport-overlays`: three-pass pipeline sample (GeometryPass + GridPass + AxesPass) with infinite grid and world-axes overlay
 - `direct-rendering-transparent-pass`: two-pass pipeline sample (GeometryPass + TransparentPass) with back-to-front sorted alpha-blended spheres
 - `direct-rendering-directional-shadow-pass`: directional-light shadow mapping with orbiting rocks and textured terrain floor
+- `direct-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
 
 ### Changed
 
