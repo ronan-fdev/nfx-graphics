@@ -80,13 +80,19 @@ static const char* s_fragSrc = R"glsl(
     uniform float     uShadowBiasMin;
     uniform float     uShadowBiasMax;
     uniform float     uShadowDiskRadius;
-    uniform int       uHasPointShadow;
-    uniform samplerCube uPointShadowCube;
+
+    layout(std140, binding = 3) uniform ShadowMatricesBlock {
+        mat4 dirLightSpace;
+        mat4 spotLightSpace[4];
+        ivec4 shadowInfo;
+    } shadowMatrices;
+
+    layout(binding = 4) uniform samplerCube uPointShadowMaps[4];
 
     // 20-tap PCF on cube shadow map for soft omnidirectional shadows
     float pointShadowPCF(vec3 fragPosWS, vec3 N)
     {
-        if (uHasPointShadow == 0)
+        if (shadowMatrices.shadowInfo.y <= 0)
         {
             return 1.0;
         }
@@ -111,7 +117,7 @@ static const char* s_fragSrc = R"glsl(
         float shadow = 0.0;
         for(int i = 0; i < 20; ++i)
         {
-            float closest = texture(uPointShadowCube, toLight + offsets[i] * diskRadius).r;
+            float closest = texture(uPointShadowMaps[0], toLight + offsets[i] * diskRadius).r;
             shadow += (currentDepth - bias) > closest ? 0.0 : 1.0;
         }
         return shadow / 20.0;
@@ -338,7 +344,6 @@ int main()
                     m->setUniform("uDiffuseColor", gl::UniformVec3{ 0.75f, 0.75f, 0.75f });
                     m->setUniform("uSpecularColor", gl::UniformVec3{ 0.25f, 0.25f, 0.25f });
                     m->setUniform("uShininess", 16.0f);
-                    m->setUniform("uPointShadowCube", static_cast<int>(gl::TextureBindings::PointShadowMapBase));
                     m->setUniform("uPointColor", gl::UniformVec3{ kPointColor[0], kPointColor[1], kPointColor[2] });
                     m->setUniform("uPointIntensity", kPointIntensity);
                     m->setUniform("uPointRadius", kPointRadius);
@@ -346,7 +351,6 @@ int main()
                     m->setUniform("uShadowBiasMin", 0.01f);
                     m->setUniform("uShadowBiasMax", 0.06f);
                     m->setUniform("uShadowDiskRadius", 0.04f);
-                    m->setUniform("uHasPointShadow", 0);
                     if (diffuse.isValid())
                     {
                         m->setTexture("uDiffuseMap", diffuse);
@@ -459,22 +463,9 @@ int main()
             scene->shadowPass->addLight(point);
             setPointUniforms(*scene, point);
 
-            // Bind current point shadow cube to a fixed texture unit (Material currently binds only 2D textures)
             const auto& maps = scene->shadowPass->shadowMaps();
-            bool hasPointShadowCube = false;
-            if (const gl::TextureCube* cube = scene->textureCubeCache.get(maps[0].texture))
-            {
-                cube->bind(gl::TextureBindings::PointShadowMapBase);
-                hasPointShadowCube = true;
-            }
-
-            for (gl::MaterialHandle h : { scene->rockMaterial, scene->floorMaterial })
-            {
-                if (gl::Material* m = scene->materialCache.get(h))
-                {
-                    m->setUniform("uHasPointShadow", hasPointShadowCube ? 1 : 0);
-                }
-            }
+            frame.pointShadowCount = maps[0].texture.isValid() ? 1 : 0;
+            frame.pointShadowMaps[0] = maps[0];
 
             // Marker sphere for point light
             gl::RenderCommand markerCmd;
@@ -518,8 +509,6 @@ int main()
 
             scene->renderer.setFrameData(frame);
             scene->renderer.render();
-
-            gl::TextureCube::unbind(gl::TextureBindings::PointShadowMapBase);
         },
 
         // onShutdown

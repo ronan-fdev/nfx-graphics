@@ -25,6 +25,8 @@ add_executable(nfx-graphics-gl-tests
 
     scene/tests_lights.cpp
     scene/tests_OrbitCamera.cpp
+
+    shaders/tests_ShaderFeatures.cpp
 )
 
 set_target_properties(nfx-graphics-gl-tests PROPERTIES DEBUG_POSTFIX "-d")
@@ -39,6 +41,11 @@ target_link_libraries(nfx-graphics-gl-tests
         doctest::doctest_with_main
         nfx::graphics
         nfx-graphics-warnings
+)
+
+target_include_directories(nfx-graphics-gl-tests
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/src
 )
 
 doctest_discover_tests(nfx-graphics-gl-tests)

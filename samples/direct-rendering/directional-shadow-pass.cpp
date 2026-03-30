@@ -35,8 +35,10 @@ static const char* s_vertSrc = R"glsl(
     } camera;
 
     layout(std140, binding = 3) uniform ShadowMatricesBlock {
-        mat4 lightSpaceMatrix;
-    } shadow;
+        mat4 dirLightSpace;
+        mat4 spotLightSpace[4];
+        ivec4 shadowInfo;
+    } shadowMatrices;
 
     void main()
     {
@@ -45,7 +47,7 @@ static const char* s_vertSrc = R"glsl(
         vFragPosWS = worldPos.xyz;
         vNormalWS = uNormalMatrix * aNormal;
         vUV = aUV;
-        vFragPosLS = shadow.lightSpaceMatrix * worldPos;
+        vFragPosLS = shadowMatrices.dirLightSpace * worldPos;
     }
 )glsl";
 
@@ -77,6 +79,12 @@ static const char* s_fragSrc = R"glsl(
         vec4 direction;
         vec4 colorIntensity;
     } dirLight;
+
+    layout(std140, binding = 3) uniform ShadowMatricesBlock {
+        mat4 dirLightSpace;
+        mat4 spotLightSpace[4];
+        ivec4 shadowInfo;
+    } shadowMatrices;
 
     uniform sampler2D uDiffuseMap;
     uniform int uUseDiffuseMap;
@@ -122,7 +130,7 @@ static const char* s_fragSrc = R"glsl(
 
         float diff   = max(dot(N, L), 0.0);
         float spec   = pow(max(dot(N, H), 0.0), uShininess);
-        float shadow = shadowFactor(vFragPosLS);
+        float shadow = (shadowMatrices.shadowInfo.z != 0) ? shadowFactor(vFragPosLS) : 1.0;
 
         vec3 ambientColor = ambient.colorIntensity.rgb * ambient.colorIntensity.a;
         vec3 lightColor   = dirLight.colorIntensity.rgb * dirLight.colorIntensity.a;
@@ -179,8 +187,6 @@ struct Scene
 
     gl::Texture2DHandle rockDiffuseHandle;
     gl::Texture2DHandle terrainDiffuseHandle;
-
-    gl::UniformBuffer<math::Mat4> lightSpaceUbo;
 
     gl::OrbitCamera orbitCamera;
 
@@ -291,20 +297,6 @@ int main()
                                                                 scene->samplerCache });
             scene->renderer.initialize(*scene->renderResources);
 
-            // Wire the depth texture into both materials now that it is allocated
-            const gl::ShadowMapData sm = scene->shadowPass->shadowMap();
-            if (gl::Material* rockMat = scene->materialCache.get(scene->rockMaterial))
-            {
-                rockMat->setTexture("uShadowMap", sm.texture);
-            }
-            if (gl::Material* floorMat = scene->materialCache.get(scene->floorMaterial))
-            {
-                floorMat->setTexture("uShadowMap", sm.texture);
-            }
-
-            // Bind the light-space UBO at slot 3 for the main shader
-            scene->lightSpaceUbo.bind(gl::UboBindings::ShadowMatricesBlock);
-
             scene->geometryPass->setOutputSize(scene->texture2DCache, 1280, 720);
             scene->geometryPass->setClearColor(true, 0.08f, 0.10f, 0.14f, 1.0f);
             scene->geometryPass->setClearDepth(true, 1.0f);
@@ -391,12 +383,13 @@ int main()
             directional.intensity = 1.0f;
             frame.directionalLight = directional.toGpuData(kLightDir);
 
-            // Build light-space matrix: upload to shadow pass (depth shader) and to main shader UBO
+            // Build light-space matrix for the directional shadow pass
             math::Mat4 lightSpaceMat;
             gl::DirectionalShadowPass::buildLightSpaceMatrix(
                 lightSpaceMat.data(), kLightDir, 0.0f, 0.0f, 0.0f, kShadowSceneRadius, kShadowNear, kShadowFar);
             scene->shadowPass->setLightSpaceMatrix(lightSpaceMat.data());
-            scene->lightSpaceUbo.upload(lightSpaceMat);
+            frame.hasDirShadow = true;
+            frame.dirShadowMap = scene->shadowPass->shadowMap();
 
             // shadowPass queue is cleared automatically at end() after each frame
             scene->geometryPass->clearQueue();
@@ -417,7 +410,6 @@ int main()
             }
             scene->geometryPass->submit(floorCmd);
 
-            // Animate orbiting rocks
             for (int i = 0; i < kRockCount; ++i)
             {
                 const float a = scene->time * kRockOrbitSpeed + static_cast<float>(i) * kRockAngleStep;

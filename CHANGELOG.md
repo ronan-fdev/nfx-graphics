@@ -34,6 +34,8 @@
 - `Material`: high-level material combining shader, render state and named uniform/texture bindings
 - `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess)
 
+- `BlinnPhong`: material descriptor with diffuse/specular/normal map support, alpha transparency and shadow permutation
+
 ##### Meshes
 
 - `Mesh`: runtime wrapper for vertex/index GPU buffers, VAO setup, and optional instance attribute streams
@@ -62,6 +64,7 @@
 
 - `ShadowMap`: directional/spot shadow map payload combining depth texture handle and light-space matrix
 - `PointShadowMap`: point-light shadow payload combining depth cube map, light position, and far plane
+- `ShadowMatricesBlock`: std140 block for shadow matrices
 
 - `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
 - `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding
@@ -129,6 +132,8 @@
 
 - `gl/scene/tests_lights`: ambient/directional defaults, raw/typed packing parity, and std140 GPU payload layout checks
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry
+
+- `gl/material/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
 
 - `math/tests_Mat3`: validates mat3 identity/scale/rotation helpers and inverse-transpose normal-matrix behavior
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior

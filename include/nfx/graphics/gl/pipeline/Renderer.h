@@ -10,9 +10,11 @@
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
+#include "nfx/graphics/gl/pipeline/shadows/ShadowMatricesBlock.h"
 
 #include <memory>
 #include <optional>
+#include <unordered_set>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -35,6 +37,20 @@ namespace nfx::graphics::gl
     class Renderer final
     {
     public:
+        /**
+         * \brief Controls how permutation vs. frame-globals mismatches are reported.
+         *
+         * - Off    : no validation performed.
+         * - Warn   : logs a one-time stderr warning per offending shader permutation (default).
+         * - Strict : calls std::abort() on any mismatch (CI / test builds).
+         */
+        enum class ValidationMode
+        {
+            Off,
+            Warn,
+            Strict
+        };
+
         Renderer() = default;
 
         Renderer(const Renderer&) = delete;
@@ -105,6 +121,11 @@ namespace nfx::graphics::gl
         void resetFrameData() { m_frameData.reset(); }
 
         /**
+         * \brief Sets permutation/frame-globals validation behavior.
+         */
+        void setValidationMode(ValidationMode mode) noexcept { m_validationMode = mode; }
+
+        /**
          * \brief Executes all enabled passes in registration order.
          *
          * Calls initialize(), begin(), execute() and end() on each enabled pass.
@@ -114,6 +135,7 @@ namespace nfx::graphics::gl
 
     private:
         void bindFrameScope();
+        void validatePermutations();
 
         std::vector<std::unique_ptr<RenderPass>> m_passes;
 
@@ -125,6 +147,11 @@ namespace nfx::graphics::gl
         std::optional<UniformBuffer<Camera::GpuData>> m_cameraUbo;
         std::optional<UniformBuffer<AmbientLight::GpuData>> m_ambientUbo;
         std::optional<UniformBuffer<DirectionalLight::GpuData>> m_directionalUbo;
+        std::optional<UniformBuffer<ShadowMatricesBlockData>> m_shadowMatricesUbo;
         std::optional<ShaderStorageBuffer<PunctualLight::GpuBlock>> m_punctualLightsSsbo;
+
+        // Validation
+        ValidationMode m_validationMode = ValidationMode::Warn;
+        std::unordered_set<std::uint32_t> m_validatedPermutations;
     };
 } // namespace nfx::graphics::gl

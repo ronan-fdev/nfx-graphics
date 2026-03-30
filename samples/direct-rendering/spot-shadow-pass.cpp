@@ -72,14 +72,15 @@ static const char* s_fragSrc = R"glsl(
     uniform vec3      uSpecularColor;
     uniform float     uShininess;
 
+    layout(std140, binding = 3) uniform ShadowMatricesBlock {
+        mat4 dirLightSpace;
+        mat4 spotLightSpace[4];
+        ivec4 shadowInfo;
+    } shadowMatrices;
+
     uniform int uSpotCount;
 
-    uniform mat4      uSpotLightSpaceMat0;
-    uniform mat4      uSpotLightSpaceMat1;
-    uniform mat4      uSpotLightSpaceMat2;
-    uniform sampler2D uSpotShadowMap0;
-    uniform sampler2D uSpotShadowMap1;
-    uniform sampler2D uSpotShadowMap2;
+    layout(binding = 8) uniform sampler2D uSpotShadowMaps[4];
     uniform vec3      uSpotPos0;
     uniform vec3      uSpotPos1;
     uniform vec3      uSpotPos2;
@@ -96,30 +97,60 @@ static const char* s_fragSrc = R"glsl(
     uniform float     uSpotOuter1;
     uniform float     uSpotOuter2;
 
-    float spotShadow(sampler2D shadowMap, mat4 lightSpaceMat)
+    float pcfSpot(int idx, vec2 uv, float depth)
     {
-        vec4 fragPosLS = lightSpaceMat * vec4(vFragPosWS, 1.0);
+        float shadow = 0.0;
+        vec2 texelSize;
+        if (idx == 0)
+        {
+            texelSize = 1.0 / textureSize(uSpotShadowMaps[0], 0);
+        }
+        else if (idx == 1)
+        {
+            texelSize = 1.0 / textureSize(uSpotShadowMaps[1], 0);
+        }
+        else if (idx == 2)
+        {
+            texelSize = 1.0 / textureSize(uSpotShadowMaps[2], 0);
+        }
+        else
+        {
+            texelSize = 1.0 / textureSize(uSpotShadowMaps[3], 0);
+        }
+
+        for(int x = -1; x <= 1; ++x)
+            for(int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth;
+                if (idx == 0)
+                    pcfDepth = texture(uSpotShadowMaps[0], uv + vec2(x, y) * texelSize).r;
+                else if (idx == 1)
+                    pcfDepth = texture(uSpotShadowMaps[1], uv + vec2(x, y) * texelSize).r;
+                else if (idx == 2)
+                    pcfDepth = texture(uSpotShadowMaps[2], uv + vec2(x, y) * texelSize).r;
+                else
+                    pcfDepth = texture(uSpotShadowMaps[3], uv + vec2(x, y) * texelSize).r;
+
+                shadow += depth > pcfDepth ? 0.0 : 1.0;
+            }
+
+        return shadow / 9.0;
+    }
+
+    float spotShadow(int idx)
+    {
+        vec4 fragPosLS = shadowMatrices.spotLightSpace[idx] * vec4(vFragPosWS, 1.0);
         vec3 proj = fragPosLS.xyz / fragPosLS.w;
         proj = proj * 0.5 + 0.5;
 
         if(proj.z < 0.0 || proj.z > 1.0 || proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0)
             return 1.0;
 
-        float currentDepth = proj.z;
-        float shadow = 0.0;
-        vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-        for(int x = -1; x <= 1; ++x)
-            for(int y = -1; y <= 1; ++y)
-            {
-                float pcfDepth = texture(shadowMap, proj.xy + vec2(x, y) * texelSize).r;
-                shadow += currentDepth > pcfDepth ? 0.0 : 1.0;
-            }
-        return shadow / 9.0;
+        return pcfSpot(idx, proj.xy, proj.z);
     }
 
     vec3 blinnPhongSpot(vec3 N, vec3 base, vec3 spotPos, vec3 spotDir,
-                        vec3 spotColor, float innerAngle, float outerAngle,
-                        sampler2D shadowMap, mat4 lightSpaceMat)
+                        vec3 spotColor, float innerAngle, float outerAngle, int shadowIdx)
     {
         vec3 L = normalize(spotPos - vFragPosWS);
         vec3 V = normalize(camera.position - vFragPosWS);
@@ -133,7 +164,7 @@ static const char* s_fragSrc = R"glsl(
 
         float diff = max(dot(N, L), 0.0);
         float spec = pow(max(dot(N, H), 0.0), uShininess);
-        float shadow = spotShadow(shadowMap, lightSpaceMat);
+        float shadow = (shadowIdx < shadowMatrices.shadowInfo.x) ? spotShadow(shadowIdx) : 1.0;
 
         return cone * shadow * (diff * spotColor * base + spec * spotColor * uSpecularColor);
     }
@@ -150,13 +181,13 @@ static const char* s_fragSrc = R"glsl(
 
         if(uSpotCount > 0)
             color += blinnPhongSpot(N, base, uSpotPos0, uSpotDir0, uSpotColor0,
-                                    uSpotInner0, uSpotOuter0, uSpotShadowMap0, uSpotLightSpaceMat0);
+                                    uSpotInner0, uSpotOuter0, 0);
         if(uSpotCount > 1)
             color += blinnPhongSpot(N, base, uSpotPos1, uSpotDir1, uSpotColor1,
-                                    uSpotInner1, uSpotOuter1, uSpotShadowMap1, uSpotLightSpaceMat1);
+                                    uSpotInner1, uSpotOuter1, 1);
         if(uSpotCount > 2)
             color += blinnPhongSpot(N, base, uSpotPos2, uSpotDir2, uSpotColor2,
-                                    uSpotInner2, uSpotOuter2, uSpotShadowMap2, uSpotLightSpaceMat2);
+                                    uSpotInner2, uSpotOuter2, 2);
 
         fragColor = vec4(color, 1.0);
     }
@@ -269,24 +300,20 @@ struct Scene
 };
 
 // Sets a named spot uniform on both rock and floor materials
-static void setSpotUniforms(Scene& scene, int idx, const gl::SpotLight& spot, const gl::ShadowMapData& sm)
+static void setSpotUniforms(Scene& scene, int idx, const gl::SpotLight& spot)
 {
-    char posName[32], dirName[32], colorName[32], innerName[32], outerName[32], matName[32];
+    char posName[32], dirName[32], colorName[32], innerName[32], outerName[32];
     std::snprintf(posName, sizeof(posName), "uSpotPos%d", idx);
     std::snprintf(dirName, sizeof(dirName), "uSpotDir%d", idx);
     std::snprintf(colorName, sizeof(colorName), "uSpotColor%d", idx);
     std::snprintf(innerName, sizeof(innerName), "uSpotInner%d", idx);
     std::snprintf(outerName, sizeof(outerName), "uSpotOuter%d", idx);
-    std::snprintf(matName, sizeof(matName), "uSpotLightSpaceMat%d", idx);
 
     const gl::UniformVec3 pos{ spot.position[0], spot.position[1], spot.position[2] };
     const gl::UniformVec3 dir{ spot.direction[0], spot.direction[1], spot.direction[2] };
     const gl::UniformVec3 col{ kSpotColors[idx][0] * kSpotIntensity,
                                kSpotColors[idx][1] * kSpotIntensity,
                                kSpotColors[idx][2] * kSpotIntensity };
-
-    gl::UniformMat4 mat;
-    std::copy(sm.lightSpaceMatrix, sm.lightSpaceMatrix + 16, mat.begin());
 
     for (gl::MaterialHandle h : { scene.rockMaterial, scene.floorMaterial })
     {
@@ -297,7 +324,6 @@ static void setSpotUniforms(Scene& scene, int idx, const gl::SpotLight& spot, co
             m->setUniform(colorName, col);
             m->setUniform(innerName, spot.innerAngle);
             m->setUniform(outerName, spot.outerAngle);
-            m->setUniform(matName, mat);
         }
     }
 }
@@ -411,20 +437,6 @@ int main()
                                                                 scene->samplerCache });
             scene->renderer.initialize(*scene->renderResources);
 
-            // Wire spot shadow depth textures into both materials (set once after init)
-            const auto& sms = scene->shadowPass->shadowMaps();
-            const char* shadowSamplers[kSpotCount] = { "uSpotShadowMap0", "uSpotShadowMap1", "uSpotShadowMap2" };
-            for (int i = 0; i < kSpotCount; ++i)
-            {
-                for (gl::MaterialHandle h : { scene->rockMaterial, scene->floorMaterial })
-                {
-                    if (gl::Material* m = scene->materialCache.get(h))
-                    {
-                        m->setTexture(shadowSamplers[i], sms[i].texture);
-                    }
-                }
-            }
-
             scene->geometryPass->setOutputSize(scene->texture2DCache, 1280, 720);
             scene->geometryPass->setClearColor(true, 0.02f, 0.02f, 0.04f, 1.0f);
             scene->geometryPass->setClearDepth(true, 1.0f);
@@ -496,22 +508,6 @@ int main()
 
             scene->geometryPass->clearQueue();
 
-            // Keep material shadow samplers synced if SpotShadowPass reallocates depth maps
-            {
-                const auto& sms = scene->shadowPass->shadowMaps();
-                const char* shadowSamplers[kSpotCount] = { "uSpotShadowMap0", "uSpotShadowMap1", "uSpotShadowMap2" };
-                for (int i = 0; i < kSpotCount; ++i)
-                {
-                    for (gl::MaterialHandle h : { scene->rockMaterial, scene->floorMaterial })
-                    {
-                        if (gl::Material* m = scene->materialCache.get(h))
-                        {
-                            m->setTexture(shadowSamplers[i], sms[i].texture);
-                        }
-                    }
-                }
-            }
-
             // Register orbiting spot lights and update per-frame uniforms
             const float spotAngleStep = (2.0f * std::numbers::pi_v<float>) / static_cast<float>(kSpotCount);
             for (int i = 0; i < kSpotCount; ++i)
@@ -544,8 +540,7 @@ int main()
 
                 scene->shadowPass->addLight(spot);
 
-                // Light-space matrix is available immediately after addLight()
-                setSpotUniforms(*scene, i, spot, scene->shadowPass->shadowMaps()[i]);
+                setSpotUniforms(*scene, i, spot);
 
                 // Marker sphere for this spot light
                 gl::RenderCommand markerCmd;
@@ -559,6 +554,13 @@ int main()
                     math::mat4Mul(markerCmd.transform, t, s);
                 }
                 scene->geometryPass->submit(markerCmd);
+            }
+
+            frame.spotShadowCount = kSpotCount;
+            const auto& spotMaps = scene->shadowPass->shadowMaps();
+            for (int i = 0; i < kSpotCount; ++i)
+            {
+                frame.spotShadowMaps[i] = spotMaps[i];
             }
 
             // Floor

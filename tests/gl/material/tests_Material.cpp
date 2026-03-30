@@ -2,6 +2,7 @@
 
 #include <nfx/graphics/gl/material/Material.h>
 #include <nfx/graphics/gl/material/MaterialBlock.h>
+#include <nfx/graphics/gl/material/BlinnPhong.h>
 #include <nfx/graphics/gl/pipeline/RenderState.h>
 #include <nfx/graphics/gl/resources/Handle.h>
 
@@ -101,6 +102,54 @@ TEST_SUITE("Material")
         const Uniform* u = mat.uniform("uTime");
         REQUIRE(u != nullptr);
         CHECK(std::get<float>(*u) == doctest::Approx(3.14f));
+    }
+
+    TEST_CASE("setUniformVec3 raw pointer stores UniformVec3")
+    {
+        auto mat = makeMaterial();
+        const float v[3] = { 0.1f, 0.2f, 0.3f };
+        mat.setUniformVec3("uColor", v);
+
+        const Uniform* u = mat.uniform("uColor");
+        REQUIRE(u != nullptr);
+        const auto& vec = std::get<UniformVec3>(*u);
+        CHECK(vec[0] == doctest::Approx(0.1f));
+        CHECK(vec[1] == doctest::Approx(0.2f));
+        CHECK(vec[2] == doctest::Approx(0.3f));
+    }
+
+    TEST_CASE("setUniformMat3 raw pointer copies all 9 values")
+    {
+        auto mat = makeMaterial();
+        const float m[9] = {
+            1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f,
+        };
+        mat.setUniformMat3("uN", m);
+
+        const Uniform* u = mat.uniform("uN");
+        REQUIRE(u != nullptr);
+        const auto& mat3 = std::get<UniformMat3>(*u);
+        for (int i = 0; i < 9; ++i)
+        {
+            CHECK(mat3[static_cast<std::size_t>(i)] == doctest::Approx(m[i]));
+        }
+    }
+
+    TEST_CASE("setUniformMat4 raw pointer copies all 16 values")
+    {
+        auto mat = makeMaterial();
+        const float m[16] = {
+            1.f, 0.f, 0.f, 0.f, 0.f, 2.f, 0.f, 0.f, 0.f, 0.f, 3.f, 0.f, 0.f, 0.f, 0.f, 4.f,
+        };
+        mat.setUniformMat4("uM", m);
+
+        const Uniform* u = mat.uniform("uM");
+        REQUIRE(u != nullptr);
+        const auto& mat4 = std::get<UniformMat4>(*u);
+        for (int i = 0; i < 16; ++i)
+        {
+            CHECK(mat4[static_cast<std::size_t>(i)] == doctest::Approx(m[i]));
+        }
     }
 
     TEST_CASE("setUniform overwrites existing value")
@@ -203,5 +252,64 @@ TEST_SUITE("Material")
         auto mat2 = makeMaterial();
         mat2 = std::move(mat);
         CHECK(mat2.hasUniform("uY"));
+    }
+
+    TEST_SUITE("BlinnPhongMaterial")
+    {
+        TEST_CASE("apply() selects transparent state when alpha < 1")
+        {
+            BlinnPhongMaterial bp;
+            bp.alpha = 0.5f;
+
+            auto mat = makeMaterial();
+            bp.apply(mat);
+
+            CHECK(mat.renderState().blend == true);
+        }
+
+        TEST_CASE("apply() selects opaque state when alpha >= 1")
+        {
+            BlinnPhongMaterial bp;
+            bp.alpha = 1.25f;
+
+            auto mat = makeMaterial();
+            bp.apply(mat);
+
+            CHECK(mat.renderState().blend == false);
+        }
+
+        TEST_CASE("apply() binds all provided texture maps")
+        {
+            BlinnPhongMaterial bp;
+            bp.diffuseMap = Texture2DHandle{ 11 };
+            bp.normalMap = Texture2DHandle{ 12 };
+            bp.specularMap = Texture2DHandle{ 13 };
+
+            auto mat = makeMaterial();
+            bp.apply(mat);
+
+            CHECK(mat.hasTexture("uDiffuseMap"));
+            CHECK(mat.hasTexture("uNormalMap"));
+            CHECK(mat.hasTexture("uSpecularMap"));
+        }
+
+        TEST_CASE("apply() clears map bindings when handles are invalid")
+        {
+            auto mat = makeMaterial();
+            mat.setTexture("uDiffuseMap", Texture2DHandle{ 21 });
+            mat.setTexture("uNormalMap", Texture2DHandle{ 22 });
+            mat.setTexture("uSpecularMap", Texture2DHandle{ 23 });
+
+            BlinnPhongMaterial bp;
+            bp.diffuseMap = {};
+            bp.normalMap = {};
+            bp.specularMap = {};
+
+            bp.apply(mat);
+
+            CHECK(!mat.hasTexture("uDiffuseMap"));
+            CHECK(!mat.hasTexture("uNormalMap"));
+            CHECK(!mat.hasTexture("uSpecularMap"));
+        }
     }
 }

@@ -1,0 +1,176 @@
+#include "nfx/graphics/gl/material/BlinnPhong.h"
+
+#include "nfx/graphics/gl/material/MaterialBlock.h"
+#include "ShaderFeatures.h"
+
+#include <embedded_shaders.h>
+
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+
+namespace nfx::graphics::gl
+{
+    namespace
+    {
+        std::unordered_map<std::uint32_t, ShaderHandle>& shaderCache()
+        {
+            static std::unordered_map<std::uint32_t, ShaderHandle> cache;
+            return cache;
+        }
+
+        std::string injectDefines(std::string_view src, std::string_view defines)
+        {
+            std::string out(src);
+            if (defines.empty())
+            {
+                return out;
+            }
+
+            const std::size_t firstLineEnd = out.find('\n');
+            if (firstLineEnd == std::string::npos)
+            {
+                return out;
+            }
+            out.insert(firstLineEnd + 1, defines);
+            return out;
+        }
+
+        std::string variantDefines(ShaderFeature features)
+        {
+            std::string defines;
+            for (std::string_view def : toDefines(features))
+            {
+                defines += "#define ";
+                defines += def;
+                defines += '\n';
+            }
+            return defines;
+        }
+
+        ShaderHandle resolveShaderVariant(RenderResources& resources, ShaderFeature features)
+        {
+            const std::uint32_t key = static_cast<std::uint32_t>(features);
+            if (auto it = shaderCache().find(key); it != shaderCache().end() && resources.shaders.contains(it->second))
+            {
+                return it->second;
+            }
+
+            const EmbeddedResource* vert = shaders::find("material/blinn_phong.vert");
+            const EmbeddedResource* frag = shaders::find("material/blinn_phong.frag");
+            if (!vert || !frag)
+            {
+                std::fprintf(stderr, "[BlinnPhong] Missing embedded shader resources\n");
+                return {};
+            }
+
+            const std::string defines = variantDefines(features);
+            const std::string vertSrc = injectDefines(vert->str(), defines);
+            const std::string fragSrc = injectDefines(frag->str(), defines);
+
+            ShaderHandle handle = resources.shaders.compile({
+                { ShaderProgram::Stage::Vertex, vertSrc },
+                { ShaderProgram::Stage::Fragment, fragSrc },
+            });
+            if (!handle.isValid())
+            {
+                std::fprintf(stderr, "[BlinnPhong] Failed to compile shader variant (key=%u)\n", key);
+                return {};
+            }
+
+            shaderCache()[key] = handle;
+            return handle;
+        }
+    } // namespace
+
+    MaterialHandle BlinnPhongMaterial::build(RenderResources& resources) const
+    {
+        ShaderFeature features = ShaderFeature::None;
+        if (diffuseMap.isValid())
+        {
+            features |= ShaderFeature::HasDiffuseMap;
+        }
+        if (normalMap.isValid())
+        {
+            features |= ShaderFeature::HasNormalMap;
+        }
+        if (specularMap.isValid())
+        {
+            features |= ShaderFeature::HasSpecularMap;
+        }
+        if (hasShadow)
+        {
+            features |= ShaderFeature::HasShadow;
+        }
+
+        const ShaderHandle shader = resolveShaderVariant(resources, features);
+        if (!shader.isValid())
+        {
+            return {};
+        }
+
+        const float clampedAlpha = std::clamp(alpha, 0.f, 1.f);
+        const RenderState state = (clampedAlpha < 1.f) ? RenderState::transparent() : RenderState::opaque();
+
+        MaterialHandle handle = resources.materials.create(shader, state);
+        Material* mat = resources.materials.get(handle);
+        if (!mat)
+        {
+            std::fprintf(stderr, "[BlinnPhong] Failed to resolve created material handle\n");
+            return {};
+        }
+
+        apply(*mat);
+
+        return handle;
+    }
+
+    void BlinnPhongMaterial::apply(Material& mat) const
+    {
+        const float clampedAlpha = std::clamp(alpha, 0.f, 1.f);
+        const float clampedShininess = std::max(shininess, 1.f);
+
+        const RenderState state = (clampedAlpha < 1.f) ? RenderState::transparent() : RenderState::opaque();
+        mat.setRenderState(state);
+
+        MaterialBlockData block;
+        block.baseColor_alpha[0] = diffuseColor[0];
+        block.baseColor_alpha[1] = diffuseColor[1];
+        block.baseColor_alpha[2] = diffuseColor[2];
+        block.baseColor_alpha[3] = clampedAlpha;
+        block.specColor_shine[0] = specularColor[0];
+        block.specColor_shine[1] = specularColor[1];
+        block.specColor_shine[2] = specularColor[2];
+        block.specColor_shine[3] = clampedShininess;
+        mat.setMaterialBlock(block);
+
+        if (diffuseMap.isValid())
+        {
+            mat.setTexture("uDiffuseMap", diffuseMap);
+        }
+        else
+        {
+            mat.clearTexture("uDiffuseMap");
+        }
+
+        if (normalMap.isValid())
+        {
+            mat.setTexture("uNormalMap", normalMap);
+        }
+        else
+        {
+            mat.clearTexture("uNormalMap");
+        }
+
+        if (specularMap.isValid())
+        {
+            mat.setTexture("uSpecularMap", specularMap);
+        }
+        else
+        {
+            mat.clearTexture("uSpecularMap");
+        }
+    }
+} // namespace nfx::graphics::gl
