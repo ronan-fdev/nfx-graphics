@@ -161,6 +161,7 @@
 - `direct-rendering-transparent-pass`: two-pass pipeline sample (GeometryPass + TransparentPass) with back-to-front sorted alpha-blended spheres
 - `direct-rendering-directional-shadow-pass`: directional-light shadow mapping with orbiting rocks and textured terrain floor
 - `direct-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
+- `direct-rendering-point-shadow-pass`: point-light cube-shadow mapping with one levitating rock and one moving light marker
 
 ### Changed
 
