@@ -26,6 +26,7 @@
 #include "nfx/graphics/gl/pipeline/passes/DirectionalShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GridPass.h"
+#include "nfx/graphics/gl/pipeline/passes/PointShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"

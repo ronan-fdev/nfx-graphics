@@ -55,11 +55,13 @@
 
 - `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
 - `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light
+- `PointShadowPass`: depth-only point-light shadow pass producing layered cube-map depth shadows
 
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
 - `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear
 
 - `ShadowMap`: directional/spot shadow map payload combining depth texture handle and light-space matrix
+- `PointShadowMap`: point-light shadow payload combining depth cube map, light position, and far plane
 
 - `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
 - `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding

@@ -38,7 +38,7 @@ nfx_graphics_embed_resources(
     OUTPUT_DIR      ${CMAKE_CURRENT_BINARY_DIR}/gen/shaders
     NAMESPACE       nfx::graphics::shaders
     REGISTRY_NAME   embedded_shaders
-    PATTERN         "*.vert" "*.frag"
+    PATTERN         "*.vert" "*.frag" "*.geom"
     RECURSE
 )
 
