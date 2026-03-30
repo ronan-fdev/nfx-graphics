@@ -151,6 +151,8 @@ nfx_graphics_download_assets(
     BASE_URL "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rocky_terrain"
     FILES
         rocky_terrain_diff_1k.jpg
+        rocky_terrain_nor_gl_1k.jpg
+        rocky_terrain_rough_1k.jpg
 )
 
 nfx_graphics_embed_resources(
