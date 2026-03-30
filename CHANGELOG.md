@@ -35,6 +35,7 @@
 - `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess)
 
 - `BlinnPhong`: material descriptor with diffuse/specular/normal map support, alpha transparency and shadow permutation
+- `Unlit`: material descriptor for constant-color rendering with alpha support
 
 ##### Meshes
 
