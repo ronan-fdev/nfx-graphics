@@ -2,99 +2,17 @@
 
 #include <nfx/Graphics.h>
 
-#include <algorithm>
 #include <optional>
 
 namespace gl = nfx::graphics::gl;
 namespace math = nfx::graphics::math;
 namespace smp = nfx::samples;
 
-static const char* s_vertSrc = R"glsl(
-    #version 450 core
-
-    layout(location = 0) in vec3 aPosition;
-    layout(location = 1) in vec3 aNormal;
-
-    uniform mat4 uModel;
-    uniform mat3 uNormalMatrix;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    out vec3 vFragPosWS;
-    out vec3 vNormalWS;
-
-    void main()
-    {
-        vec4 worldPos = uModel * vec4(aPosition, 1.0);
-        gl_Position = camera.viewProj * worldPos;
-        vFragPosWS = worldPos.xyz;
-        vNormalWS = uNormalMatrix * aNormal;
-    }
-)glsl";
-
-static const char* s_fragSrc = R"glsl(
-    #version 450 core
-
-    in vec3 vFragPosWS;
-    in vec3 vNormalWS;
-
-    out vec4 fragColor;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    layout(std140, binding = 1) uniform AmbientBlock {
-        vec4 colorIntensity;
-    } ambient;
-
-    layout(std140, binding = 2) uniform DirectionalLightBlock {
-        vec4 direction;
-        vec4 colorIntensity;
-    } dirLight;
-
-    uniform vec3 uColor;
-    uniform float uShininess;
-
-    void main()
-    {
-        vec3 N = normalize(vNormalWS);
-        N = gl_FrontFacing ? N : -N;
-
-        vec3 L = normalize(-dirLight.direction.xyz);
-        vec3 V = normalize(camera.position - vFragPosWS);
-        vec3 H = normalize(L + V);
-
-        float diff = max(dot(N, L), 0.0);
-        float spec = pow(max(dot(N, H), 0.0), uShininess);
-
-        vec3 ambientColor = ambient.colorIntensity.rgb * ambient.colorIntensity.a;
-        vec3 lightColor = dirLight.colorIntensity.rgb * dirLight.colorIntensity.a;
-
-        vec3 color = ambientColor * uColor + diff * lightColor * uColor + spec * lightColor * vec3(0.35);
-        fragColor = vec4(color, 1.0);
-    }
-)glsl";
-
 struct Scene
 {
-    gl::ShaderCache shaderCache;
     gl::MeshCache meshCache;
     gl::MaterialCache materialCache;
+    gl::ShaderCache shaderCache;
     gl::Texture2DCache texture2DCache;
     gl::TextureCubeCache textureCubeCache;
     gl::SamplerCache samplerCache;
@@ -104,7 +22,6 @@ struct Scene
     gl::GeometryPass* geometryPass = nullptr;
     gl::PresentPass* presentPass = nullptr;
 
-    gl::ShaderHandle shaderHandle;
     gl::MeshHandle cubeHandle;
     gl::MeshHandle sphereHandle;
     gl::MeshHandle planeHandle;
@@ -126,16 +43,6 @@ struct Scene
     bool ready = false;
 };
 
-static void setMaterialColor(
-    gl::MaterialCache& cache, gl::MaterialHandle handle, const gl::UniformVec3& color, float shininess)
-{
-    if (gl::Material* mat = cache.get(handle))
-    {
-        mat->setUniform("uColor", color);
-        mat->setUniform("uShininess", shininess);
-    }
-}
-
 int main()
 {
     std::optional<Scene> scene;
@@ -147,31 +54,10 @@ int main()
         [&] {
             scene.emplace();
 
-            // Shader
-            scene->shaderHandle = scene->shaderCache.compile(
-                { { gl::ShaderProgram::Stage::Vertex, s_vertSrc }, { gl::ShaderProgram::Stage::Fragment, s_fragSrc } });
-
             // Meshes
             scene->cubeHandle = scene->meshCache.create(gl::Primitive::cube());
             scene->sphereHandle = scene->meshCache.create(gl::Primitive::uvSphere());
             scene->planeHandle = scene->meshCache.create(gl::Primitive::plane());
-
-            // Materials
-            scene->cubeMaterial = scene->materialCache.create(scene->shaderHandle, gl::RenderState::opaque());
-            scene->sphereMaterial = scene->materialCache.create(scene->shaderHandle, gl::RenderState::opaque());
-
-            gl::RenderState planeState = gl::RenderState::opaque();
-            planeState.cullFace = false;
-            scene->planeMaterial = scene->materialCache.create(scene->shaderHandle, planeState);
-
-            setMaterialColor(scene->materialCache, scene->cubeMaterial, gl::UniformVec3{ 0.95f, 0.35f, 0.15f }, 24.0f);
-            setMaterialColor(
-                scene->materialCache, scene->sphereMaterial, gl::UniformVec3{ 0.20f, 0.65f, 0.95f }, 64.0f);
-            setMaterialColor(scene->materialCache, scene->planeMaterial, gl::UniformVec3{ 0.28f, 0.30f, 0.34f }, 8.0f);
-
-            // Pass
-            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
-            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
 
             scene->renderResources.emplace(gl::RenderResources{ scene->meshCache,
                                                                 scene->materialCache,
@@ -179,6 +65,39 @@ int main()
                                                                 scene->texture2DCache,
                                                                 scene->textureCubeCache,
                                                                 scene->samplerCache });
+
+            // Materials
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.95f, 0.35f, 0.15f };
+                desc.specularColor = { 0.35f, 0.35f, 0.35f };
+                desc.shininess = 24.0f;
+                scene->cubeMaterial = desc.build(*scene->renderResources);
+            }
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.20f, 0.65f, 0.95f };
+                desc.specularColor = { 0.35f, 0.35f, 0.35f };
+                desc.shininess = 64.0f;
+                scene->sphereMaterial = desc.build(*scene->renderResources);
+            }
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.28f, 0.30f, 0.34f };
+                desc.specularColor = { 0.20f, 0.20f, 0.20f };
+                desc.shininess = 8.0f;
+                scene->planeMaterial = desc.build(*scene->renderResources);
+                if (gl::Material* mat = scene->materialCache.get(scene->planeMaterial))
+                {
+                    gl::RenderState state = mat->renderState();
+                    state.cullFace = false;
+                    mat->setRenderState(state);
+                }
+            }
+
+            // Pass
+            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
+            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
             scene->renderer.initialize(*scene->renderResources);
 
             scene->geometryPass->setOutputSize(scene->texture2DCache, 800, 600);
@@ -194,11 +113,10 @@ int main()
             scene->orbitCamera.distance = 4.5f;
             scene->orbitCamera.target[1] = 0.25f;
 
-            scene->ready = scene->shaderHandle.isValid() && scene->cubeHandle.isValid() &&
-                           scene->sphereHandle.isValid() && scene->planeHandle.isValid() &&
-                           scene->cubeMaterial.isValid() && scene->sphereMaterial.isValid() &&
-                           scene->planeMaterial.isValid() && scene->geometryPass != nullptr &&
-                           scene->presentPass != nullptr && scene->renderResources.has_value();
+            scene->ready =
+                scene->cubeHandle.isValid() && scene->sphereHandle.isValid() && scene->planeHandle.isValid() &&
+                scene->cubeMaterial.isValid() && scene->sphereMaterial.isValid() && scene->planeMaterial.isValid() &&
+                scene->geometryPass != nullptr && scene->presentPass != nullptr && scene->renderResources.has_value();
         },
 
         // onRender
@@ -210,6 +128,8 @@ int main()
 
             const int safeW = (width > 0) ? width : 1;
             const int safeH = (height > 0) ? height : 1;
+            const auto& funcs = gl::Context::current().functions();
+            funcs.glViewport(0, 0, safeW, safeH);
 
             if (scene->geometryPass->outputWidth() != safeW || scene->geometryPass->outputHeight() != safeH)
             {

@@ -8,92 +8,11 @@ namespace gl = nfx::graphics::gl;
 namespace math = nfx::graphics::math;
 namespace smp = nfx::samples;
 
-static const char* s_vertSrc = R"glsl(
-    #version 450 core
-
-    layout(location = 0) in vec3 aPosition;
-    layout(location = 1) in vec3 aNormal;
-
-    uniform mat4 uModel;
-    uniform mat3 uNormalMatrix;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    out vec3 vFragPosWS;
-    out vec3 vNormalWS;
-
-    void main()
-    {
-        vec4 worldPos = uModel * vec4(aPosition, 1.0);
-        gl_Position = camera.viewProj * worldPos;
-        vFragPosWS = worldPos.xyz;
-        vNormalWS = uNormalMatrix * aNormal;
-    }
-)glsl";
-
-static const char* s_fragSrc = R"glsl(
-    #version 450 core
-
-    in vec3 vFragPosWS;
-    in vec3 vNormalWS;
-
-    out vec4 fragColor;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    layout(std140, binding = 1) uniform AmbientBlock {
-        vec4 colorIntensity;
-    } ambient;
-
-    layout(std140, binding = 2) uniform DirectionalLightBlock {
-        vec4 direction;
-        vec4 colorIntensity;
-    } dirLight;
-
-    uniform vec3 uColor;
-    uniform float uShininess;
-
-    void main()
-    {
-        vec3 N = normalize(vNormalWS);
-        N = gl_FrontFacing ? N : -N;
-
-        vec3 L = normalize(-dirLight.direction.xyz);
-        vec3 V = normalize(camera.position - vFragPosWS);
-        vec3 H = normalize(L + V);
-
-        float diff = max(dot(N, L), 0.0);
-        float spec = pow(max(dot(N, H), 0.0), uShininess);
-
-        vec3 ambientColor = ambient.colorIntensity.rgb * ambient.colorIntensity.a;
-        vec3 lightColor = dirLight.colorIntensity.rgb * dirLight.colorIntensity.a;
-
-        vec3 color = ambientColor * uColor + diff * lightColor * uColor + spec * lightColor * vec3(0.35);
-        fragColor = vec4(color, 1.0);
-    }
-)glsl";
-
 struct Scene
 {
-    gl::ShaderCache shaderCache;
     gl::MeshCache meshCache;
     gl::MaterialCache materialCache;
+    gl::ShaderCache shaderCache;
     gl::Texture2DCache texture2DCache;
     gl::TextureCubeCache textureCubeCache;
     gl::SamplerCache samplerCache;
@@ -105,7 +24,6 @@ struct Scene
     gl::AxesPass* axesPass = nullptr;
     gl::PresentPass* presentPass = nullptr;
 
-    gl::ShaderHandle shaderHandle;
     gl::MeshHandle cubeHandle;
     gl::MeshHandle sphereHandle;
     gl::MaterialHandle cubeMaterial;
@@ -125,16 +43,6 @@ struct Scene
     bool ready = false;
 };
 
-static void setMaterialParams(
-    gl::MaterialCache& cache, gl::MaterialHandle handle, const gl::UniformVec3& color, float shininess)
-{
-    if (gl::Material* mat = cache.get(handle))
-    {
-        mat->setUniform("uColor", color);
-        mat->setUniform("uShininess", shininess);
-    }
-}
-
 int main()
 {
     std::optional<Scene> scene;
@@ -146,27 +54,9 @@ int main()
         [&] {
             scene.emplace();
 
-            // Shader
-            scene->shaderHandle = scene->shaderCache.compile(
-                { { gl::ShaderProgram::Stage::Vertex, s_vertSrc }, { gl::ShaderProgram::Stage::Fragment, s_fragSrc } });
-
             // Meshes
             scene->cubeHandle = scene->meshCache.create(gl::Primitive::cube());
             scene->sphereHandle = scene->meshCache.create(gl::Primitive::uvSphere());
-
-            // Material
-            scene->cubeMaterial = scene->materialCache.create(scene->shaderHandle, gl::RenderState::opaque());
-            scene->sphereMaterial = scene->materialCache.create(scene->shaderHandle, gl::RenderState::opaque());
-
-            setMaterialParams(scene->materialCache, scene->cubeMaterial, gl::UniformVec3{ 0.95f, 0.90f, 0.20f }, 24.0f);
-            setMaterialParams(
-                scene->materialCache, scene->sphereMaterial, gl::UniformVec3{ 0.25f, 0.65f, 0.95f }, 64.0f);
-
-            // Passes: geometry first, then grid + axes overlay on same framebuffer
-            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
-            scene->gridPass = scene->renderer.createPass<gl::GridPass>("Grid");
-            scene->axesPass = scene->renderer.createPass<gl::AxesPass>("Axes");
-            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
 
             scene->renderResources.emplace(gl::RenderResources{ scene->meshCache,
                                                                 scene->materialCache,
@@ -174,6 +64,28 @@ int main()
                                                                 scene->texture2DCache,
                                                                 scene->textureCubeCache,
                                                                 scene->samplerCache });
+
+            // Material
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.95f, 0.90f, 0.20f };
+                desc.specularColor = { 0.35f, 0.35f, 0.35f };
+                desc.shininess = 24.0f;
+                scene->cubeMaterial = desc.build(*scene->renderResources);
+            }
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.25f, 0.65f, 0.95f };
+                desc.specularColor = { 0.35f, 0.35f, 0.35f };
+                desc.shininess = 64.0f;
+                scene->sphereMaterial = desc.build(*scene->renderResources);
+            }
+
+            // Passes: geometry first, then grid + axes overlay on same framebuffer
+            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
+            scene->gridPass = scene->renderer.createPass<gl::GridPass>("Grid");
+            scene->axesPass = scene->renderer.createPass<gl::AxesPass>("Axes");
+            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
             scene->renderer.initialize(*scene->renderResources);
 
             scene->geometryPass->setOutputSize(scene->texture2DCache, 1000, 700);
@@ -191,14 +103,16 @@ int main()
             scene->axesPass->setFadeDistance(60.0f);
 
             scene->presentPass->setInput(scene->geometryPass->colorOutput());
+            scene->presentPass->setTonemapEnabled(true);
+            scene->presentPass->setGammaEnabled(true);
 
             scene->orbitCamera.distance = 6.0f;
             scene->orbitCamera.elevation = 0.45f;
 
-            scene->ready = scene->shaderHandle.isValid() && scene->cubeHandle.isValid() &&
-                           scene->sphereHandle.isValid() && scene->cubeMaterial.isValid() &&
-                           scene->sphereMaterial.isValid() && scene->geometryPass != nullptr &&
-                           scene->gridPass != nullptr && scene->axesPass != nullptr && scene->presentPass != nullptr;
+            scene->ready = scene->cubeHandle.isValid() && scene->sphereHandle.isValid() &&
+                           scene->cubeMaterial.isValid() && scene->sphereMaterial.isValid() &&
+                           scene->geometryPass != nullptr && scene->gridPass != nullptr && scene->axesPass != nullptr &&
+                           scene->presentPass != nullptr;
         },
 
         // onRender

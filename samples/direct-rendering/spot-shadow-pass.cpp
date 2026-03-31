@@ -9,225 +9,6 @@
 #include <optional>
 #include <string_view>
 
-static const char* s_vertSrc = R"glsl(
-    #version 450 core
-
-    layout(location = 0) in vec3 aPosition;
-    layout(location = 1) in vec3 aNormal;
-    layout(location = 2) in vec2 aUV;
-
-    out vec3 vFragPosWS;
-    out vec3 vNormalWS;
-    out vec2 vUV;
-
-    uniform mat4 uModel;
-    uniform mat3 uNormalMatrix;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    void main()
-    {
-        vec4 worldPos = uModel * vec4(aPosition, 1.0);
-        gl_Position = camera.viewProj * worldPos;
-        vFragPosWS = worldPos.xyz;
-        vNormalWS = uNormalMatrix * aNormal;
-        vUV = aUV;
-    }
-)glsl";
-
-static const char* s_fragSrc = R"glsl(
-    #version 450 core
-
-    in vec3 vFragPosWS;
-    in vec3 vNormalWS;
-    in vec2 vUV;
-
-    out vec4 fragColor;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    layout(std140, binding = 1) uniform AmbientBlock {
-        vec4 colorIntensity;
-    } ambient;
-
-    uniform sampler2D uDiffuseMap;
-    uniform int       uUseDiffuseMap;
-    uniform vec3      uDiffuseColor;
-    uniform vec3      uSpecularColor;
-    uniform float     uShininess;
-
-    layout(std140, binding = 3) uniform ShadowMatricesBlock {
-        mat4 dirLightSpace;
-        mat4 spotLightSpace[4];
-        ivec4 shadowInfo;
-    } shadowMatrices;
-
-    uniform int uSpotCount;
-
-    layout(binding = 8) uniform sampler2D uSpotShadowMaps[4];
-    uniform vec3      uSpotPos0;
-    uniform vec3      uSpotPos1;
-    uniform vec3      uSpotPos2;
-    uniform vec3      uSpotDir0;
-    uniform vec3      uSpotDir1;
-    uniform vec3      uSpotDir2;
-    uniform vec3      uSpotColor0;
-    uniform vec3      uSpotColor1;
-    uniform vec3      uSpotColor2;
-    uniform float     uSpotInner0;
-    uniform float     uSpotInner1;
-    uniform float     uSpotInner2;
-    uniform float     uSpotOuter0;
-    uniform float     uSpotOuter1;
-    uniform float     uSpotOuter2;
-
-    float pcfSpot(int idx, vec2 uv, float depth)
-    {
-        float shadow = 0.0;
-        vec2 texelSize;
-        if (idx == 0)
-        {
-            texelSize = 1.0 / textureSize(uSpotShadowMaps[0], 0);
-        }
-        else if (idx == 1)
-        {
-            texelSize = 1.0 / textureSize(uSpotShadowMaps[1], 0);
-        }
-        else if (idx == 2)
-        {
-            texelSize = 1.0 / textureSize(uSpotShadowMaps[2], 0);
-        }
-        else
-        {
-            texelSize = 1.0 / textureSize(uSpotShadowMaps[3], 0);
-        }
-
-        for(int x = -1; x <= 1; ++x)
-            for(int y = -1; y <= 1; ++y)
-            {
-                float pcfDepth;
-                if (idx == 0)
-                    pcfDepth = texture(uSpotShadowMaps[0], uv + vec2(x, y) * texelSize).r;
-                else if (idx == 1)
-                    pcfDepth = texture(uSpotShadowMaps[1], uv + vec2(x, y) * texelSize).r;
-                else if (idx == 2)
-                    pcfDepth = texture(uSpotShadowMaps[2], uv + vec2(x, y) * texelSize).r;
-                else
-                    pcfDepth = texture(uSpotShadowMaps[3], uv + vec2(x, y) * texelSize).r;
-
-                shadow += depth > pcfDepth ? 0.0 : 1.0;
-            }
-
-        return shadow / 9.0;
-    }
-
-    float spotShadow(int idx)
-    {
-        vec4 fragPosLS = shadowMatrices.spotLightSpace[idx] * vec4(vFragPosWS, 1.0);
-        vec3 proj = fragPosLS.xyz / fragPosLS.w;
-        proj = proj * 0.5 + 0.5;
-
-        if(proj.z < 0.0 || proj.z > 1.0 || proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0)
-            return 1.0;
-
-        return pcfSpot(idx, proj.xy, proj.z);
-    }
-
-    vec3 blinnPhongSpot(vec3 N, vec3 base, vec3 spotPos, vec3 spotDir,
-                        vec3 spotColor, float innerAngle, float outerAngle, int shadowIdx)
-    {
-        vec3 L = normalize(spotPos - vFragPosWS);
-        vec3 V = normalize(camera.position - vFragPosWS);
-        vec3 H = normalize(L + V);
-
-        // Cone attenuation
-        float cosOuter = cos(outerAngle);
-        float cosInner = cos(innerAngle);
-        float cosTheta = dot(L, normalize(-spotDir));
-        float cone = clamp((cosTheta - cosOuter) / max(cosInner - cosOuter, 1e-4), 0.0, 1.0);
-
-        float diff = max(dot(N, L), 0.0);
-        float spec = pow(max(dot(N, H), 0.0), uShininess);
-        float shadow = (shadowIdx < shadowMatrices.shadowInfo.x) ? spotShadow(shadowIdx) : 1.0;
-
-        return cone * shadow * (diff * spotColor * base + spec * spotColor * uSpecularColor);
-    }
-
-    void main()
-    {
-        vec3 N = normalize(vNormalWS);
-        if(!gl_FrontFacing) N = -N;
-
-        vec3 base = (uUseDiffuseMap != 0) ? texture(uDiffuseMap, vUV).rgb : uDiffuseColor;
-        vec3 ambientColor = ambient.colorIntensity.rgb * ambient.colorIntensity.a;
-
-        vec3 color = ambientColor * base;
-
-        if(uSpotCount > 0)
-            color += blinnPhongSpot(N, base, uSpotPos0, uSpotDir0, uSpotColor0,
-                                    uSpotInner0, uSpotOuter0, 0);
-        if(uSpotCount > 1)
-            color += blinnPhongSpot(N, base, uSpotPos1, uSpotDir1, uSpotColor1,
-                                    uSpotInner1, uSpotOuter1, 1);
-        if(uSpotCount > 2)
-            color += blinnPhongSpot(N, base, uSpotPos2, uSpotDir2, uSpotColor2,
-                                    uSpotInner2, uSpotOuter2, 2);
-
-        fragColor = vec4(color, 1.0);
-    }
-)glsl";
-
-static const char* s_markerVertSrc = R"glsl(
-    #version 450 core
-
-    layout(location = 0) in vec3 aPosition;
-
-    uniform mat4 uModel;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    void main()
-    {
-        gl_Position = camera.viewProj * (uModel * vec4(aPosition, 1.0));
-    }
-)glsl";
-
-static const char* s_markerFragSrc = R"glsl(
-    #version 450 core
-
-    uniform vec3 uColor;
-    out vec4 fragColor;
-
-    void main()
-    {
-        fragColor = vec4(uColor, 1.0);
-    }
-)glsl";
-
 namespace gl = nfx::graphics::gl;
 namespace math = nfx::graphics::math;
 namespace smp = nfx::samples;
@@ -252,8 +33,6 @@ namespace
     constexpr float kSpotColors[kSpotCount][3] = { { 1.0f, 0.30f, 0.30f },
                                                    { 0.30f, 1.0f, 0.30f },
                                                    { 0.30f, 0.55f, 1.0f } };
-
-    static_assert(kSpotCount == 3, "spot-shadow-pass sample currently supports exactly 3 spot lights");
 } // namespace
 
 struct Scene
@@ -273,8 +52,6 @@ struct Scene
     gl::AxesPass* axesPass = nullptr;
     gl::PresentPass* presentPass = nullptr;
 
-    gl::ShaderHandle shaderHandle;
-    gl::ShaderHandle markerShaderHandle;
     gl::MeshHandle rockHandle;
     gl::MeshHandle markerSphereHandle;
 
@@ -298,35 +75,6 @@ struct Scene
 
     bool ready = false;
 };
-
-// Sets a named spot uniform on both rock and floor materials
-static void setSpotUniforms(Scene& scene, int idx, const gl::SpotLight& spot)
-{
-    char posName[32], dirName[32], colorName[32], innerName[32], outerName[32];
-    std::snprintf(posName, sizeof(posName), "uSpotPos%d", idx);
-    std::snprintf(dirName, sizeof(dirName), "uSpotDir%d", idx);
-    std::snprintf(colorName, sizeof(colorName), "uSpotColor%d", idx);
-    std::snprintf(innerName, sizeof(innerName), "uSpotInner%d", idx);
-    std::snprintf(outerName, sizeof(outerName), "uSpotOuter%d", idx);
-
-    const gl::UniformVec3 pos{ spot.position[0], spot.position[1], spot.position[2] };
-    const gl::UniformVec3 dir{ spot.direction[0], spot.direction[1], spot.direction[2] };
-    const gl::UniformVec3 col{ kSpotColors[idx][0] * kSpotIntensity,
-                               kSpotColors[idx][1] * kSpotIntensity,
-                               kSpotColors[idx][2] * kSpotIntensity };
-
-    for (gl::MaterialHandle h : { scene.rockMaterial, scene.floorMaterial })
-    {
-        if (gl::Material* m = scene.materialCache.get(h))
-        {
-            m->setUniform(posName, pos);
-            m->setUniform(dirName, dir);
-            m->setUniform(colorName, col);
-            m->setUniform(innerName, spot.innerAngle);
-            m->setUniform(outerName, spot.outerAngle);
-        }
-    }
-}
 
 int main()
 {
@@ -359,16 +107,9 @@ int main()
             scene->rockHandle = scene->meshCache.create(*meshData);
             scene->markerSphereHandle = scene->meshCache.create(gl::Primitive::uvSphere());
 
-            scene->shaderHandle = scene->shaderCache.compile(
-                { { gl::ShaderProgram::Stage::Vertex, s_vertSrc }, { gl::ShaderProgram::Stage::Fragment, s_fragSrc } });
-            scene->markerShaderHandle =
-                scene->shaderCache.compile({ { gl::ShaderProgram::Stage::Vertex, s_markerVertSrc },
-                                             { gl::ShaderProgram::Stage::Fragment, s_markerFragSrc } });
-
-            if (!scene->rockHandle.isValid() || !scene->markerSphereHandle.isValid() ||
-                !scene->shaderHandle.isValid() || !scene->markerShaderHandle.isValid())
+            if (!scene->rockHandle.isValid() || !scene->markerSphereHandle.isValid())
             {
-                std::fprintf(stderr, "spot-shadow-pass: failed to create mesh or shader(s)\n");
+                std::fprintf(stderr, "spot-shadow-pass: failed to create mesh resources\n");
                 return;
             }
 
@@ -376,49 +117,6 @@ int main()
                 scene->texture2DCache.add(smp::loadEmbeddedTexture("obj/rock/rock.png", true, true));
             scene->terrainDiffuseHandle = scene->texture2DCache.add(
                 smp::loadEmbeddedTexture("rocky_terrain_1k/rocky_terrain_diff_1k.jpg", true, true));
-
-            scene->rockMaterial = scene->materialCache.create(scene->shaderHandle, gl::RenderState::opaque());
-
-            gl::RenderState floorState = gl::RenderState::opaque();
-            floorState.cullFace = false;
-            scene->floorMaterial = scene->materialCache.create(scene->shaderHandle, floorState);
-
-            auto setupMat = [&](gl::MaterialHandle h, gl::Texture2DHandle diffuse) {
-                if (gl::Material* m = scene->materialCache.get(h))
-                {
-                    m->setUniform("uUseDiffuseMap", diffuse.isValid() ? 1 : 0);
-                    m->setUniform("uDiffuseColor", gl::UniformVec3{ 0.75f, 0.75f, 0.75f });
-                    m->setUniform("uSpecularColor", gl::UniformVec3{ 0.25f, 0.25f, 0.25f });
-                    m->setUniform("uShininess", 16.0f);
-                    m->setUniform("uSpotCount", kSpotCount);
-                    if (diffuse.isValid())
-                    {
-                        m->setTexture("uDiffuseMap", diffuse);
-                    }
-                }
-            };
-            setupMat(scene->rockMaterial, scene->rockDiffuseHandle);
-            setupMat(scene->floorMaterial, scene->terrainDiffuseHandle);
-
-            if (gl::Material* m = scene->materialCache.get(scene->floorMaterial))
-            {
-                m->setUniform("uDiffuseColor", gl::UniformVec3{ 0.35f, 0.35f, 0.35f });
-                m->setUniform("uSpecularColor", gl::UniformVec3{ 0.03f, 0.03f, 0.03f });
-                m->setUniform("uShininess", 3.0f);
-            }
-
-            for (int i = 0; i < kSpotCount; ++i)
-            {
-                scene->markerMaterials[i] =
-                    scene->materialCache.create(scene->markerShaderHandle, gl::RenderState::opaque());
-                if (gl::Material* m = scene->materialCache.get(scene->markerMaterials[i]))
-                {
-                    m->setUniform(
-                        "uColor",
-                        gl::UniformVec3{
-                            kSpotColors[i][0] * 1.2f, kSpotColors[i][1] * 1.2f, kSpotColors[i][2] * 1.2f });
-                }
-            }
 
             // Shadow pass first, then geometry
             scene->shadowPass = scene->renderer.createPass<gl::SpotShadowPass>("SpotShadow");
@@ -435,6 +133,39 @@ int main()
                                                                 scene->texture2DCache,
                                                                 scene->textureCubeCache,
                                                                 scene->samplerCache });
+
+            // Materials
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.75f, 0.75f, 0.75f };
+                desc.specularColor = { 0.25f, 0.25f, 0.25f };
+                desc.shininess = 16.0f;
+                desc.diffuseMap = scene->rockDiffuseHandle;
+                desc.hasShadow = true;
+                scene->rockMaterial = desc.build(*scene->renderResources);
+            }
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.35f, 0.35f, 0.35f };
+                desc.specularColor = { 0.03f, 0.03f, 0.03f };
+                desc.shininess = 3.0f;
+                desc.diffuseMap = scene->terrainDiffuseHandle;
+                desc.hasShadow = true;
+                scene->floorMaterial = desc.build(*scene->renderResources);
+                if (gl::Material* m = scene->materialCache.get(scene->floorMaterial))
+                {
+                    gl::RenderState floorState = m->renderState();
+                    floorState.cullFace = false;
+                    m->setRenderState(floorState);
+                }
+            }
+            for (int i = 0; i < kSpotCount; ++i)
+            {
+                gl::UnlitMaterial desc;
+                desc.color = { kSpotColors[i][0] * 1.2f, kSpotColors[i][1] * 1.2f, kSpotColors[i][2] * 1.2f };
+                scene->markerMaterials[i] = desc.build(scene->shaderCache, scene->materialCache);
+            }
+
             scene->renderer.initialize(*scene->renderResources);
 
             scene->geometryPass->setOutputSize(scene->texture2DCache, 1280, 720);
@@ -458,12 +189,13 @@ int main()
             scene->orbitCamera.target[1] = 0.45f;
 
             scene->ready = scene->rockHandle.isValid() && scene->markerSphereHandle.isValid() &&
-                           scene->shaderHandle.isValid() && scene->markerShaderHandle.isValid() &&
                            scene->rockDiffuseHandle.isValid() && scene->terrainDiffuseHandle.isValid() &&
                            scene->rockMaterial.isValid() && scene->floorMaterial.isValid() &&
                            scene->shadowPass != nullptr && scene->geometryPass != nullptr &&
                            scene->gridPass != nullptr && scene->axesPass != nullptr && scene->presentPass != nullptr &&
-                           scene->renderResources.has_value() && scene->shadowPass->shadowMaps()[0].texture.isValid() &&
+                           scene->renderResources.has_value() && scene->markerMaterials[0].isValid() &&
+                           scene->markerMaterials[1].isValid() && scene->markerMaterials[2].isValid() &&
+                           scene->shadowPass->shadowMaps()[0].texture.isValid() &&
                            scene->shadowPass->shadowMaps()[1].texture.isValid() &&
                            scene->shadowPass->shadowMaps()[2].texture.isValid();
         },
@@ -507,8 +239,10 @@ int main()
             scene->time += scene->clock.tick();
 
             scene->geometryPass->clearQueue();
+            frame.lights.clear();
+            frame.spotShadowCount = 0;
 
-            // Register orbiting spot lights and update per-frame uniforms
+            // Register 3 orbiting spot lights and update per-frame uniforms
             const float spotAngleStep = (2.0f * std::numbers::pi_v<float>) / static_cast<float>(kSpotCount);
             for (int i = 0; i < kSpotCount; ++i)
             {
@@ -539,8 +273,9 @@ int main()
                     kSpotFar);
 
                 scene->shadowPass->addLight(spot);
-
-                setSpotUniforms(*scene, i, spot);
+                frame.lights.push_back(spot.toGpuData());
+                frame.spotShadowMaps[i] = scene->shadowPass->shadowMaps()[i];
+                frame.spotShadowCount = i + 1;
 
                 // Marker sphere for this spot light
                 gl::RenderCommand markerCmd;
@@ -554,13 +289,6 @@ int main()
                     math::mat4Mul(markerCmd.transform, t, s);
                 }
                 scene->geometryPass->submit(markerCmd);
-            }
-
-            frame.spotShadowCount = kSpotCount;
-            const auto& spotMaps = scene->shadowPass->shadowMaps();
-            for (int i = 0; i < kSpotCount; ++i)
-            {
-                frame.spotShadowMaps[i] = spotMaps[i];
             }
 
             // Floor

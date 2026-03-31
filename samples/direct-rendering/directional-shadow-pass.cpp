@@ -9,139 +9,6 @@
 #include <random>
 #include <string_view>
 
-static const char* s_vertSrc = R"glsl(
-    #version 450 core
-
-    layout(location = 0) in vec3 aPosition;
-    layout(location = 1) in vec3 aNormal;
-    layout(location = 2) in vec2 aUV;
-
-    out vec3 vFragPosWS;
-    out vec3 vNormalWS;
-    out vec2 vUV;
-    out vec4 vFragPosLS;
-
-    uniform mat4 uModel;
-    uniform mat3 uNormalMatrix;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    layout(std140, binding = 3) uniform ShadowMatricesBlock {
-        mat4 dirLightSpace;
-        mat4 spotLightSpace[4];
-        ivec4 shadowInfo;
-    } shadowMatrices;
-
-    void main()
-    {
-        vec4 worldPos = uModel * vec4(aPosition, 1.0);
-        gl_Position = camera.viewProj * worldPos;
-        vFragPosWS = worldPos.xyz;
-        vNormalWS = uNormalMatrix * aNormal;
-        vUV = aUV;
-        vFragPosLS = shadowMatrices.dirLightSpace * worldPos;
-    }
-)glsl";
-
-static const char* s_fragSrc = R"glsl(
-    #version 450 core
-
-    in vec3 vFragPosWS;
-    in vec3 vNormalWS;
-    in vec2 vUV;
-    in vec4 vFragPosLS;
-
-    out vec4 fragColor;
-
-    layout(std140, binding = 0) uniform CameraBlock {
-        mat4 view;
-        mat4 proj;
-        mat4 viewProj;
-        vec3 position;
-        float _pad0;
-        vec3 direction;
-        float _pad1;
-    } camera;
-
-    layout(std140, binding = 1) uniform AmbientBlock {
-        vec4 colorIntensity;
-    } ambient;
-
-    layout(std140, binding = 2) uniform DirectionalLightBlock {
-        vec4 direction;
-        vec4 colorIntensity;
-    } dirLight;
-
-    layout(std140, binding = 3) uniform ShadowMatricesBlock {
-        mat4 dirLightSpace;
-        mat4 spotLightSpace[4];
-        ivec4 shadowInfo;
-    } shadowMatrices;
-
-    uniform sampler2D uDiffuseMap;
-    uniform int uUseDiffuseMap;
-    uniform vec3 uDiffuseColor;
-    uniform vec3 uSpecularColor;
-    uniform float uShininess;
-    layout(binding = 12) uniform sampler2D uShadowMap;
-
-    float shadowFactor(vec4 fragPosLS)
-    {
-        vec3 proj = fragPosLS.xyz / fragPosLS.w;
-        proj = proj * 0.5 + 0.5;
-
-        if(proj.z < 0.0 || proj.z > 1.0 || proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0)
-        {
-            return 1.0;
-        }
-
-        float currentDepth = proj.z;
-        float shadow = 0.0;
-        vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
-        for(int x = -1; x <= 1; ++x)
-        {
-            for(int y = -1; y <= 1; ++y)
-            {
-                float pcfDepth = texture(uShadowMap, proj.xy + vec2(x, y) * texelSize).r;
-                shadow += currentDepth > pcfDepth ? 0.0 : 1.0;
-            }
-        }
-        return shadow / 9.0;
-    }
-
-    void main()
-    {
-        vec3 N = normalize(vNormalWS);
-        if(!gl_FrontFacing) N = -N;
-
-        vec3 base = (uUseDiffuseMap != 0) ? texture(uDiffuseMap, vUV).rgb : uDiffuseColor;
-
-        vec3 L = normalize(-dirLight.direction.xyz);
-        vec3 V = normalize(camera.position - vFragPosWS);
-        vec3 H = normalize(L + V);
-
-        float diff   = max(dot(N, L), 0.0);
-        float spec   = pow(max(dot(N, H), 0.0), uShininess);
-        float shadow = (shadowMatrices.shadowInfo.z != 0) ? shadowFactor(vFragPosLS) : 1.0;
-
-        vec3 ambientColor = ambient.colorIntensity.rgb * ambient.colorIntensity.a;
-        vec3 lightColor   = dirLight.colorIntensity.rgb * dirLight.colorIntensity.a;
-
-        vec3 color = ambientColor * base
-                   + shadow * diff * lightColor * base
-                   + shadow * spec * lightColor * uSpecularColor;
-        fragColor = vec4(color, 1.0);
-    }
-)glsl";
-
 namespace gl = nfx::graphics::gl;
 namespace math = nfx::graphics::math;
 namespace smp = nfx::samples;
@@ -179,7 +46,6 @@ struct Scene
     gl::AxesPass* axesPass = nullptr;
     gl::PresentPass* presentPass = nullptr;
 
-    gl::ShaderHandle shaderHandle;
     gl::MeshHandle rockHandle;
 
     gl::MaterialHandle rockMaterial;
@@ -235,12 +101,9 @@ int main()
 
             scene->rockHandle = scene->meshCache.create(*meshData);
 
-            scene->shaderHandle = scene->shaderCache.compile(
-                { { gl::ShaderProgram::Stage::Vertex, s_vertSrc }, { gl::ShaderProgram::Stage::Fragment, s_fragSrc } });
-
-            if (!scene->rockHandle.isValid() || !scene->shaderHandle.isValid())
+            if (!scene->rockHandle.isValid())
             {
-                std::fprintf(stderr, "directional-shadow-pass: failed to create mesh or shader\n");
+                std::fprintf(stderr, "directional-shadow-pass: failed to create mesh\n");
                 return;
             }
 
@@ -248,37 +111,6 @@ int main()
                 scene->texture2DCache.add(smp::loadEmbeddedTexture("obj/rock/rock.png", true, true));
             scene->terrainDiffuseHandle = scene->texture2DCache.add(
                 smp::loadEmbeddedTexture("rocky_terrain_1k/rocky_terrain_diff_1k.jpg", true, true));
-
-            scene->rockMaterial = scene->materialCache.create(scene->shaderHandle, gl::RenderState::opaque());
-
-            gl::RenderState floorState = gl::RenderState::opaque();
-            floorState.cullFace = false; // visible from below
-            scene->floorMaterial = scene->materialCache.create(scene->shaderHandle, floorState);
-
-            // uShadowMap is wired after renderer.initialize() once the depth texture is allocated
-            if (gl::Material* rockMat = scene->materialCache.get(scene->rockMaterial))
-            {
-                rockMat->setUniform("uUseDiffuseMap", scene->rockDiffuseHandle.isValid() ? 1 : 0);
-                rockMat->setUniform("uDiffuseColor", gl::UniformVec3{ 0.75f, 0.75f, 0.75f });
-                rockMat->setUniform("uSpecularColor", gl::UniformVec3{ 0.25f, 0.25f, 0.25f });
-                rockMat->setUniform("uShininess", 12.0f);
-                if (scene->rockDiffuseHandle.isValid())
-                {
-                    rockMat->setTexture("uDiffuseMap", scene->rockDiffuseHandle);
-                }
-            }
-
-            if (gl::Material* floorMat = scene->materialCache.get(scene->floorMaterial))
-            {
-                floorMat->setUniform("uUseDiffuseMap", scene->terrainDiffuseHandle.isValid() ? 1 : 0);
-                floorMat->setUniform("uDiffuseColor", gl::UniformVec3{ 0.35f, 0.35f, 0.35f });
-                floorMat->setUniform("uSpecularColor", gl::UniformVec3{ 0.03f, 0.03f, 0.03f });
-                floorMat->setUniform("uShininess", 3.0f);
-                if (scene->terrainDiffuseHandle.isValid())
-                {
-                    floorMat->setTexture("uDiffuseMap", scene->terrainDiffuseHandle);
-                }
-            }
 
             // Shadow pass must come first so it executes before the geometry pass
             scene->shadowPass = scene->renderer.createPass<gl::DirectionalShadowPass>("Shadow");
@@ -295,6 +127,33 @@ int main()
                                                                 scene->texture2DCache,
                                                                 scene->textureCubeCache,
                                                                 scene->samplerCache });
+
+            // Materials
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.75f, 0.75f, 0.75f };
+                desc.specularColor = { 0.25f, 0.25f, 0.25f };
+                desc.shininess = 12.0f;
+                desc.diffuseMap = scene->rockDiffuseHandle;
+                desc.hasShadow = true;
+                scene->rockMaterial = desc.build(*scene->renderResources);
+            }
+            {
+                gl::BlinnPhongMaterial desc;
+                desc.diffuseColor = { 0.35f, 0.35f, 0.35f };
+                desc.specularColor = { 0.03f, 0.03f, 0.03f };
+                desc.shininess = 3.0f;
+                desc.diffuseMap = scene->terrainDiffuseHandle;
+                desc.hasShadow = true;
+                scene->floorMaterial = desc.build(*scene->renderResources);
+                if (gl::Material* floorMat = scene->materialCache.get(scene->floorMaterial))
+                {
+                    gl::RenderState floorState = floorMat->renderState();
+                    floorState.cullFace = false;
+                    floorMat->setRenderState(floorState);
+                }
+            }
+
             scene->renderer.initialize(*scene->renderResources);
 
             scene->geometryPass->setOutputSize(scene->texture2DCache, 1280, 720);
@@ -340,12 +199,12 @@ int main()
                 scene->rockSpinSpeeds[i] = speedDist(rng);
             }
 
-            scene->ready = scene->rockHandle.isValid() && scene->shaderHandle.isValid() &&
-                           scene->rockDiffuseHandle.isValid() && scene->terrainDiffuseHandle.isValid() &&
-                           scene->rockMaterial.isValid() && scene->floorMaterial.isValid() &&
-                           scene->shadowPass != nullptr && scene->geometryPass != nullptr &&
-                           scene->gridPass != nullptr && scene->axesPass != nullptr && scene->presentPass != nullptr &&
-                           scene->renderResources.has_value() && scene->shadowPass->depthOutput().isValid();
+            scene->ready = scene->rockHandle.isValid() && scene->rockDiffuseHandle.isValid() &&
+                           scene->terrainDiffuseHandle.isValid() && scene->rockMaterial.isValid() &&
+                           scene->floorMaterial.isValid() && scene->shadowPass != nullptr &&
+                           scene->geometryPass != nullptr && scene->gridPass != nullptr && scene->axesPass != nullptr &&
+                           scene->presentPass != nullptr && scene->renderResources.has_value() &&
+                           scene->shadowPass->depthOutput().isValid();
         },
 
         // onRender
