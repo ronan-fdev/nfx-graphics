@@ -2,6 +2,7 @@
 
 #include "Clock.h"
 #include "ObjLoader.h"
+#include "SkyboxLoader.h"
 #include "TextureLoader.h"
 
 #include <functional>
