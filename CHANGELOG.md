@@ -170,6 +170,7 @@
 - `direct-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
 - `direct-rendering-point-shadow-pass`: point-light cube-shadow mapping with one levitating rock and one moving light marker
 - `direct-rendering-material-permutations`: BlinnPhong/Unlit material permutations with directional and point shadows
+- `direct-rendering-postprocess-pass`: post-process sample with left-click effect cycling (neutral, mono scanlines, chromatic grain)
 
 ### Changed
 
