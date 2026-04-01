@@ -162,4 +162,37 @@ namespace nfx::graphics::gl
 
         return state;
     }
+
+    RenderState RenderState::skybox()
+    {
+        RenderState state;
+
+        state.depthTest = true;
+        state.depthWrite = false;
+        state.depthFunc = DepthFunc::LessOrEqual;
+
+        state.blend = false;
+        state.blendSrc = BlendFactor::SrcAlpha;
+        state.blendDst = BlendFactor::OneMinusSrcAlpha;
+        state.blendSrcAlpha = BlendFactor::SrcAlpha;
+        state.blendDstAlpha = BlendFactor::OneMinusSrcAlpha;
+        state.blendOp = BlendOp::Add;
+        state.blendOpAlpha = BlendOp::Add;
+
+        state.cullFace = false;
+        state.cullMode = CullFace::Back;
+        state.frontFace = FrontFace::CCW;
+
+        state.colorWrite = true;
+        state.colorWriteR = true;
+        state.colorWriteG = true;
+        state.colorWriteB = true;
+        state.colorWriteA = true;
+
+        state.polygonOffset = false;
+        state.polygonOffsetFactor = 1.0f;
+        state.polygonOffsetUnits = 1.0f;
+
+        return state;
+    }
 } // namespace nfx::graphics::gl

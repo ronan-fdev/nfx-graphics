@@ -16,6 +16,7 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/pipeline/passes/PostProcessPass.cpp
     src/gl/pipeline/passes/PresentPass.cpp
     src/gl/pipeline/passes/SpotShadowPass.cpp
+    src/gl/pipeline/passes/SkyboxPass.cpp
     src/gl/pipeline/passes/TransparentPass.cpp
     src/gl/pipeline/Renderer.cpp
     src/gl/pipeline/RenderState.cpp

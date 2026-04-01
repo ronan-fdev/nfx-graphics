@@ -133,5 +133,10 @@ namespace nfx::graphics::gl
          * \brief Returns a preset suitable for shadow caster passes.
          */
         static RenderState shadowCaster();
+
+        /**
+         * \brief Returns a preset suitable for skybox rendering.
+         */
+        static RenderState skybox();
     };
 } // namespace nfx::graphics::gl
