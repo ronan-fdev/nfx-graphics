@@ -57,6 +57,7 @@
 - `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, and target framebuffer compositing
 - `PostProcessPass`: generic fullscreen post-process pass with custom fragment source, input color handle, output texture target, and dynamic uniforms
 - `SkyboxPass`: cubemap skybox pass rendered behind opaque scene geometry
+- `WboitPass`: weighted blended OIT pass with accumulation/reveal targets and fullscreen composite
 
 - `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
 - `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light
