@@ -176,6 +176,7 @@
 - `direct-rendering-postprocess-pass`: post-process sample with left-click effect cycling (neutral, mono scanlines, chromatic grain)
 - `direct-rendering-skybox-pass`: SkyboxPass pipeline sample with cubemap background and orbit camera
 - `direct-rendering-wboit-pass`: weighted blended OIT sample (GeometryPass + WboitPass)
+- `direct-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
 
 ### Changed
 
