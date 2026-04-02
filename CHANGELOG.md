@@ -174,6 +174,7 @@
 - `direct-rendering-material-permutations`: BlinnPhong/Unlit material permutations with directional and point shadows
 - `direct-rendering-postprocess-pass`: post-process sample with left-click effect cycling (neutral, mono scanlines, chromatic grain)
 - `direct-rendering-skybox-pass`: SkyboxPass pipeline sample with cubemap background and orbit camera
+- `direct-rendering-wboit-pass`: weighted blended OIT sample (GeometryPass + WboitPass)
 
 ### Changed
 
