@@ -23,7 +23,7 @@ namespace nfx::graphics::gl
         static constexpr GLuint ShadowDepthBlock      = 4;  ///< ShadowDepth UBO
 
         // Per-material
-        static constexpr GLuint MaterialBlock         = 16; ///< MaterialBlockData (base color, specular, shininess)
+        static constexpr GLuint MaterialBlock         = 16; ///< MaterialBlockData (base color, specular, shininess, emissive/env)
     };
 
     /**
@@ -52,6 +52,7 @@ namespace nfx::graphics::gl
         static constexpr GLuint PointShadowMapBase    = 4;  ///< Units 4-7  (up to MaxPointShadows)
         static constexpr GLuint SpotShadowMapBase     = 8;  ///< Units 8-11 (up to MaxSpotShadows)
         static constexpr GLuint DirectionalShadowMap  = 12; ///< Directional shadow map
+        static constexpr GLuint EnvMap                = 13; ///< Environment cube map for reflection/refraction
 
         // Built-in material maps
         static constexpr GLuint MaterialSlot0         = 16; ///< Blinn-Phong: uDiffuseMap  / PBR: uBaseColorMap

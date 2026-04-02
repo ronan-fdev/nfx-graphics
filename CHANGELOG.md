@@ -32,7 +32,7 @@
 ##### Materials
 
 - `Material`: high-level material combining shader, render state and named uniform/texture bindings
-- `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess)
+- `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess, emissive+envIntensity)
 
 - `BlinnPhong`: material descriptor with diffuse/specular/normal map support, alpha transparency and shadow permutation
 - `Unlit`: material descriptor for constant-color rendering with alpha support
@@ -58,6 +58,7 @@
 - `PostProcessPass`: generic fullscreen post-process pass with custom fragment source, input color handle, output texture target, and dynamic uniforms
 - `SkyboxPass`: cubemap skybox pass rendered behind opaque scene geometry
 - `WboitPass`: weighted blended OIT pass with accumulation/reveal targets and fullscreen composite
+- `EnvironmentPass`: environment cubemap composition pass with configurable intensity and explicit target color/depth wiring
 
 - `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
 - `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light

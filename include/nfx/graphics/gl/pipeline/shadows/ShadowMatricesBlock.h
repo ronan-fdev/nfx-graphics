@@ -11,7 +11,7 @@
  *     x = spotCount    - number of active spot shadow maps
  *     y = pointCount   - number of active point shadow maps
  *     z = hasDirShadow - 1 if directional shadow map is active
- *     w = reserved     - unused
+ *     w = hasEnvMap    - 1 if env map is active
  *
  * std140 layout (336 bytes):
  *   offset   0 : mat4  dirLightSpace     (64 B)
@@ -61,7 +61,7 @@ namespace nfx::graphics::gl
         };
         // clang-format on
 
-        // x=spotCount, y=pointCount, z=hasDirShadow, w=unused
+        // x=spotCount, y=pointCount, z=hasDirShadow, w=hasEnvMap
         int shadowInfo[4] = {};
     };
     static_assert(sizeof(ShadowMatricesBlockData) == 336, "ShadowMatricesBlock must be 336 bytes (std140)");

@@ -22,7 +22,8 @@ namespace nfx::graphics::gl
         HasDiffuseMap  = 1u << 0,
         HasNormalMap   = 1u << 1,
         HasSpecularMap = 1u << 2,
-        HasShadow      = 1u << 3
+        HasShadow      = 1u << 3,
+        HasEnvMap      = 1u << 4
     };
     // clang-format on
 
@@ -85,6 +86,10 @@ namespace nfx::graphics::gl
         {
             defines.push_back("HAS_SHADOW");
         }
+        if (has(features, ShaderFeature::HasEnvMap))
+        {
+            defines.push_back("HAS_ENV_MAP");
+        }
         return defines;
     }
 
@@ -121,6 +126,10 @@ namespace nfx::graphics::gl
         if (has(features, ShaderFeature::HasShadow))
         {
             append("HasShadow");
+        }
+        if (has(features, ShaderFeature::HasEnvMap))
+        {
+            append("HasEnvMap");
         }
         return s;
     }

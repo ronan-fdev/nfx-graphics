@@ -2,8 +2,9 @@
 
 layout(std140, binding = 16) uniform MaterialBlock
 {
-    vec4 baseColor_alpha; // rgb = diffuse/base color, a = alpha
-    vec4 specColor_shine; // rgb = specular color    , w = shininess
+    vec4 baseColor_alpha; // rgb = diffuse/base color  , a = alpha
+    vec4 specColor_shine; // rgb = specular color      , w = shininess
+    vec4 emissive_env;    // rgb = emissive (default 0), w = envIntensity
 }
 material;
 

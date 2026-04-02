@@ -41,5 +41,10 @@ namespace nfx::graphics::gl
 
         std::array<PointShadowMap, PipelineLimits::MaxPointShadows> pointShadowMaps = {};
         int pointShadowCount = 0;
+
+        TextureCubeHandle envMap = {};
+        bool hasEnvMap = false;
+        SamplerHandle envSampler = {};
+        bool hasEnvSampler = false;
     };
 } // namespace nfx::graphics::gl

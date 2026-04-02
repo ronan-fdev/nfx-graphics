@@ -196,6 +196,8 @@ namespace nfx::graphics::gl
         smb.shadowInfo[0] = nSpot;
         smb.shadowInfo[1] = nPoint;
         smb.shadowInfo[2] = frame.hasDirShadow ? 1 : 0;
+        smb.shadowInfo[3] = frame.hasEnvMap ? 1 : 0;
+
         for (int i = 0; i < nSpot; ++i)
         {
             std::copy(
@@ -257,6 +259,42 @@ namespace nfx::graphics::gl
                 tex->bind(TextureBindings::DirectionalShadowMap);
             }
         }
+
+        // unit 13: environment cube map
+        {
+            const GLuint envUnit = TextureBindings::EnvMap;
+            if (frame.hasEnvMap)
+            {
+                if (const TextureCube* tex = m_resources->texturesCube.get(frame.envMap))
+                {
+                    tex->bind(envUnit);
+                }
+                else
+                {
+                    TextureCube::unbind(envUnit);
+                }
+            }
+            else
+            {
+                TextureCube::unbind(envUnit);
+            }
+
+            if (frame.hasEnvSampler)
+            {
+                if (const Sampler* sampler = m_resources->samplers.get(frame.envSampler))
+                {
+                    sampler->bind(envUnit);
+                }
+                else
+                {
+                    Sampler::unbind(envUnit);
+                }
+            }
+            else
+            {
+                Sampler::unbind(envUnit);
+            }
+        }
     }
 
     void Renderer::validatePermutations()
@@ -268,26 +306,70 @@ namespace nfx::graphics::gl
 
         const FrameData& frame = *m_frameData;
 
+        auto fail = [&](const char* warnMsg, const char* errMsg) {
+            if (m_validationMode == ValidationMode::Warn)
+            {
+                std::fprintf(stderr, "%s", warnMsg);
+            }
+            else if (m_validationMode == ValidationMode::Strict)
+            {
+                std::fprintf(stderr, "%s", errMsg);
+                std::abort();
+            }
+        };
+
+        if (frame.spotShadowCount < 0 || frame.spotShadowCount > static_cast<int>(PipelineLimits::MaxSpotShadows))
+        {
+            fail(
+                "[Renderer] WARNING: spotShadowCount is out of range for PipelineLimits::MaxSpotShadows\n",
+                "[Renderer] ERROR: spotShadowCount is out of range for PipelineLimits::MaxSpotShadows\n");
+        }
+
+        if (frame.pointShadowCount < 0 || frame.pointShadowCount > static_cast<int>(PipelineLimits::MaxPointShadows))
+        {
+            fail(
+                "[Renderer] WARNING: pointShadowCount is out of range for PipelineLimits::MaxPointShadows\n",
+                "[Renderer] ERROR: pointShadowCount is out of range for PipelineLimits::MaxPointShadows\n");
+        }
+
+        const int spotCount = std::clamp(frame.spotShadowCount, 0, static_cast<int>(PipelineLimits::MaxSpotShadows));
+        const int pointCount = std::clamp(frame.pointShadowCount, 0, static_cast<int>(PipelineLimits::MaxPointShadows));
+
+        if (frame.hasEnvMap && frame.envMap.id == 0)
+        {
+            fail(
+                "[Renderer] WARNING: hasEnvMap=true but envMap handle is invalid\n",
+                "[Renderer] ERROR: hasEnvMap=true but envMap handle is invalid\n");
+        }
+
+        if (frame.hasEnvSampler && frame.envSampler.id == 0)
+        {
+            fail(
+                "[Renderer] WARNING: hasEnvSampler=true but envSampler handle is invalid\n",
+                "[Renderer] ERROR: hasEnvSampler=true but envSampler handle is invalid\n");
+        }
+
+        if (frame.hasEnvSampler && !frame.hasEnvMap)
+        {
+            fail(
+                "[Renderer] WARNING: hasEnvSampler=true while hasEnvMap=false\n",
+                "[Renderer] ERROR: hasEnvSampler=true while hasEnvMap=false\n");
+        }
+
         // Validate shadow data consistency:
         // If directional shadow is enabled, verify the shadow map is populated
         if (frame.hasDirShadow)
         {
             if (frame.dirShadowMap.texture.id == 0)
             {
-                if (m_validationMode == ValidationMode::Warn)
-                {
-                    std::fprintf(stderr, "[Renderer] WARNING: hasDirShadow=true but dirShadowMap texture is invalid\n");
-                }
-                else if (m_validationMode == ValidationMode::Strict)
-                {
-                    std::fprintf(stderr, "[Renderer] ERROR: hasDirShadow=true but dirShadowMap texture is invalid\n");
-                    std::abort();
-                }
+                fail(
+                    "[Renderer] WARNING: hasDirShadow=true but dirShadowMap texture is invalid\n",
+                    "[Renderer] ERROR: hasDirShadow=true but dirShadowMap texture is invalid\n");
             }
         }
 
         // Validate spot shadow data consistency
-        for (int i = 0; i < frame.spotShadowCount; ++i)
+        for (int i = 0; i < spotCount; ++i)
         {
             if (frame.spotShadowMaps[i].texture.id == 0)
             {
@@ -312,7 +394,7 @@ namespace nfx::graphics::gl
         }
 
         // Validate point shadow data consistency
-        for (int i = 0; i < frame.pointShadowCount; ++i)
+        for (int i = 0; i < pointCount; ++i)
         {
             if (frame.pointShadowMaps[i].texture.id == 0)
             {

@@ -10,6 +10,7 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/mesh/Primitive.cpp
     src/gl/pipeline/passes/AxesPass.cpp
     src/gl/pipeline/passes/DirectionalShadowPass.cpp
+    src/gl/pipeline/passes/EnvironmentPass.cpp
     src/gl/pipeline/passes/GeometryPass.cpp
     src/gl/pipeline/passes/GridPass.cpp
     src/gl/pipeline/passes/PointShadowPass.cpp

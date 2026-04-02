@@ -19,9 +19,9 @@ namespace
 
 TEST_SUITE("MaterialBlockData")
 {
-    TEST_CASE("Size matches std140 expectation (32 bytes)")
+    TEST_CASE("Size matches std140 expectation (48 bytes)")
     {
-        CHECK(sizeof(MaterialBlockData) == 32);
+        CHECK(sizeof(MaterialBlockData) == 48);
     }
 
     TEST_CASE("Layout offsets and alignment match std140 expectations")
@@ -29,6 +29,7 @@ TEST_SUITE("MaterialBlockData")
         CHECK(alignof(MaterialBlockData) >= alignof(float));
         CHECK(offsetof(MaterialBlockData, baseColor_alpha) == 0);
         CHECK(offsetof(MaterialBlockData, specColor_shine) == 16);
+        CHECK(offsetof(MaterialBlockData, emissive_env) == 32);
     }
 
     TEST_CASE("Default base color is white, alpha 1")
@@ -47,6 +48,15 @@ TEST_SUITE("MaterialBlockData")
         CHECK(block.specColor_shine[1] == doctest::Approx(1.f));
         CHECK(block.specColor_shine[2] == doctest::Approx(1.f));
         CHECK(block.specColor_shine[3] == doctest::Approx(32.f));
+    }
+
+    TEST_CASE("Default emissive is black, env intensity 1")
+    {
+        MaterialBlockData block;
+        CHECK(block.emissive_env[0] == doctest::Approx(0.f));
+        CHECK(block.emissive_env[1] == doctest::Approx(0.f));
+        CHECK(block.emissive_env[2] == doctest::Approx(0.f));
+        CHECK(block.emissive_env[3] == doctest::Approx(1.f));
     }
 }
 

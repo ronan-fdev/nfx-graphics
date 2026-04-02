@@ -104,6 +104,10 @@ namespace nfx::graphics::gl
         {
             features |= ShaderFeature::HasShadow;
         }
+        if (hasEnvMap)
+        {
+            features |= ShaderFeature::HasEnvMap;
+        }
 
         const ShaderHandle shader = resolveShaderVariant(resources, features);
         if (!shader.isValid())
@@ -133,6 +137,7 @@ namespace nfx::graphics::gl
         const float clampedShininess = std::max(shininess, 1.f);
 
         const RenderState state = (clampedAlpha < 1.f) ? RenderState::transparent() : RenderState::opaque();
+
         mat.setRenderState(state);
 
         MaterialBlockData block;
@@ -144,6 +149,8 @@ namespace nfx::graphics::gl
         block.specColor_shine[1] = specularColor[1];
         block.specColor_shine[2] = specularColor[2];
         block.specColor_shine[3] = clampedShininess;
+        block.emissive_env[3] = envIntensity;
+
         mat.setMaterialBlock(block);
 
         if (diffuseMap.isValid())

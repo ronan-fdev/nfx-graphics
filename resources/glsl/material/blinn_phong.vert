@@ -26,7 +26,7 @@ layout(std140, binding = 3) uniform ShadowMatricesBlock
 {
     mat4 dirLightSpace;
     mat4 spotLightSpace[4];
-    ivec4 shadowInfo; // x=spotCount, y=pointCount, z=hasDirShadow, w=reserved
+    ivec4 shadowInfo; // x=spotCount, y=pointCount, z=hasDirShadow, w=hasEnvMap
 }
 shadowMatrices;
 #endif
