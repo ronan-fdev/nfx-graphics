@@ -29,13 +29,10 @@ struct Scene
     gl::SamplerCache samplerCache;
     std::optional<gl::RenderResources> renderResources;
 
-    gl::Renderer renderer;
+    gl::ForwardRenderPath path;
     gl::DirectionalShadowPass* shadowPass = nullptr;
-    gl::GeometryPass* geometryPass = nullptr;
-    gl::SkyboxPass* skyboxPass = nullptr;
     gl::GridPass* gridPass = nullptr;
     gl::AxesPass* axesPass = nullptr;
-    gl::PresentPass* presentPass = nullptr;
 
     gl::MeshHandle cubeHandle;
     gl::MeshHandle sphereHandle;
@@ -134,39 +131,45 @@ int main()
                 }
             }
 
-            // Passes: shadow -> geometry -> skybox -> overlays
-            scene->shadowPass = scene->renderer.createPass<gl::DirectionalShadowPass>("Shadow");
-            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
-            scene->skyboxPass = scene->renderer.createPass<gl::SkyboxPass>("Skybox");
-            scene->gridPass = scene->renderer.createPass<gl::GridPass>("Grid");
-            scene->axesPass = scene->renderer.createPass<gl::AxesPass>("Axes");
-            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
-
+            // ForwardRenderPath: shadow -> geometry -> skybox -> overlays -> present
+            scene->shadowPass = scene->path.addShadowPass<gl::DirectionalShadowPass>("Shadow");
+            if (!scene->shadowPass)
+            {
+                std::fprintf(stderr, "skybox-pass: failed to create Shadow pass\n");
+                return;
+            }
             scene->shadowPass->setResolution(scene->texture2DCache, kShadowRes, kShadowRes);
-            scene->geometryPass->setOutputSize(scene->texture2DCache, 1000, 700);
-
-            scene->renderer.initialize(*scene->renderResources);
 
             scene->skyboxCube = smp::loadSkybox(scene->textureCubeCache, "skyboxes/fjords", true);
+            if (!scene->skyboxCube.isValid())
+            {
+                std::fprintf(stderr, "skybox-pass: failed to load skybox cubemap\n");
+                return;
+            }
+            scene->path.setSkybox(scene->textureCubeCache, scene->skyboxCube);
 
-            scene->geometryPass->setClearColor(true, 0.1f, 0.1f, 0.1f, 1.0f);
-            scene->geometryPass->setClearDepth(true, 1.0f);
-
-            scene->skyboxPass->setTargetTextures(
-                scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-            scene->skyboxPass->setCubemap(scene->textureCubeCache, scene->skyboxCube);
-
-            scene->gridPass->setTargetTextures(scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
+            scene->gridPass = scene->path.addOverlay<gl::GridPass>("Grid");
+            if (!scene->gridPass)
+            {
+                std::fprintf(stderr, "skybox-pass: failed to create Grid overlay\n");
+                return;
+            }
             scene->gridPass->setGridSize(1.0f);
             scene->gridPass->setFadeDistance(60.0f);
 
-            scene->axesPass->setTargetTextures(scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
+            scene->axesPass = scene->path.addOverlay<gl::AxesPass>("Axes");
+            if (!scene->axesPass)
+            {
+                std::fprintf(stderr, "skybox-pass: failed to create Axes overlay\n");
+                return;
+            }
             scene->axesPass->setAxisLength(1000.0f);
             scene->axesPass->setFadeDistance(60.0f);
 
-            scene->presentPass->setInput(scene->geometryPass->colorOutput());
-            scene->presentPass->setTonemapEnabled(true);
-            scene->presentPass->setGammaEnabled(true);
+            scene->path.setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            scene->path.setTonemapEnabled(true);
+            scene->path.setGammaEnabled(true);
+            scene->path.initialize(*scene->renderResources);
 
             scene->orbitCamera.distance = 5.0f;
             scene->orbitCamera.elevation = 0.4f;
@@ -175,8 +178,7 @@ int main()
                            scene->planeHandle.isValid() && scene->skyboxCube.isValid() &&
                            scene->cubeMaterial.isValid() && scene->sphereMaterial.isValid() &&
                            scene->groundMaterial.isValid() && scene->shadowPass != nullptr &&
-                           scene->geometryPass != nullptr && scene->skyboxPass != nullptr &&
-                           scene->gridPass != nullptr && scene->axesPass != nullptr && scene->presentPass != nullptr;
+                           scene->gridPass != nullptr && scene->axesPass != nullptr;
         },
 
         // onRender
@@ -189,18 +191,6 @@ int main()
             const int safeW = (width > 0) ? width : 1;
             const int safeH = (height > 0) ? height : 1;
             gl::Context::current().functions().glViewport(0, 0, safeW, safeH);
-
-            if (scene->geometryPass->outputWidth() != safeW || scene->geometryPass->outputHeight() != safeH)
-            {
-                scene->geometryPass->setOutputSize(scene->texture2DCache, safeW, safeH);
-                scene->skyboxPass->setTargetTextures(
-                    scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-                scene->gridPass->setTargetTextures(
-                    scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-                scene->axesPass->setTargetTextures(
-                    scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-                scene->presentPass->setInput(scene->geometryPass->colorOutput());
-            }
 
             scene->time += scene->clock.tick();
 
@@ -265,7 +255,7 @@ int main()
             frame.hasDirShadow = true;
             frame.dirShadowMap = scene->shadowPass->shadowMap();
 
-            scene->geometryPass->clearQueue();
+            scene->path.geometryPass().clearQueue();
 
             // Rotating cube
             {
@@ -279,7 +269,7 @@ int main()
                     math::mat4Translate(t, -1.5f, 0.5f, 0.0f);
                     math::mat4Mul(cmd.transform, t, r);
                 }
-                scene->geometryPass->submit(cmd);
+                scene->path.geometryPass().submit(cmd);
             }
 
             // Static sphere
@@ -293,7 +283,7 @@ int main()
                     math::mat4Translate(t, 1.5f, 0.5f, 0.0f);
                     cmd.transform = t;
                 }
-                scene->geometryPass->submit(cmd);
+                scene->path.geometryPass().submit(cmd);
             }
 
             // Ground plane
@@ -308,11 +298,10 @@ int main()
                     math::mat4Translate(t, 0.0f, -1.0f, 0.0f);
                     math::mat4Mul(cmd.transform, t, scale);
                 }
-                scene->geometryPass->submit(cmd);
+                scene->path.geometryPass().submit(cmd);
             }
 
-            scene->renderer.setFrameData(frame);
-            scene->renderer.render();
+            scene->path.render(frame, safeW, safeH);
         },
 
         // onShutdown

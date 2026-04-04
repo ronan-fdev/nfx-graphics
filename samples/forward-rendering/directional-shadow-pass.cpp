@@ -39,12 +39,10 @@ struct Scene
     gl::SamplerCache samplerCache;
     std::optional<gl::RenderResources> renderResources;
 
-    gl::Renderer renderer;
+    gl::ForwardRenderPath path;
     gl::DirectionalShadowPass* shadowPass = nullptr;
-    gl::GeometryPass* geometryPass = nullptr;
     gl::GridPass* gridPass = nullptr;
     gl::AxesPass* axesPass = nullptr;
-    gl::PresentPass* presentPass = nullptr;
 
     gl::MeshHandle rockHandle;
 
@@ -112,15 +110,6 @@ int main()
             scene->terrainDiffuseHandle = scene->texture2DCache.add(
                 smp::loadEmbeddedTexture("rocky_terrain_1k/rocky_terrain_diff_1k.jpg", true, true));
 
-            // Shadow pass must come first so it executes before the geometry pass
-            scene->shadowPass = scene->renderer.createPass<gl::DirectionalShadowPass>("Shadow");
-            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
-            scene->gridPass = scene->renderer.createPass<gl::GridPass>("Grid");
-            scene->axesPass = scene->renderer.createPass<gl::AxesPass>("Axes");
-            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
-
-            scene->shadowPass->setResolution(scene->texture2DCache, kShadowResolution, kShadowResolution);
-
             scene->renderResources.emplace(gl::RenderResources{ scene->meshCache,
                                                                 scene->materialCache,
                                                                 scene->shaderCache,
@@ -154,23 +143,37 @@ int main()
                 }
             }
 
-            scene->renderer.initialize(*scene->renderResources);
+            // ForwardRenderPath: shadow -> geometry -> overlays -> present
+            scene->shadowPass = scene->path.addShadowPass<gl::DirectionalShadowPass>("Shadow");
+            if (!scene->shadowPass)
+            {
+                std::fprintf(stderr, "directional-shadow-pass: failed to create Shadow pass\n");
+                return;
+            }
+            scene->shadowPass->setResolution(scene->texture2DCache, kShadowResolution, kShadowResolution);
 
-            scene->geometryPass->setOutputSize(scene->texture2DCache, 1280, 720);
-            scene->geometryPass->setClearColor(true, 0.08f, 0.10f, 0.14f, 1.0f);
-            scene->geometryPass->setClearDepth(true, 1.0f);
-            scene->geometryPass->setOrder(gl::RenderQueue::Order::BySortKey);
-
-            scene->gridPass->setTargetTextures(scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
+            scene->gridPass = scene->path.addOverlay<gl::GridPass>("Grid");
+            if (!scene->gridPass)
+            {
+                std::fprintf(stderr, "directional-shadow-pass: failed to create Grid overlay\n");
+                return;
+            }
             scene->gridPass->setGridSize(1.0f);
             scene->gridPass->setFadeDistance(90.0f);
-            scene->axesPass->setTargetTextures(scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
+
+            scene->axesPass = scene->path.addOverlay<gl::AxesPass>("Axes");
+            if (!scene->axesPass)
+            {
+                std::fprintf(stderr, "directional-shadow-pass: failed to create Axes overlay\n");
+                return;
+            }
             scene->axesPass->setAxisLength(500.0f);
             scene->axesPass->setFadeDistance(90.0f);
 
-            scene->presentPass->setInput(scene->geometryPass->colorOutput());
-            scene->presentPass->setTonemapEnabled(true);
-            scene->presentPass->setGammaEnabled(true);
+            scene->path.setClearColor(0.08f, 0.10f, 0.14f, 1.0f);
+            scene->path.setTonemapEnabled(true);
+            scene->path.setGammaEnabled(true);
+            scene->path.initialize(*scene->renderResources);
 
             scene->orbitCamera.distance = 14.0f;
             scene->orbitCamera.elevation = 0.50f;
@@ -202,9 +205,9 @@ int main()
             scene->ready = scene->rockHandle.isValid() && scene->rockDiffuseHandle.isValid() &&
                            scene->terrainDiffuseHandle.isValid() && scene->rockMaterial.isValid() &&
                            scene->floorMaterial.isValid() && scene->shadowPass != nullptr &&
-                           scene->geometryPass != nullptr && scene->gridPass != nullptr && scene->axesPass != nullptr &&
-                           scene->presentPass != nullptr && scene->renderResources.has_value() &&
-                           scene->shadowPass->depthOutput().isValid();
+                           scene->gridPass != nullptr && scene->axesPass != nullptr &&
+                           scene->renderResources.has_value() && scene->rockSpinAxes.size() == kRockCount &&
+                           scene->rockSpinSpeeds.size() == kRockCount;
         },
 
         // onRender
@@ -217,16 +220,6 @@ int main()
             const int safeW = (width > 0) ? width : 1;
             const int safeH = (height > 0) ? height : 1;
             gl::Context::current().functions().glViewport(0, 0, safeW, safeH);
-
-            if (scene->geometryPass->outputWidth() != safeW || scene->geometryPass->outputHeight() != safeH)
-            {
-                scene->geometryPass->setOutputSize(scene->texture2DCache, safeW, safeH);
-                scene->gridPass->setTargetTextures(
-                    scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-                scene->axesPass->setTargetTextures(
-                    scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-                scene->presentPass->setInput(scene->geometryPass->colorOutput());
-            }
 
             gl::FrameData frame;
             frame.camera =
@@ -251,7 +244,7 @@ int main()
             frame.dirShadowMap = scene->shadowPass->shadowMap();
 
             // shadowPass queue is cleared automatically at end() after each frame
-            scene->geometryPass->clearQueue();
+            scene->path.geometryPass().clearQueue();
 
             scene->time += scene->clock.tick();
 
@@ -267,7 +260,7 @@ int main()
                 math::mat4Translate(t, 0.0f, -2.15f, 0.0f);
                 math::mat4Mul(floorCmd.transform, t, s);
             }
-            scene->geometryPass->submit(floorCmd);
+            scene->path.geometryPass().submit(floorCmd);
 
             for (int i = 0; i < kRockCount; ++i)
             {
@@ -289,6 +282,7 @@ int main()
                 math::Mat4 rs;
                 math::mat4Scale(s, 0.42f, 0.42f, 0.42f);
                 math::mat4RotateY(r, -a * 1.3f);
+
                 // Apply individual spin rotation around random axis using quaternions
                 const auto& axis = scene->rockSpinAxes[i];
                 float spinAngle = scene->time * scene->rockSpinSpeeds[i];
@@ -300,12 +294,11 @@ int main()
                 math::mat4Translate(t, x, y, z);
                 math::mat4Mul(rockCmd.transform, t, rss);
 
-                scene->geometryPass->submit(rockCmd);
+                scene->path.geometryPass().submit(rockCmd);
                 scene->shadowPass->submit(rockCmd);
             }
 
-            scene->renderer.setFrameData(frame);
-            scene->renderer.render();
+            scene->path.render(frame, safeW, safeH);
         },
 
         // onShutdown

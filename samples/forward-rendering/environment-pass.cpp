@@ -19,10 +19,7 @@ struct Scene
     gl::SamplerCache samplerCache;
     std::optional<gl::RenderResources> renderResources;
 
-    gl::Renderer renderer;
-    gl::GeometryPass* geometryPass = nullptr;
-    gl::EnvironmentPass* environmentPass = nullptr;
-    gl::PresentPass* presentPass = nullptr;
+    gl::ForwardRenderPath path;
 
     gl::MeshHandle sphereHandle;
     gl::MaterialHandle sphereMaterial;
@@ -69,8 +66,8 @@ int main()
             reflective.envIntensity = 1.0f;
             scene->sphereMaterial = reflective.build(*scene->renderResources);
 
-            // Explicit sampler for the environment cubemap: Linear filtering, clamp on all axes.
-            // Ensures deterministic sampling independent of the texture object's default state.
+            // Explicit sampler for the environment cubemap: Linear filtering, clamp on all axes
+            // Ensures deterministic sampling independent of the texture object's default state
             scene->envSampler =
                 scene->samplerCache.add(gl::Sampler::create({ .minFilter = gl::Sampler::Filter::Linear,
                                                               .magFilter = gl::Sampler::Filter::Linear,
@@ -78,31 +75,21 @@ int main()
                                                               .wrapT = gl::Sampler::Wrap::ClampToEdge,
                                                               .wrapR = gl::Sampler::Wrap::ClampToEdge }));
 
-            scene->geometryPass = scene->renderer.createPass<gl::GeometryPass>("Geometry");
-            scene->environmentPass = scene->renderer.createPass<gl::EnvironmentPass>("Environment");
-            scene->presentPass = scene->renderer.createPass<gl::PresentPass>("Present");
+            scene->path.enableEnvironment(1.0f);
+            scene->path.setClearColor(0.0f, 0.0f, 0.0f);
+            scene->path.setTonemapEnabled(true);
+            scene->path.setGammaEnabled(true);
 
-            scene->renderer.initialize(*scene->renderResources);
+            scene->path.initialize(*scene->renderResources);
 
-            scene->geometryPass->setOutputSize(scene->texture2DCache, 960, 720);
-            scene->geometryPass->setClearColor(true, 0.0f, 0.0f, 0.0f, 1.0f);
-            scene->geometryPass->setClearDepth(true, 1.0f);
-            scene->geometryPass->setOrder(gl::RenderQueue::Order::BySortKey);
-
-            scene->environmentPass->setTargetTextures(
-                scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-            scene->environmentPass->setIntensity(1.0f);
-
-            scene->presentPass->setInput(scene->geometryPass->colorOutput());
-            scene->presentPass->setTonemapEnabled(true);
-            scene->presentPass->setGammaEnabled(true);
+            scene->path.geometryPass().setOrder(gl::RenderQueue::Order::BySortKey);
 
             scene->orbitCamera.distance = 4.2f;
             scene->orbitCamera.elevation = 0.35f;
 
             scene->ready = scene->sphereHandle.isValid() && scene->sphereMaterial.isValid() &&
-                           scene->skyboxHandle.isValid() && scene->geometryPass != nullptr &&
-                           scene->environmentPass != nullptr && scene->presentPass != nullptr;
+                           scene->skyboxHandle.isValid() && scene->envSampler.isValid() &&
+                           scene->renderResources.has_value();
         },
 
         // onRender
@@ -115,14 +102,6 @@ int main()
             const int safeW = (width > 0) ? width : 1;
             const int safeH = (height > 0) ? height : 1;
             gl::Context::current().functions().glViewport(0, 0, safeW, safeH);
-
-            if (scene->geometryPass->outputWidth() != safeW || scene->geometryPass->outputHeight() != safeH)
-            {
-                scene->geometryPass->setOutputSize(scene->texture2DCache, safeW, safeH);
-                scene->environmentPass->setTargetTextures(
-                    scene->geometryPass->colorOutput(), scene->geometryPass->depthOutput());
-                scene->presentPass->setInput(scene->geometryPass->colorOutput());
-            }
 
             gl::FrameData frame;
             frame.camera = scene->orbitCamera.toGpuData(
@@ -146,7 +125,7 @@ int main()
             frame.envSampler = scene->envSampler;
             frame.hasEnvSampler = scene->envSampler.isValid();
 
-            scene->geometryPass->clearQueue();
+            scene->path.geometryPass().clearQueue();
 
             gl::RenderCommand sphere;
             sphere.mesh = scene->sphereHandle;
@@ -157,10 +136,9 @@ int main()
                 math::mat4Scale(model, 1.0f, 1.0f, 1.0f);
                 sphere.transform = model;
             }
-            scene->geometryPass->submit(sphere);
+            scene->path.geometryPass().submit(sphere);
 
-            scene->renderer.setFrameData(frame);
-            scene->renderer.render();
+            scene->path.render(frame, safeW, safeH);
         },
 
         // onShutdown

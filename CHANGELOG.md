@@ -172,16 +172,16 @@
 - `direct-rendering-geometry-pass`: GeometryPass pipeline sample with 3 submitted commands, per-frame FrameData upload, and orbit camera controls
 - `direct-rendering-viewport-overlays`: three-pass pipeline sample (GeometryPass + GridPass + AxesPass) with infinite grid and world-axes overlay
 - `direct-rendering-transparent-pass`: two-pass pipeline sample (GeometryPass + TransparentPass) with back-to-front sorted alpha-blended spheres
-- `direct-rendering-directional-shadow-pass`: directional-light shadow mapping with orbiting rocks and textured terrain floor
-- `direct-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
-- `direct-rendering-point-shadow-pass`: point-light cube-shadow mapping with one levitating rock and one moving light marker
-- `direct-rendering-material-permutations`: BlinnPhong/Unlit material permutations with directional and point shadows
 - `direct-rendering-postprocess-pass`: post-process sample with left-click effect cycling (neutral, mono scanlines, chromatic grain)
-- `direct-rendering-skybox-pass`: SkyboxPass pipeline sample with cubemap background and orbit camera
 - `direct-rendering-wboit-pass`: weighted blended OIT sample (GeometryPass + WboitPass)
-- `direct-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
 
 - `forward-rendering-forward-path-showcase`: ForwardRenderPath showcase combining directional + point shadows, skybox background, WBOIT transparency, and grid/axes overlays
+- `forward-rendering-directional-shadow-pass`: directional-light shadow mapping with orbiting rocks and textured terrain floor
+- `forward-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
+- `forward-rendering-point-shadow-pass`: point-light cube-shadow mapping with one levitating rock and one moving light marker
+- `forward-rendering-material-permutations`: BlinnPhong/Unlit material permutations with directional and point shadows
+- `forward-rendering-skybox-pass`: SkyboxPass pipeline sample with cubemap background and orbit camera
+- `forward-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
 
 ### Changed
 

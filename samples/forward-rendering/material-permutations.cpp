@@ -17,7 +17,6 @@ namespace
     constexpr float kAmbientIntensity = 0.13f;
 
     constexpr int kShadowRes = 2048;
-    constexpr int kPointShadowRes = 1024;
     constexpr float kShadowRadius = 12.0f;
     constexpr float kShadowNear = 1.0f;
     constexpr float kShadowFar = 40.0f;
@@ -33,13 +32,9 @@ struct Scene
     gl::SamplerCache samplerCache;
     std::optional<gl::RenderResources> renderResources;
 
-    gl::Renderer renderer;
+    gl::ForwardRenderPath path;
     gl::DirectionalShadowPass* shadowPass = nullptr;
     gl::PointShadowPass* pointShadowPass = nullptr;
-    gl::GeometryPass* geoPass = nullptr;
-    gl::GridPass* gridPass = nullptr;
-    gl::AxesPass* axesPass = nullptr;
-    gl::PresentPass* presentPass = nullptr;
 
     gl::MeshHandle sphereMesh;
     gl::MeshHandle cubeMesh;
@@ -91,8 +86,6 @@ int main()
 
             s.renderResources.emplace(gl::RenderResources{
                 s.meshCache, s.materialCache, s.shaderCache, s.texture2DCache, s.textureCubeCache, s.samplerCache });
-
-            s.renderer.setValidationMode(gl::Renderer::ValidationMode::Strict);
 
             // Primitives
             s.sphereMesh = s.meshCache.create(gl::Primitive::uvSphere());
@@ -192,35 +185,50 @@ int main()
                 s.matOrb = desc.build(s.shaderCache, s.materialCache);
             }
 
-            // Passes
-            s.pointShadowPass = s.renderer.createPass<gl::PointShadowPass>("PointShadow");
-            s.shadowPass = s.renderer.createPass<gl::DirectionalShadowPass>("Shadow");
-
-            s.geoPass = s.renderer.createPass<gl::GeometryPass>("Geometry");
-
-            s.gridPass = s.renderer.createPass<gl::GridPass>("Grid");
-            s.axesPass = s.renderer.createPass<gl::AxesPass>("Axes");
-            s.presentPass = s.renderer.createPass<gl::PresentPass>("Present");
-
+            // ForwardRenderPath configuration
+            s.shadowPass = s.path.addShadowPass<gl::DirectionalShadowPass>("Shadow");
+            if (!s.shadowPass)
+            {
+                std::fprintf(stderr, "material-permutations: failed to create Shadow pass\n");
+                return;
+            }
             s.shadowPass->setResolution(s.texture2DCache, kShadowRes, kShadowRes);
-            s.pointShadowPass->setResolution(s.textureCubeCache, kPointShadowRes);
-            s.geoPass->setOutputSize(s.texture2DCache, 1280, 720);
 
-            s.geoPass->setClearColor(true, 0.08f, 0.09f, 0.12f, 1.f);
-            s.geoPass->setClearDepth(true, 1.f);
+            s.pointShadowPass = s.path.addShadowPass<gl::PointShadowPass>("PointShadow");
+            if (!s.pointShadowPass)
+            {
+                std::fprintf(stderr, "material-permutations: failed to create PointShadow pass\n");
+                return;
+            }
+            s.pointShadowPass->setResolution(s.textureCubeCache, 512);
 
-            s.gridPass->setGridSize(1.f);
-            s.gridPass->setFadeDistance(60.f);
-            s.axesPass->setAxisLength(300.f);
-            s.axesPass->setFadeDistance(60.f);
-            s.gridPass->setTargetTextures(s.geoPass->colorOutput(), s.geoPass->depthOutput());
-            s.axesPass->setTargetTextures(s.geoPass->colorOutput(), s.geoPass->depthOutput());
+            if (auto* grid = s.path.addOverlay<gl::GridPass>("Grid"))
+            {
+                grid->setGridSize(1.f);
+                grid->setFadeDistance(60.f);
+            }
+            else
+            {
+                std::fprintf(stderr, "material-permutations: failed to create Grid overlay\n");
+                return;
+            }
 
-            s.presentPass->setInput(s.geoPass->colorOutput());
-            s.presentPass->setTonemapEnabled(true);
-            s.presentPass->setGammaEnabled(true);
+            if (auto* axes = s.path.addOverlay<gl::AxesPass>("Axes"))
+            {
+                axes->setAxisLength(300.f);
+                axes->setFadeDistance(60.f);
+            }
+            else
+            {
+                std::fprintf(stderr, "material-permutations: failed to create Axes overlay\n");
+                return;
+            }
 
-            s.renderer.initialize(*s.renderResources);
+            s.path.setClearColor(0.08f, 0.09f, 0.12f);
+            s.path.setTonemapEnabled(true);
+            s.path.setGammaEnabled(true);
+
+            s.path.initialize(*s.renderResources);
 
             s.orbit.distance = 16.f;
             s.orbit.elevation = 0.45f;
@@ -228,9 +236,8 @@ int main()
 
             s.ready = s.sphereMesh.isValid() && s.cubeMesh.isValid() && s.planeMesh.isValid() && s.matFlat.isValid() &&
                       s.matDiffuse.isValid() && s.matNormal.isValid() && s.matShadow.isValid() &&
-                      s.matFloor.isValid() && s.matCube.isValid() && s.markerMat.isValid() && s.matOrb.isValid() &&
-                      s.terrainDiffuse.isValid() && s.shadowPass && s.pointShadowPass && s.geoPass && s.gridPass &&
-                      s.axesPass && s.presentPass;
+                      s.matFloor.isValid() && s.matCube.isValid() && s.markerMat.isValid() &&
+                      s.terrainDiffuse.isValid() && s.shadowPass && s.pointShadowPass;
         },
 
         // onRender
@@ -243,14 +250,6 @@ int main()
 
             const int W = width > 0 ? width : 1;
             const int H = height > 0 ? height : 1;
-
-            if (s.geoPass->outputWidth() != W || s.geoPass->outputHeight() != H)
-            {
-                s.geoPass->setOutputSize(s.texture2DCache, W, H);
-                s.gridPass->setTargetTextures(s.geoPass->colorOutput(), s.geoPass->depthOutput());
-                s.axesPass->setTargetTextures(s.geoPass->colorOutput(), s.geoPass->depthOutput());
-                s.presentPass->setInput(s.geoPass->colorOutput());
-            }
 
             s.time += s.clock.tick();
 
@@ -269,7 +268,7 @@ int main()
             s.pointShadowPass->addLight(orb);
 
             // Submit geometry
-            s.geoPass->clearQueue();
+            s.path.geometryPass().clearQueue();
 
             // Floor
             {
@@ -281,7 +280,7 @@ int main()
                 math::mat4Scale(scale, 16.f, 1.f, 10.f);
                 math::mat4Translate(tr, 0.f, -1.f, 0.f);
                 math::mat4Mul(cmd.transform, tr, scale);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
             }
 
             // Rotating occluder cube (casts a shadow on sphere 4 and the floor)
@@ -294,7 +293,7 @@ int main()
                 math::mat4RotateY(rot, s.time * 0.9f);
                 math::mat4Translate(tr, 4.5f, 2.2f, 0.0f);
                 math::mat4Mul(cmd.transform, tr, rot);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
                 s.shadowPass->submit(cmd);
             }
 
@@ -305,7 +304,7 @@ int main()
                 cmd.material = s.matFlat;
                 cmd.sortKey = 20;
                 math::mat4Translate(cmd.transform, -4.5f, 0.f, 0.f);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
                 s.shadowPass->submit(cmd);
             }
 
@@ -316,7 +315,7 @@ int main()
                 cmd.material = s.matDiffuse;
                 cmd.sortKey = 21;
                 math::mat4Translate(cmd.transform, -1.5f, 0.f, 0.f);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
                 s.shadowPass->submit(cmd);
             }
 
@@ -327,7 +326,7 @@ int main()
                 cmd.material = s.matNormal;
                 cmd.sortKey = 22;
                 math::mat4Translate(cmd.transform, 1.5f, 0.f, 0.f);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
                 s.shadowPass->submit(cmd);
             }
 
@@ -338,7 +337,7 @@ int main()
                 cmd.material = s.matShadow;
                 cmd.sortKey = 23;
                 math::mat4Translate(cmd.transform, 4.5f, 0.f, 0.f);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
                 s.shadowPass->submit(cmd);
             }
 
@@ -352,7 +351,7 @@ int main()
                 math::mat4Scale(scale, 0.18f, 0.18f, 0.18f);
                 math::mat4Translate(tr, orbX, orbY, orbZ);
                 math::mat4Mul(cmd.transform, tr, scale);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
             }
 
             // Point shadow casters
@@ -386,7 +385,7 @@ int main()
             {
                 gl::RenderCommand cmd;
                 cmd.mesh = s.sphereMesh;
-                math::mat4Translate(cmd.transform, 4.5f, 0.f, 0.f);
+                math::mat4Translate(cmd.transform, 4.5f, -0.6f, 0.f);
                 s.pointShadowPass->submit(cmd);
             }
 
@@ -404,7 +403,7 @@ int main()
                 math::mat4Scale(scale, 0.18f, 0.18f, 0.18f);
                 math::mat4Translate(tr, mx, my, mz);
                 math::mat4Mul(cmd.transform, tr, scale);
-                s.geoPass->submit(cmd);
+                s.path.geometryPass().submit(cmd);
             }
 
             // Frame data
@@ -430,8 +429,7 @@ int main()
             frame.lights.clear();
             frame.lights.push_back(orb.toGpuData());
 
-            s.renderer.setFrameData(frame);
-            s.renderer.render();
+            s.path.render(frame, W, H);
         },
 
         // onShutdown
