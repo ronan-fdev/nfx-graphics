@@ -183,6 +183,7 @@
 - `forward-rendering-material-permutations`: BlinnPhong/Unlit material permutations with directional and point shadows
 - `forward-rendering-skybox-pass`: SkyboxPass pipeline sample with cubemap background and orbit camera
 - `forward-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
+- `forward-rendering-pbr-minimal`: minimal ForwardRenderPath sample with two PBR materials using packed ARM maps (`R=ao`, `G=roughness`, `B=metallic`)
 
 ### Changed
 

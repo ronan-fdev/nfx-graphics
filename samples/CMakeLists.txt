@@ -156,6 +156,24 @@ nfx_graphics_download_assets(
         rocky_terrain_rough_1k.jpg
 )
 
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/rusty_metal_04_1k"
+    BASE_URL "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rusty_metal_04"
+    FILES
+        rusty_metal_04_diff_1k.jpg
+        rusty_metal_04_nor_gl_1k.jpg
+        rusty_metal_04_arm_1k.jpg
+)
+
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/rusty_metal_grid_1k"
+    BASE_URL "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rusty_metal_grid"
+    FILES
+        rusty_metal_grid_diff_1k.jpg
+        rusty_metal_grid_nor_gl_1k.jpg
+        rusty_metal_grid_arm_1k.jpg
+)
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures
