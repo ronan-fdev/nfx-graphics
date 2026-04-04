@@ -1,6 +1,17 @@
 #include "nfx/graphics/gl/pipeline/Renderer.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "nfx/graphics/gl/pipeline/passes/AxesPass.h"
+#include "nfx/graphics/gl/pipeline/passes/DirectionalShadowPass.h"
+#include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
+#include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
+#include "nfx/graphics/gl/pipeline/passes/GridPass.h"
+#include "nfx/graphics/gl/pipeline/passes/PointShadowPass.h"
+#include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
+#include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
+#include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"
+#include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
+#include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "gl/material/ShaderFeatures.h"
 
@@ -11,6 +22,39 @@
 
 namespace nfx::graphics::gl
 {
+    namespace
+    {
+        int builtinPassRank(const RenderPass& pass)
+        {
+            if (dynamic_cast<const DirectionalShadowPass*>(&pass) || dynamic_cast<const SpotShadowPass*>(&pass) ||
+                dynamic_cast<const PointShadowPass*>(&pass))
+            {
+                return 0;
+            }
+            if (dynamic_cast<const GeometryPass*>(&pass))
+            {
+                return 1;
+            }
+            if (dynamic_cast<const SkyboxPass*>(&pass) || dynamic_cast<const EnvironmentPass*>(&pass))
+            {
+                return 2;
+            }
+            if (dynamic_cast<const WboitPass*>(&pass) || dynamic_cast<const TransparentPass*>(&pass))
+            {
+                return 3;
+            }
+            if (dynamic_cast<const GridPass*>(&pass) || dynamic_cast<const AxesPass*>(&pass))
+            {
+                return 4;
+            }
+            if (dynamic_cast<const PresentPass*>(&pass))
+            {
+                return 6;
+            }
+            return 5;
+        }
+    } // namespace
+
     void Renderer::addPass(std::unique_ptr<RenderPass> pass)
     {
         if (!pass)
@@ -64,6 +108,11 @@ namespace nfx::graphics::gl
     void Renderer::initialize(RenderResources& resources)
     {
         m_resources = &resources;
+
+        std::stable_sort(m_passes.begin(), m_passes.end(), [](const auto& a, const auto& b) {
+            return builtinPassRank(*a) < builtinPassRank(*b);
+        });
+
         for (auto& passPtr : m_passes)
         {
             if (!passPtr)

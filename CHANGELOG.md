@@ -77,6 +77,8 @@
 - `RenderState`: pipeline state descriptor with `apply()` helper and `opaque()` / `transparent()` / `shadowCaster()` presets
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 
+- `ForwardRenderPath`: forward rendering pipeline assembler - fluent pass configuration (`addShadowPass<T>`, `setSkybox`, `enableTransparency<T>`, `addOverlay<T>`), automatic color/depth target wiring, viewport resize handling, and typed pass access via `get<T>(name)`
+
 ##### Resources
 
 - `Handle<Tag>`: strongly typed opaque resource handle (64-bit id, `std::hash` support)
@@ -128,7 +130,8 @@
 - `gl/mesh/tests_Mesh`: validates invalid-instance-data no-op behavior on default meshes
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
 - `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
-
+- 
+- `gl/pipeline/tests_ForwardRenderPathWiring`: validates automatic target texture wiring between passes (geometry output routed to overlays/transparent/outline)
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping

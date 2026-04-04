@@ -33,43 +33,44 @@ cmake --build build
 ```
 nfx-graphics/
 ├── include/nfx/
-│   ├── Graphics.h                    # top-level nfx::graphics API entry point
-│   ├── Gl.h                          # low-level nfx::graphics::gl API entry point
+│   ├── Graphics.h                        # top-level nfx::graphics API entry point
+│   ├── Gl.h                              # low-level nfx::graphics::gl API entry point
 │   └── graphics
 │       ├── gl/
 │       │   ├── core/
-│       │   │   ├── buffers/          # Buffer objects (VBO/SSBO/UBO wrappers)
-│       │   │   ├── framebuffers/     # Framebuffer and renderbuffer wrappers
-│       │   │   ├── functions/        # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
-│       │   │   ├── Context.h         # Per-thread GL function table initialization
-│       │   │   ├── Functions.h       # Full OpenGL 1.0-4.6 C++ wrapper
-│       │   │   ├── shaders/          # Shader program wrappers and typed uniforms
-│       │   │   ├── textures/         # Sampler and texture wrappers
-│       │   │   ├── GlDefinitions.h   # All GL constants
-│       │   │   └── GlTypes.h         # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
-│       │   ├── material/             # Material system (shaders, render state, uniforms, textures)
-│       │   ├── mesh/                 # Mesh data, primitives
-│       │   ├── pipeline/             # High-level rendering pipeline
-│       │   │   ├── frame/            # FrameData, RenderResources (camera/light payloads)
-│       │   │   ├── passes/           # RenderPass base class for render pipeline stages
-│       │   │   ├── queue/            # RenderCommand, RenderQueue (draw commands)
-│       │   │   ├── shadows/          # Shadow map payloads
-│       │   │   ├── Renderer.h        # Frame renderer orchestrating render passes
-│       │   │   ├── RenderMode.h      # Primitive topology enum
-│       │   │   ├── RenderState.h     # Pipeline state descriptor
-│       │   │   ├── RenderTarget.h    # High-level framebuffer wrapper
-│       │   │   └── Bindings.h        # Binding-point conventions
-│       │   ├── resources/            # Resource caches (meshes, shaders, textures)
+│       │   │   ├── buffers/              # Buffer objects (VBO/SSBO/UBO wrappers)
+│       │   │   ├── framebuffers/         # Framebuffer and renderbuffer wrappers
+│       │   │   ├── functions/            # Per-version function classes (Functions_1_0.h-Functions_4_6.h)
+│       │   │   ├── Context.h             # Per-thread GL function table initialization
+│       │   │   ├── Functions.h           # Full OpenGL 1.0-4.6 C++ wrapper
+│       │   │   ├── shaders/              # Shader program wrappers and typed uniforms
+│       │   │   ├── textures/             # Sampler and texture wrappers
+│       │   │   ├── GlDefinitions.h       # All GL constants
+│       │   │   └── GlTypes.h             # Core GL type aliases (GLuint, GLfloat, etc.), GLsync and GLDEBUGPROC
+│       │   ├── material/                 # Material system (shaders, render state, uniforms, textures)
+│       │   ├── mesh/                     # Mesh data, primitives
+│       │   ├── pipeline/                 # High-level rendering pipeline
+│       │   │   ├── frame/                # FrameData, RenderResources (camera/light payloads)
+│       │   │   ├── passes/               # RenderPass base class for render pipeline stages
+│       │   │   ├── queue/                # RenderCommand, RenderQueue (draw commands)
+│       │   │   ├── shadows/              # Shadow map payloads
+│       │   │   ├── Bindings.h            # Binding-point conventions
+│       │   │   ├── ForwardRenderPath.h   # forward pipeline assembler
+│       │   │   ├── Renderer.h            # Frame renderer orchestrating render passes
+│       │   │   ├── RenderMode.h          # Primitive topology enum
+│       │   │   ├── RenderState.h         # Pipeline state descriptor
+│       │   │   └── RenderTarget.h        # High-level framebuffer wrapper
+│       │   ├── resources/                # Resource caches (meshes, shaders, textures)
 │       │   └── scene/
-│       │       ├── cameras/          # Camera types and orbit camera
-│       │       └── lights/           # Camera Light descriptors
-│       ├── math/                     # Matrices, vectors, quaternions
-│       └── EmbeddedResource.h        # Runtime access to resources embedded at build time
-├── resources/                        # Pipeline GLSL sources
-├── samples/                          # Sample applications and shared sample framework
-├── src/                              # Implementation
-├── tests/                            # Unit tests
-└── tools/                            # Build tools and resource generator
+│       │       ├── cameras/              # Camera types and orbit camera
+│       │       └── lights/               # Camera Light descriptors
+│       ├── math/                         # Matrices, vectors, quaternions
+│       └── EmbeddedResource.h            # Runtime access to resources embedded at build time
+├── resources/                            # Pipeline GLSL sources
+├── samples/                              # Sample applications and shared sample framework
+├── src/                                  # Implementation
+├── tests/                                # Unit tests
+└── tools/                                # Build tools and resource generator
 ```
 
 The function loader resolves GL 1.2+ entry points via `glXGetProcAddress` (X11) or `wglGetProcAddress` (Win32).

@@ -40,6 +40,7 @@
 #include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
+#include "nfx/graphics/gl/pipeline/ForwardRenderPath.h"
 #include "nfx/graphics/gl/pipeline/Renderer.h"
 #include "nfx/graphics/gl/pipeline/RenderMode.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"

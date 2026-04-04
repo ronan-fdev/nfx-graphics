@@ -20,6 +20,7 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/pipeline/passes/SkyboxPass.cpp
     src/gl/pipeline/passes/TransparentPass.cpp
     src/gl/pipeline/passes/WboitPass.cpp
+    src/gl/pipeline/ForwardRenderPath.cpp
     src/gl/pipeline/Renderer.cpp
     src/gl/pipeline/RenderState.cpp
     src/gl/pipeline/RenderTarget.cpp
