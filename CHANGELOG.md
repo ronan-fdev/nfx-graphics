@@ -181,6 +181,8 @@
 - `direct-rendering-wboit-pass`: weighted blended OIT sample (GeometryPass + WboitPass)
 - `direct-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
 
+- `forward-rendering-forward-path-showcase`: ForwardRenderPath showcase combining directional + point shadows, skybox background, WBOIT transparency, and grid/axes overlays
+
 ### Changed
 
 - NIL

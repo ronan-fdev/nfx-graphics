@@ -40,6 +40,7 @@ target_link_libraries(nfx-sample-common
 
 add_subdirectory(basic)
 add_subdirectory(direct-rendering)
+add_subdirectory(forward-rendering)
 
 #----------------------------------------------
 # Third-party sample dependencies
