@@ -14,6 +14,7 @@
 #include "nfx/graphics/gl/material/BlinnPhong.h"
 #include "nfx/graphics/gl/material/Material.h"
 #include "nfx/graphics/gl/material/MaterialBlock.h"
+#include "nfx/graphics/gl/material/Pbr.h"
 #include "nfx/graphics/gl/material/Unlit.h"
 
 // Mesh

@@ -58,6 +58,18 @@ namespace nfx::graphics::gl
         static constexpr GLuint MaterialSlot0         = 16; ///< Blinn-Phong: uDiffuseMap  / PBR: uBaseColorMap
         static constexpr GLuint MaterialSlot1         = 17; ///< All:         uNormalMap
         static constexpr GLuint MaterialSlot2         = 18; ///< Blinn-Phong: uSpecularMap / PBR: uMetallicRoughnessMap
+        static constexpr GLuint MaterialSlot3         = 19; ///< PBR: uOcclusionMap / uArmMap
+
+        // Blinn-Phong aliases
+        static constexpr GLuint DiffuseMap            = MaterialSlot0;
+        static constexpr GLuint NormalMap             = MaterialSlot1;
+        static constexpr GLuint SpecularMap           = MaterialSlot2;
+
+        // PBR metallic-roughness aliases
+        static constexpr GLuint BaseColorMap          = MaterialSlot0;
+        static constexpr GLuint MetallicRoughnessMap  = MaterialSlot2;
+        static constexpr GLuint OcclusionMap          = MaterialSlot3;
+        static constexpr GLuint ArmMap                = MaterialSlot3;
 
         // User/custom sampler sandbox
         static constexpr GLuint UserMaterialFirstUnit = 22; ///< First texture unit for user/custom samplers

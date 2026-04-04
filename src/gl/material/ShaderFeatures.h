@@ -18,12 +18,16 @@ namespace nfx::graphics::gl
      */
     enum class ShaderFeature : std::uint32_t
     {
-        None           = 0,
-        HasDiffuseMap  = 1u << 0,
-        HasNormalMap   = 1u << 1,
-        HasSpecularMap = 1u << 2,
-        HasShadow      = 1u << 3,
-        HasEnvMap      = 1u << 4
+        None                    = 0,
+        HasDiffuseMap           = 1u << 0,
+        HasNormalMap            = 1u << 1,
+        HasSpecularMap          = 1u << 2,
+        HasShadow               = 1u << 3,
+        HasEnvMap               = 1u << 4,
+        HasBaseColorMap         = 1u << 5,
+        HasMetallicRoughnessMap = 1u << 6,
+        HasOcclusionMap         = 1u << 7,
+        HasArmMap               = 1u << 8
     };
     // clang-format on
 
@@ -90,6 +94,22 @@ namespace nfx::graphics::gl
         {
             defines.push_back("HAS_ENV_MAP");
         }
+        if (has(features, ShaderFeature::HasBaseColorMap))
+        {
+            defines.push_back("HAS_BASE_COLOR_MAP");
+        }
+        if (has(features, ShaderFeature::HasMetallicRoughnessMap))
+        {
+            defines.push_back("HAS_METALLIC_ROUGHNESS_MAP");
+        }
+        if (has(features, ShaderFeature::HasOcclusionMap))
+        {
+            defines.push_back("HAS_OCCLUSION_MAP");
+        }
+        if (has(features, ShaderFeature::HasArmMap))
+        {
+            defines.push_back("HAS_ARM_MAP");
+        }
         return defines;
     }
 
@@ -130,6 +150,22 @@ namespace nfx::graphics::gl
         if (has(features, ShaderFeature::HasEnvMap))
         {
             append("HasEnvMap");
+        }
+        if (has(features, ShaderFeature::HasBaseColorMap))
+        {
+            append("HasBaseColorMap");
+        }
+        if (has(features, ShaderFeature::HasMetallicRoughnessMap))
+        {
+            append("HasMetallicRoughnessMap");
+        }
+        if (has(features, ShaderFeature::HasOcclusionMap))
+        {
+            append("HasOcclusionMap");
+        }
+        if (has(features, ShaderFeature::HasArmMap))
+        {
+            append("HasArmMap");
         }
         return s;
     }

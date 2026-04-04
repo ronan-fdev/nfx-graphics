@@ -19,6 +19,10 @@ TEST_SUITE("ShaderFeatures")
         CHECK(toDefines(ShaderFeature::HasSpecularMap).size() == 1);
         CHECK(toDefines(ShaderFeature::HasShadow).size() == 1);
         CHECK(toDefines(ShaderFeature::HasEnvMap).size() == 1);
+        CHECK(toDefines(ShaderFeature::HasBaseColorMap).size() == 1);
+        CHECK(toDefines(ShaderFeature::HasMetallicRoughnessMap).size() == 1);
+        CHECK(toDefines(ShaderFeature::HasOcclusionMap).size() == 1);
+        CHECK(toDefines(ShaderFeature::HasArmMap).size() == 1);
     }
 
     TEST_CASE("Each flag maps to the expected define string")
@@ -28,6 +32,10 @@ TEST_SUITE("ShaderFeatures")
         CHECK(toDefines(ShaderFeature::HasSpecularMap)[0] == "HAS_SPECULAR_MAP");
         CHECK(toDefines(ShaderFeature::HasShadow)[0] == "HAS_SHADOW");
         CHECK(toDefines(ShaderFeature::HasEnvMap)[0] == "HAS_ENV_MAP");
+        CHECK(toDefines(ShaderFeature::HasBaseColorMap)[0] == "HAS_BASE_COLOR_MAP");
+        CHECK(toDefines(ShaderFeature::HasMetallicRoughnessMap)[0] == "HAS_METALLIC_ROUGHNESS_MAP");
+        CHECK(toDefines(ShaderFeature::HasOcclusionMap)[0] == "HAS_OCCLUSION_MAP");
+        CHECK(toDefines(ShaderFeature::HasArmMap)[0] == "HAS_ARM_MAP");
     }
 
     TEST_CASE("Union and has report active flags")
@@ -69,15 +77,21 @@ TEST_SUITE("ShaderFeatures")
     TEST_CASE("All flags active produces all five defines")
     {
         const auto features = ShaderFeature::HasDiffuseMap | ShaderFeature::HasNormalMap |
-                              ShaderFeature::HasSpecularMap | ShaderFeature::HasShadow | ShaderFeature::HasEnvMap;
+                              ShaderFeature::HasSpecularMap | ShaderFeature::HasShadow | ShaderFeature::HasEnvMap |
+                              ShaderFeature::HasBaseColorMap | ShaderFeature::HasMetallicRoughnessMap |
+                              ShaderFeature::HasOcclusionMap | ShaderFeature::HasArmMap;
         const auto defines = toDefines(features);
 
-        REQUIRE(defines.size() == 5);
+        REQUIRE(defines.size() == 9);
         CHECK(defines[0] == "HAS_DIFFUSE_MAP");
         CHECK(defines[1] == "HAS_NORMAL_MAP");
         CHECK(defines[2] == "HAS_SPECULAR_MAP");
         CHECK(defines[3] == "HAS_SHADOW");
         CHECK(defines[4] == "HAS_ENV_MAP");
+        CHECK(defines[5] == "HAS_BASE_COLOR_MAP");
+        CHECK(defines[6] == "HAS_METALLIC_ROUGHNESS_MAP");
+        CHECK(defines[7] == "HAS_OCCLUSION_MAP");
+        CHECK(defines[8] == "HAS_ARM_MAP");
     }
 
     TEST_CASE("has() returns false for None against any flag")
@@ -87,14 +101,20 @@ TEST_SUITE("ShaderFeatures")
         CHECK(!has(ShaderFeature::None, ShaderFeature::HasSpecularMap));
         CHECK(!has(ShaderFeature::None, ShaderFeature::HasShadow));
         CHECK(!has(ShaderFeature::None, ShaderFeature::HasEnvMap));
+        CHECK(!has(ShaderFeature::None, ShaderFeature::HasBaseColorMap));
+        CHECK(!has(ShaderFeature::None, ShaderFeature::HasMetallicRoughnessMap));
+        CHECK(!has(ShaderFeature::None, ShaderFeature::HasOcclusionMap));
+        CHECK(!has(ShaderFeature::None, ShaderFeature::HasArmMap));
     }
 
     TEST_CASE("Flags are independent bitmask values")
     {
         // No two flags share a bit
         const auto all = ShaderFeature::HasDiffuseMap | ShaderFeature::HasNormalMap | ShaderFeature::HasSpecularMap |
-                         ShaderFeature::HasShadow | ShaderFeature::HasEnvMap;
-        CHECK(toDefines(all).size() == 5);
+                         ShaderFeature::HasShadow | ShaderFeature::HasEnvMap | ShaderFeature::HasBaseColorMap |
+                         ShaderFeature::HasMetallicRoughnessMap | ShaderFeature::HasOcclusionMap |
+                         ShaderFeature::HasArmMap;
+        CHECK(toDefines(all).size() == 9);
     }
 
     TEST_CASE("toDebugString returns None for ShaderFeature::None")
@@ -107,6 +127,10 @@ TEST_SUITE("ShaderFeatures")
         CHECK(toDebugString(ShaderFeature::HasShadow) == "HasShadow");
         CHECK(toDebugString(ShaderFeature::HasEnvMap) == "HasEnvMap");
         CHECK(toDebugString(ShaderFeature::HasDiffuseMap) == "HasDiffuseMap");
+        CHECK(toDebugString(ShaderFeature::HasBaseColorMap) == "HasBaseColorMap");
+        CHECK(toDebugString(ShaderFeature::HasMetallicRoughnessMap) == "HasMetallicRoughnessMap");
+        CHECK(toDebugString(ShaderFeature::HasOcclusionMap) == "HasOcclusionMap");
+        CHECK(toDebugString(ShaderFeature::HasArmMap) == "HasArmMap");
     }
 
     TEST_CASE("toDebugString combines flags with pipe separator")
@@ -117,7 +141,11 @@ TEST_SUITE("ShaderFeatures")
 
     TEST_CASE("toDebugString follows stable feature order")
     {
-        const auto features = ShaderFeature::HasEnvMap | ShaderFeature::HasDiffuseMap | ShaderFeature::HasShadow;
-        CHECK(toDebugString(features) == "HasDiffuseMap|HasShadow|HasEnvMap");
+        const auto features = ShaderFeature::HasArmMap | ShaderFeature::HasOcclusionMap |
+                              ShaderFeature::HasMetallicRoughnessMap | ShaderFeature::HasBaseColorMap |
+                              ShaderFeature::HasEnvMap | ShaderFeature::HasShadow | ShaderFeature::HasDiffuseMap;
+        CHECK(
+            toDebugString(features) ==
+            "HasDiffuseMap|HasShadow|HasEnvMap|HasBaseColorMap|HasMetallicRoughnessMap|HasOcclusionMap|HasArmMap");
     }
 }

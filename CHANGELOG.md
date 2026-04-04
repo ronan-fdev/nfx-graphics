@@ -36,6 +36,7 @@
 
 - `BlinnPhong`: material descriptor with diffuse/specular/normal map support, alpha transparency and shadow permutation
 - `Unlit`: material descriptor for constant-color rendering with alpha support
+- `Pbr`: metallic-roughness material descriptor with base color, normal, occlusion, shadow, and environment-map support
 
 ##### Meshes
 
