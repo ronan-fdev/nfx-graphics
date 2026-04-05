@@ -8,6 +8,7 @@
 #include "nfx/graphics/gl/core/buffers/Buffer.h"
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/mesh/MeshTypes.h"
+#include "nfx/graphics/math/geometry/Bounds.h"
 
 #include <cstddef>
 #include <optional>
@@ -53,7 +54,9 @@ namespace nfx::graphics::gl
             const void* indices = nullptr;           ///< Optional pointer to packed index data
             std::size_t indexCount = 0;              ///< Number of indices stored in the index buffer
             IndexType indexType = IndexType::UInt32; ///< Index element format
-            Buffer::Usage usage = Buffer::Usage::StaticDraw; ///< Usage hint applied to uploaded GPU buffers
+            Buffer::Usage usage = Buffer::Usage::StaticDraw;  ///< Usage hint applied to uploaded GPU buffers
+            std::optional<math::Bounds::AABB> boundsAABB;     ///< Optional default bounding box
+            std::optional<math::Bounds::Sphere> boundsSphere; ///< Optional default bounding sphere
         };
 
         /**
@@ -132,6 +135,21 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] IndexType indexType() const noexcept { return m_indexType; }
 
+        /**
+         * \brief Returns the optional axis-aligned bounding box.
+         * \return Optional AABB bounds.
+         */
+        [[nodiscard]] const std::optional<math::Bounds::AABB>& boundsAABB() const noexcept { return m_boundsAABB; }
+
+        /**
+         * \brief Returns the optional bounding sphere.
+         * \return Optional sphere bounds.
+         */
+        [[nodiscard]] const std::optional<math::Bounds::Sphere>& boundsSphere() const noexcept
+        {
+            return m_boundsSphere;
+        }
+
     private:
         std::optional<VertexArray> m_vao;
         std::optional<Buffer> m_vbo;
@@ -141,5 +159,8 @@ namespace nfx::graphics::gl
         std::size_t m_vertexCount = 0;
         std::size_t m_indexCount = 0;
         IndexType m_indexType = IndexType::UInt32;
+
+        std::optional<math::Bounds::AABB> m_boundsAABB;
+        std::optional<math::Bounds::Sphere> m_boundsSphere;
     };
 } // namespace nfx::graphics::gl

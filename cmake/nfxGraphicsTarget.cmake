@@ -61,6 +61,7 @@ target_include_directories(nfx-graphics
 target_link_libraries(nfx-graphics
     PUBLIC
         nfx::graphics::gl
+        nfx::graphics::math
     PRIVATE
         nfx-graphics-warnings
 )

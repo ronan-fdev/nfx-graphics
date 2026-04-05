@@ -7,10 +7,12 @@
 
 #include "nfx/graphics/gl/core/buffers/VertexLayout.h"
 #include "nfx/graphics/gl/mesh/MeshTypes.h"
+#include "nfx/graphics/math/geometry/Bounds.h"
 
 #include <cstddef>
 #include <cstring>
 #include <cassert>
+#include <optional>
 #include <vector>
 
 namespace nfx::graphics::gl
@@ -29,9 +31,11 @@ namespace nfx::graphics::gl
         std::size_t vertexCount = 0;       ///< Number of vertices stored in vertexData
         VertexLayout layout;               ///< Vertex attribute layout describing the contents of vertexData
 
-        std::vector<std::byte> indexData;        ///< Optional packed index buffer data
-        std::size_t indexCount = 0;              ///< Number of indices stored in indexData
-        IndexType indexType = IndexType::UInt32; ///< Index element format used by indexData
+        std::vector<std::byte> indexData;                 ///< Optional packed index buffer data
+        std::size_t indexCount = 0;                       ///< Number of indices stored in indexData
+        IndexType indexType = IndexType::UInt32;          ///< Index element format used by indexData
+        std::optional<math::Bounds::AABB> boundsAABB;     ///< Optional default mesh bounding box
+        std::optional<math::Bounds::Sphere> boundsSphere; ///< Optional default mesh bounding sphere
 
         /**
          * \brief Sets packed vertex bytes and derives vertexCount from layout stride.

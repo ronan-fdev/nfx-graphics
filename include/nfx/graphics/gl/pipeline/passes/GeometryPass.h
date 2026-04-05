@@ -11,6 +11,7 @@
 #include "nfx/graphics/gl/resources/Handle.h"
 #include "RenderPass.h"
 
+#include <cstdint>
 #include <string>
 
 namespace nfx::graphics::gl
@@ -28,6 +29,16 @@ namespace nfx::graphics::gl
         friend class Renderer;
 
     public:
+        /**
+         * \brief Per-frame culling counters produced by GeometryPass::execute().
+         */
+        struct CullingStats
+        {
+            std::uint32_t commandsTested = 0; ///< Number of commands tested against frustum bounds
+            std::uint32_t commandsCulled = 0; ///< Number of commands rejected by frustum culling
+            std::uint32_t commandsDrawn = 0;  ///< Number of commands effectively drawn
+        };
+
         /**
          * \brief Submits one draw command to the pass queue.
          * \param cmd Draw command to enqueue for the next execute().
@@ -135,6 +146,11 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] virtual int outputHeight() const noexcept override { return m_height; }
 
+        /**
+         * \brief Returns culling counters from the most recent execute() call.
+         */
+        [[nodiscard]] const CullingStats& cullingStats() const noexcept { return m_cullingStats; }
+
     private:
         explicit GeometryPass(std::string name = "GeometryPass")
             : RenderPass{ std::move(name) }
@@ -154,6 +170,7 @@ namespace nfx::graphics::gl
         int m_patchVertices = 3;
         int m_width = 0;
         int m_height = 0;
+        CullingStats m_cullingStats;
 
         struct ClearColor
         {

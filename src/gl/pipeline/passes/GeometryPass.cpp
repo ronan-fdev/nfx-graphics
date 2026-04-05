@@ -4,8 +4,11 @@
 #include "nfx/graphics/gl/core/GlDefinitions.h"
 #include "nfx/graphics/gl/material/Material.h"
 #include "nfx/graphics/gl/mesh/Mesh.h"
+#include "nfx/graphics/gl/pipeline/frame/FrameData.h"
 #include "nfx/graphics/gl/pipeline/RenderMode.h"
+#include "nfx/graphics/math/geometry/Frustum.h"
 #include "nfx/graphics/math/Mat3.h"
+#include "detail/CullingUtils.h"
 
 #include <cassert>
 #include <cstdio>

@@ -22,7 +22,7 @@ target_compile_definitions(nfx-math-tests
 target_link_libraries(nfx-math-tests
     PRIVATE
         doctest::doctest_with_main
-        nfx::graphics::math
+        nfx::graphics
         nfx-graphics-warnings
 )
 

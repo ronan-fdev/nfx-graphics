@@ -9,6 +9,15 @@ namespace nfx::graphics::gl
 {
     static constexpr float k_pi = std::numbers::pi_v<float>;
 
+    // Unit cube: half-diagonal = sqrt(3) / 2
+    static constexpr float k_cubeSphereRadius = 0.8660254f;
+    // Unit sphere: circumscribed
+    static constexpr float k_unitSphereRadius = 1.0f;
+    // Unit XZ plane (1x1): half-diagonal in XZ = sqrt(2) / 2
+    static constexpr float k_planeSphereRadius = 0.7071068f;
+    // NDC quad (-1..1 in XY): half-diagonal = sqrt(2)
+    static constexpr float k_quadSphereRadius = 1.4142136f;
+
     MeshData Primitive::cube()
     {
         // clang-format off
@@ -70,6 +79,8 @@ namespace nfx::graphics::gl
         };
         data.setVertexData(vertices.data(), vertices.size() * sizeof(float), data.layout);
         data.setIndexData(indices.data(), indices.size(), MeshData::IndexType::UInt32);
+        data.boundsAABB = math::Bounds::AABB{ { -0.5f, -0.5f, -0.5f }, { 0.5f, 0.5f, 0.5f } };
+        data.boundsSphere = math::Bounds::Sphere{ { 0.0f, 0.0f, 0.0f }, k_cubeSphereRadius };
 
         return data;
     }
@@ -151,6 +162,8 @@ namespace nfx::graphics::gl
         };
         data.setVertexData(vertices.data(), vertices.size() * sizeof(float), data.layout);
         data.setIndexData(indices.data(), indices.size(), MeshData::IndexType::UInt32);
+        data.boundsAABB = math::Bounds::AABB{ { -1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f } };
+        data.boundsSphere = math::Bounds::Sphere{ { 0.0f, 0.0f, 0.0f }, k_unitSphereRadius };
 
         return data;
     }
@@ -225,6 +238,8 @@ namespace nfx::graphics::gl
         };
         data.setVertexData(vertices.data(), vertices.size() * sizeof(float), data.layout);
         data.setIndexData(indices.data(), indices.size(), MeshData::IndexType::UInt32);
+        data.boundsAABB = math::Bounds::AABB{ { -0.5f, 0.0f, -0.5f }, { 0.5f, 0.0f, 0.5f } };
+        data.boundsSphere = math::Bounds::Sphere{ { 0.0f, 0.0f, 0.0f }, k_planeSphereRadius };
 
         return data;
     }
@@ -251,6 +266,9 @@ namespace nfx::graphics::gl
         };
         data.setVertexData(k_vertices, sizeof(k_vertices), data.layout);
         data.setIndexData(k_indices, sizeof(k_indices) / sizeof(unsigned int), MeshData::IndexType::UInt32);
+        data.boundsAABB = math::Bounds::AABB{ { -1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 0.0f } };
+        data.boundsSphere = math::Bounds::Sphere{ { 0.0f, 0.0f, 0.0f }, k_quadSphereRadius };
+
         return data;
     }
 } // namespace nfx::graphics::gl

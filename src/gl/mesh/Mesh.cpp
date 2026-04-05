@@ -17,6 +17,8 @@ namespace nfx::graphics::gl
         desc.indexCount = data.indexCount;
         desc.indexType = data.indexType;
         desc.usage = usage;
+        desc.boundsAABB = data.boundsAABB;
+        desc.boundsSphere = data.boundsSphere;
         return create(desc);
     }
 
@@ -71,6 +73,9 @@ namespace nfx::graphics::gl
         }
         mesh.m_vao->setVertexLayout(desc.layout);
         mesh.m_vao->unbind();
+
+        mesh.m_boundsAABB = desc.boundsAABB;
+        mesh.m_boundsSphere = desc.boundsSphere;
 
         return mesh;
     }

@@ -13,6 +13,8 @@
 
 namespace nfx::graphics::gl
 {
+    struct FrameData;
+
     /**
      * \brief Abstract base class representing one stage of the renderer pipeline.
      */
@@ -103,9 +105,15 @@ namespace nfx::graphics::gl
          */
         virtual void end() = 0;
 
+        /**
+         * \brief Returns the frame data currently bound to the pass, when available.
+         */
+        [[nodiscard]] const FrameData* currentFrameData() const noexcept { return m_frameData; }
+
     private:
         std::string m_name;
         bool m_enabled = true;
         bool m_initialized = false;
+        const FrameData* m_frameData = nullptr;
     };
 } // namespace nfx::graphics::gl

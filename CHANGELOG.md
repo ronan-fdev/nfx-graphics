@@ -135,7 +135,8 @@
 - `gl/mesh/tests_Mesh`: validates invalid-instance-data no-op behavior on default meshes
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
 - `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
-- 
+
+- `gl/pipeline/tests_CullingUtils`: validates frustum culling decisions and world-space bound transforms (`AABB` first, `Sphere` fallback)
 - `gl/pipeline/tests_ForwardRenderPathWiring`: validates automatic target texture wiring between passes (geometry output routed to overlays/transparent/outline)
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior

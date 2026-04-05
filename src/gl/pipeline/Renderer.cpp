@@ -168,6 +168,7 @@ namespace nfx::graphics::gl
                 gl.glPushDebugGroup(DEBUG_SOURCE_APPLICATION, 0, -1, passPtr->name().c_str());
             }
 
+            passPtr->m_frameData = m_frameData ? &*m_frameData : nullptr;
             passPtr->begin();
             passPtr->execute(*m_resources);
             passPtr->end();
