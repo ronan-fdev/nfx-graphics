@@ -3,6 +3,7 @@
 #==============================================================================
 
 add_executable(nfx-math-tests
+    geometry/tests_Frustum.cpp
     geometry/tests_Intersections.cpp
     geometry/tests_ScreenToWorldRay.cpp
     tests_Mat3.cpp

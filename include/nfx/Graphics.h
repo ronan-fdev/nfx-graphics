@@ -67,6 +67,7 @@
 
 // Math
 #include "nfx/graphics/math/geometry/Bounds.h"
+#include "nfx/graphics/math/geometry/Frustum.h"
 #include "nfx/graphics/math/geometry/Ray.h"
 #include "nfx/graphics/math/Mat3.h"
 #include "nfx/graphics/math/Mat4.h"

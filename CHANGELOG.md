@@ -112,6 +112,7 @@
 
 - `Bounds`: AABB and Sphere bounding volume types
 - `Ray`: ray type with AABB/sphere/triangle intersection helpers and screen-to-world unprojection
+- `Frustum`: view frustum extracted from a view-projection matrix with point/sphere/AABB intersection tests
 
 #### Embedded resources & build tooling
 
@@ -147,6 +148,7 @@
 
 - `gl/material/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
 
+- `math/geometry/tests_Frustum`: plane normalization, point/sphere/AABB containment and intersection checks against a perspective frustum
 - `math/geometry/tests_Intersections`: ray/AABB, ray/sphere and ray/triangle intersection checks
 - `math/geometry/tests_ScreenToWorldRay`: semantic and picking coverage for `screenToWorldRay` (center/corner direction, normalized direction, camera origin, viewport-local invariant, hit/miss, closest-object selection)
 - `math/tests_Mat3`: validates mat3 identity/scale/rotation helpers and inverse-transpose normal-matrix behavior

@@ -3,6 +3,7 @@
 #==============================================================================
 
 add_library(nfx-graphics-math STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/math/geometry/Frustum.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/math/geometry/Ray.cpp
 )
 
