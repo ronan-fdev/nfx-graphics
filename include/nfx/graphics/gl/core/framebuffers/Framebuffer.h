@@ -109,6 +109,15 @@ namespace nfx::graphics::gl
         void attachDepthCubemap(GLuint cubeTexId);
 
         /**
+         * \brief Attaches one face of a cube map texture to the first color attachment at a given mip level.
+         * \param cubeTexId OpenGL cube map texture object id.
+         * \param face Face index in [0,5] mapped to +X, -X, +Y, -Y, +Z, -Z.
+         * \param mipLevel Mip level to attach. Use 0 for the base level.
+         * \pre This framebuffer must be currently bound with bind().
+         */
+        void attachColorCubeFace(GLuint cubeTexId, int face, int mipLevel = 0);
+
+        /**
          * \brief Attaches a Texture2D wrapper to a color attachment slot.
          * \param texture Texture wrapper owning the OpenGL texture object.
          * \param attachmentIndex Zero-based color attachment index.
@@ -167,6 +176,15 @@ namespace nfx::graphics::gl
          * \pre This framebuffer must be currently bound with bind().
          */
         void attachDepthCubemap(const TextureCube& texture);
+
+        /**
+         * \brief Attaches one face of a TextureCube wrapper to the first color attachment at a given mip level.
+         * \param texture Cube map texture wrapper owning the OpenGL texture object.
+         * \param face Face to attach.
+         * \param mipLevel Mip level to attach. Use 0 for the base level.
+         * \pre This framebuffer must be currently bound with bind().
+         */
+        void attachColorCubeFace(const TextureCube& texture, TextureCube::Face face, int mipLevel = 0);
 
         /**
          * \brief Returns whether the framebuffer is complete for rendering.

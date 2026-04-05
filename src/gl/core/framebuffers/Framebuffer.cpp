@@ -143,9 +143,29 @@ namespace nfx::graphics::gl
         attachDepthCubeFace(texture.id(), static_cast<int>(face));
     }
 
+    void Framebuffer::attachColorCubeFace(GLuint cubeTexId, int face, int mipLevel)
+    {
+        if (face < 0 || face >= 6)
+        {
+            assert(face >= 0 && face < 6 && "Framebuffer::attachColorCubeFace(): face must be in [0, 5]");
+            return;
+        }
+        Context::current().functions().glFramebufferTexture2D(
+            FRAMEBUFFER,
+            COLOR_ATTACHMENT0,
+            static_cast<GLenum>(TEXTURE_CUBE_MAP_POSITIVE_X + face),
+            cubeTexId,
+            mipLevel);
+    }
+
     void Framebuffer::attachDepthCubemap(const TextureCube& texture)
     {
         attachDepthCubemap(texture.id());
+    }
+
+    void Framebuffer::attachColorCubeFace(const TextureCube& texture, TextureCube::Face face, int mipLevel)
+    {
+        attachColorCubeFace(texture.id(), static_cast<int>(face), mipLevel);
     }
 
     bool Framebuffer::isComplete() const

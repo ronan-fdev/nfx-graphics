@@ -40,4 +40,13 @@ TEST_SUITE("TextureCube")
         const TextureCube cube = TextureCube::fromMemory(faces, params);
         CHECK_FALSE(cube.isValid());
     }
+
+    TEST_CASE("TextureCube::allocate rejects non-positive mipLevels")
+    {
+        TextureCube::Params params;
+        params.mipLevels = 0;
+
+        const TextureCube cube = TextureCube::allocate(4, params);
+        CHECK_FALSE(cube.isValid());
+    }
 }

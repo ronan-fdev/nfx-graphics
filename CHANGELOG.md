@@ -38,6 +38,10 @@
 - `Unlit`: material descriptor for constant-color rendering with alpha support
 - `Pbr`: metallic-roughness material descriptor with base color, normal, occlusion, shadow, and environment-map support
 
+- `BrdfLutGenerator`: GPU-side BRDF integration LUT generator for PBR split-sum IBL.
+- `IrradianceMapGenerator`: GPU-side diffuse irradiance cubemap generator for IBL
+- `PrefilteredEnvGenerator`: GPU-side specular prefiltered environment cubemap generator for split-sum IBL
+
 ##### Meshes
 
 - `Mesh`: runtime wrapper for vertex/index GPU buffers, VAO setup, and optional instance attribute streams

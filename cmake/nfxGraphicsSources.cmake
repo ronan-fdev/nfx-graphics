@@ -3,6 +3,9 @@
 #==============================================================================
 
 set(NFX_GRAPHICS_SOURCES
+    src/gl/material/ibl/BrdfLutGenerator.cpp
+    src/gl/material/ibl/IrradianceMapGenerator.cpp
+    src/gl/material/ibl/PrefilteredEnvGenerator.cpp
     src/gl/material/BlinnPhong.cpp
     src/gl/material/Pbr.cpp
     src/gl/material/Unlit.cpp

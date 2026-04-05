@@ -22,8 +22,10 @@ namespace nfx::graphics::gl
          */
         enum class Filter : unsigned int
         {
-            Nearest = NEAREST,
-            Linear  = LINEAR
+            Nearest            = NEAREST,
+            Linear             = LINEAR,
+            LinearMipmapLinear = LINEAR_MIPMAP_LINEAR
+
         };
 
         /**
@@ -56,6 +58,7 @@ namespace nfx::graphics::gl
         struct Params
         {
             bool generateMipmaps          = false;
+            int mipLevels                 = 1;
             Filter minFilter              = Filter::Linear;
             Filter magFilter              = Filter::Linear;
             Wrap wrapS                    = Wrap::ClampToEdge;

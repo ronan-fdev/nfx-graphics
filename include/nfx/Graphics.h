@@ -11,6 +11,9 @@
 #include "Gl.h"
 
 // Material
+#include "nfx/graphics/gl/material/ibl/BrdfLutGenerator.h"
+#include "nfx/graphics/gl/material/ibl/IrradianceMapGenerator.h"
+#include "nfx/graphics/gl/material/ibl/PrefilteredEnvGenerator.h"
 #include "nfx/graphics/gl/material/BlinnPhong.h"
 #include "nfx/graphics/gl/material/Material.h"
 #include "nfx/graphics/gl/material/MaterialBlock.h"
