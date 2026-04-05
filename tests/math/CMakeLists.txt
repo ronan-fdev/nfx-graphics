@@ -3,6 +3,8 @@
 #==============================================================================
 
 add_executable(nfx-math-tests
+    geometry/tests_Intersections.cpp
+    geometry/tests_ScreenToWorldRay.cpp
     tests_Mat3.cpp
     tests_Mat4.cpp
     tests_Quat.cpp

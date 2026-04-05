@@ -173,4 +173,43 @@ TEST_SUITE("Mat4")
         CHECK(result[13] == doctest::Approx(6.0f));
         CHECK(result[14] == doctest::Approx(12.0f));
     }
+    TEST_CASE("mat4Inverse inverts an affine transform")
+    {
+        Mat4 scale, trans, m, inv, id;
+        mat4Scale(scale, 2.0f, 3.0f, 4.0f);
+        mat4Translate(trans, 5.0f, -2.0f, 1.0f);
+        mat4Mul(m, trans, scale);
+
+        CHECK(mat4Inverse(inv, m));
+        mat4Mul(id, m, inv);
+
+        checkIdentity(id.data());
+    }
+
+    TEST_CASE("mat4Inverse returns false on singular matrix")
+    {
+        Mat4 m, inv;
+        mat4Scale(m, 1.0f, 0.0f, 1.0f); // singular: one zero scale axis
+        CHECK(!mat4Inverse(inv, m));
+    }
+
+    TEST_CASE("mat4MulVec4 raw and Mat4 overloads are equivalent")
+    {
+        Mat4 m;
+        mat4Translate(m, 2.0f, 3.0f, 4.0f);
+
+        const float v[4] = { 1.0f, 2.0f, 3.0f, 1.0f };
+        const auto raw = mat4MulVec4(m.data(), v);
+        const auto typed = mat4MulVec4(m, v);
+
+        for (int i = 0; i < 4; ++i)
+        {
+            CHECK(raw[i] == doctest::Approx(typed[i]).epsilon(EPSILON));
+        }
+
+        CHECK(typed[0] == doctest::Approx(3.0f));
+        CHECK(typed[1] == doctest::Approx(5.0f));
+        CHECK(typed[2] == doctest::Approx(7.0f));
+        CHECK(typed[3] == doctest::Approx(1.0f));
+    }
 }

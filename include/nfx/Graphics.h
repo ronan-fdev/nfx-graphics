@@ -66,6 +66,8 @@
 #include "nfx/graphics/gl/scene/lights/SpotLight.h"
 
 // Math
+#include "nfx/graphics/math/geometry/Bounds.h"
+#include "nfx/graphics/math/geometry/Ray.h"
 #include "nfx/graphics/math/Mat3.h"
 #include "nfx/graphics/math/Mat4.h"
 #include "nfx/graphics/math/Quat.h"

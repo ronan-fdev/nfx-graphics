@@ -103,12 +103,15 @@
 
 #### Math library
 
-- `nfx::graphics::math` interface target: lightweight Vec3 and Mat4 helpers
+- `nfx::graphics::math` static library: Vec3, Mat4, and geometry helpers
 
 - `Mat3`: helpers for 3x3 identity/scale/rotation and inverse-transpose normal matrix computation
 - `Mat4`: helpers for 4x4 matrix transforms, projection, view, and multiplication
 - `Quat`: quaternion type with angle-axis construction, multiplication, normalization, and vector rotation
 - `Vec3`: helpers for length, dot/cross products, normalization, and subtraction
+
+- `Bounds`: AABB and Sphere bounding volume types
+- `Ray`: ray type with AABB/sphere/triangle intersection helpers and screen-to-world unprojection
 
 #### Embedded resources & build tooling
 
@@ -144,6 +147,8 @@
 
 - `gl/material/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
 
+- `math/geometry/tests_Intersections`: ray/AABB, ray/sphere and ray/triangle intersection checks
+- `math/geometry/tests_ScreenToWorldRay`: semantic and picking coverage for `screenToWorldRay` (center/corner direction, normalized direction, camera origin, viewport-local invariant, hit/miss, closest-object selection)
 - `math/tests_Mat3`: validates mat3 identity/scale/rotation helpers and inverse-transpose normal-matrix behavior
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior
 - `math/tests_Quat`: quaternion construction/normalization/composition/vector-rotation checks

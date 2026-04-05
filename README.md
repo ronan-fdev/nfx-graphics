@@ -64,7 +64,7 @@ nfx-graphics/
 │       │   └── scene/
 │       │       ├── cameras/              # Camera types and orbit camera
 │       │       └── lights/               # Camera Light descriptors
-│       ├── math/                         # Matrices, vectors, quaternions
+│       ├── math/                         # Matrices, vectors, quaternions, geometry
 │       └── EmbeddedResource.h            # Runtime access to resources embedded at build time
 ├── resources/                            # Pipeline GLSL sources
 ├── samples/                              # Sample applications and shared sample framework

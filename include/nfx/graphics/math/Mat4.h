@@ -454,4 +454,91 @@ namespace nfx::graphics::math
     {
         mat4Mul(out.data(), a.data(), b.data());
     }
+
+    /**
+     * \brief Inverts a column-major 4x4 matrix.
+     * \param out Output inverse matrix.
+     * \param m Input matrix.
+     * \return False when the matrix is singular, true otherwise.
+     */
+    inline bool mat4Inverse(float out[16], const float m[16])
+    {
+        // clang-format off
+        float inv[16];
+        inv[ 0] =  m[5]*m[10]*m[15] - m[5]*m[11]*m[14] - m[9]*m[6]*m[15] + m[9]*m[7]*m[14] + m[13]*m[6]*m[11] - m[13]*m[7]*m[10];
+        inv[ 4] = -m[4]*m[10]*m[15] + m[4]*m[11]*m[14] + m[8]*m[6]*m[15] - m[8]*m[7]*m[14] - m[12]*m[6]*m[11] + m[12]*m[7]*m[10];
+        inv[ 8] =  m[4]*m[9] *m[15] - m[4]*m[11]*m[13] - m[8]*m[5]*m[15] + m[8]*m[7]*m[13] + m[12]*m[5]*m[11] - m[12]*m[7]*m[9];
+        inv[12] = -m[4]*m[9] *m[14] + m[4]*m[10]*m[13] + m[8]*m[5]*m[14] - m[8]*m[6]*m[13] - m[12]*m[5]*m[10] + m[12]*m[6]*m[9];
+
+        inv[ 1] = -m[1]*m[10]*m[15] + m[1]*m[11]*m[14] + m[9]*m[2]*m[15] - m[9]*m[3]*m[14] - m[13]*m[2]*m[11] + m[13]*m[3]*m[10];
+        inv[ 5] =  m[0]*m[10]*m[15] - m[0]*m[11]*m[14] - m[8]*m[2]*m[15] + m[8]*m[3]*m[14] + m[12]*m[2]*m[11] - m[12]*m[3]*m[10];
+        inv[ 9] = -m[0]*m[9] *m[15] + m[0]*m[11]*m[13] + m[8]*m[1]*m[15] - m[8]*m[3]*m[13] - m[12]*m[1]*m[11] + m[12]*m[3]*m[9];
+        inv[13] =  m[0]*m[9] *m[14] - m[0]*m[10]*m[13] - m[8]*m[1]*m[14] + m[8]*m[2]*m[13] + m[12]*m[1]*m[10] - m[12]*m[2]*m[9];
+
+        inv[ 2] =  m[1]*m[6] *m[15] - m[1]*m[7] *m[14] - m[5]*m[2]*m[15] + m[5]*m[3]*m[14] + m[13]*m[2]*m[7]  - m[13]*m[3]*m[6];
+        inv[ 6] = -m[0]*m[6] *m[15] + m[0]*m[7] *m[14] + m[4]*m[2]*m[15] - m[4]*m[3]*m[14] - m[12]*m[2]*m[7]  + m[12]*m[3]*m[6];
+        inv[10] =  m[0]*m[5] *m[15] - m[0]*m[7] *m[13] - m[4]*m[1]*m[15] + m[4]*m[3]*m[13] + m[12]*m[1]*m[7]  - m[12]*m[3]*m[5];
+        inv[14] = -m[0]*m[5] *m[14] + m[0]*m[6] *m[13] + m[4]*m[1]*m[14] - m[4]*m[2]*m[13] - m[12]*m[1]*m[6]  + m[12]*m[2]*m[5];
+
+        inv[ 3] = -m[1]*m[6] *m[11] + m[1]*m[7] *m[10] + m[5]*m[2]*m[11] - m[5]*m[3]*m[10] - m[9]*m[2]*m[7]   + m[9]*m[3]*m[6];
+        inv[ 7] =  m[0]*m[6] *m[11] - m[0]*m[7] *m[10] - m[4]*m[2]*m[11] + m[4]*m[3]*m[10] + m[8]*m[2]*m[7]   - m[8]*m[3]*m[6];
+        inv[11] = -m[0]*m[5] *m[11] + m[0]*m[7] *m[9]  + m[4]*m[1]*m[11] - m[4]*m[3]*m[9]  - m[8]*m[1]*m[7]   + m[8]*m[3]*m[5];
+        inv[15] =  m[0]*m[5] *m[10] - m[0]*m[6] *m[9]  - m[4]*m[1]*m[10] + m[4]*m[2]*m[9]  + m[8]*m[1]*m[6]   - m[8]*m[2]*m[5];
+        // clang-format on
+
+        const float det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+        if (det == 0.f)
+        {
+            return false;
+        }
+
+        const float invDet = 1.f / det;
+        for (int i = 0; i < 16; ++i)
+        {
+            out[i] = inv[i] * invDet;
+        }
+
+        return true;
+    }
+
+    /**
+     * \brief Inverts a Mat4 matrix.
+     * \param out Output inverse matrix.
+     * \param m Input matrix.
+     * \return False when the matrix is singular, true otherwise.
+     */
+    inline bool mat4Inverse(Mat4& out, const Mat4& m)
+    {
+        return mat4Inverse(out.data(), m.data());
+    }
+
+    /**
+     * \brief Multiplies a column-major 4x4 matrix by a vec4.
+     * \param m Input matrix.
+     * \param v Input homogeneous vector.
+     * \return The transformed homogeneous vector.
+     */
+    inline std::array<float, 4> mat4MulVec4(const float m[16], const float v[4])
+    {
+        // clang-format off
+        return {
+            m[0] * v[0] + m[4] * v[1] + m[8]  * v[2] + m[12] * v[3],
+            m[1] * v[0] + m[5] * v[1] + m[9]  * v[2] + m[13] * v[3],
+            m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14] * v[3],
+            m[3] * v[0] + m[7] * v[1] + m[11] * v[2] + m[15] * v[3],
+        };
+        // clang-format on
+    }
+
+    /**
+     * \brief Multiplies a Mat4 by a vec4.
+     * \param m Input matrix.
+     * \param v Input homogeneous vector.
+     * \return The transformed homogeneous vector.
+     */
+    inline std::array<float, 4> mat4MulVec4(const Mat4& m, const float v[4])
+    {
+        return mat4MulVec4(m.data(), v);
+    }
+
 } // namespace nfx::graphics::math
