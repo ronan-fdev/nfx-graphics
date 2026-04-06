@@ -199,6 +199,8 @@
 - `forward-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
 - `forward-rendering-pbr-minimal`: minimal ForwardRenderPath sample with two PBR materials using packed ARM maps (`R=ao`, `G=roughness`, `B=metallic`)
 
+- `forward-rendering-pbr-ibl-showcase`: visual comparison sample of fallback env reflection vs split-sum IBL across four PBR materials
+
 ### Changed
 
 - NIL

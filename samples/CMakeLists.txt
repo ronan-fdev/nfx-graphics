@@ -174,6 +174,24 @@ nfx_graphics_download_assets(
         rusty_metal_grid_arm_1k.jpg
 )
 
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/blue_metal_plate_1k"
+    BASE_URL "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/blue_metal_plate"
+    FILES
+        blue_metal_plate_diff_1k.jpg
+        blue_metal_plate_nor_gl_1k.jpg
+        blue_metal_plate_arm_1k.jpg
+)
+
+nfx_graphics_download_assets(
+    DIR      "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures/concrete_slab_wall_02_1k"
+    BASE_URL "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_slab_wall_02"
+    FILES
+        concrete_slab_wall_02_diff_1k.jpg
+        concrete_slab_wall_02_nor_gl_1k.jpg
+        concrete_slab_wall_02_arm_1k.jpg
+)
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures
