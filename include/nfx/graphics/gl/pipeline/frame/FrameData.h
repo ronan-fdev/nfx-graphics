@@ -46,5 +46,14 @@ namespace nfx::graphics::gl
         bool hasEnvMap = false;
         SamplerHandle envSampler = {};
         bool hasEnvSampler = false;
+
+        TextureCubeHandle irradianceMap = {};
+        bool hasIrradianceMap = false;
+
+        TextureCubeHandle prefilteredEnvMap = {};
+        bool hasPrefilteredEnvMap = false;
+
+        Texture2DHandle brdfLut = {};
+        bool hasBrdfLut = false;
     };
 } // namespace nfx::graphics::gl

@@ -21,6 +21,7 @@ namespace nfx::graphics::gl
         static constexpr GLuint DirectionalLightBlock = 2;  ///< DirectionalLight UBO
         static constexpr GLuint ShadowMatricesBlock   = 3;  ///< ShadowMatrices UBO
         static constexpr GLuint ShadowDepthBlock      = 4;  ///< ShadowDepth UBO
+        static constexpr GLuint IblFrameBlock         = 5;  ///< IBL frame-global flags
 
         // Per-material
         static constexpr GLuint MaterialBlock         = 16; ///< MaterialBlockData (base color, specular, shininess, emissive/env)
@@ -53,12 +54,15 @@ namespace nfx::graphics::gl
         static constexpr GLuint SpotShadowMapBase     = 8;  ///< Units 8-11 (up to MaxSpotShadows)
         static constexpr GLuint DirectionalShadowMap  = 12; ///< Directional shadow map
         static constexpr GLuint EnvMap                = 13; ///< Environment cube map for reflection/refraction
+        static constexpr GLuint IrradianceMap         = 14; ///< Diffuse irradiance cubemap for IBL
+        static constexpr GLuint PrefilteredEnvMap     = 15; ///< Prefiltered specular cubemap for IBL
 
         // Built-in material maps
         static constexpr GLuint MaterialSlot0         = 16; ///< Blinn-Phong: uDiffuseMap  / PBR: uBaseColorMap
         static constexpr GLuint MaterialSlot1         = 17; ///< All:         uNormalMap
         static constexpr GLuint MaterialSlot2         = 18; ///< Blinn-Phong: uSpecularMap / PBR: uMetallicRoughnessMap
         static constexpr GLuint MaterialSlot3         = 19; ///< PBR: uOcclusionMap / uArmMap
+        static constexpr GLuint BrdfLut               = 20; ///< 2D BRDF integration LUT for split-sum IBL
 
         // Blinn-Phong aliases
         static constexpr GLuint DiffuseMap            = MaterialSlot0;

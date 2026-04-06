@@ -6,6 +6,7 @@
  */
 
 #include "nfx/graphics/gl/core/buffers/ShaderStorageBuffer.h"
+#include "nfx/graphics/gl/material/ibl/IblFrameBlock.h"
 #include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
@@ -148,6 +149,7 @@ namespace nfx::graphics::gl
         std::optional<UniformBuffer<AmbientLight::GpuData>> m_ambientUbo;
         std::optional<UniformBuffer<DirectionalLight::GpuData>> m_directionalUbo;
         std::optional<UniformBuffer<ShadowMatricesBlockData>> m_shadowMatricesUbo;
+        std::optional<UniformBuffer<IblFrameBlockData>> m_iblFrameUbo;
         std::optional<ShaderStorageBuffer<PunctualLight::GpuBlock>> m_punctualLightsSsbo;
 
         // Validation

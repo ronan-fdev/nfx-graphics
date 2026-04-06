@@ -160,7 +160,7 @@ namespace nfx::graphics::gl
         block.specColor_shine[0] = clampedMetallic;
         block.specColor_shine[1] = clampedRoughness;
         block.specColor_shine[2] = clampedAo;
-        block.specColor_shine[3] = 0.f;
+        block.specColor_shine[3] = useIblSplitSum ? 1.f : 0.f;
         block.emissive_env[0] = emissive[0];
         block.emissive_env[1] = emissive[1];
         block.emissive_env[2] = emissive[2];

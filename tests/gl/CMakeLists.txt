@@ -13,6 +13,7 @@ add_executable(nfx-graphics-gl-tests
 
     material/tests_Material.cpp
 
+    pipeline/tests_Bindings.cpp
     pipeline/tests_CullingUtils.cpp
     pipeline/tests_ForwardRenderPathWiring.cpp
     pipeline/tests_Renderer.cpp

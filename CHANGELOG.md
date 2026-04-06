@@ -33,6 +33,7 @@
 
 - `Material`: high-level material combining shader, render state and named uniform/texture bindings
 - `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess, emissive+envIntensity)
+- `IblFrameBlock`: std140 frame-global IBL state block used to bind split-sum resources
 
 - `BlinnPhong`: material descriptor with diffuse/specular/normal map support, alpha transparency and shadow permutation
 - `Unlit`: material descriptor for constant-color rendering with alpha support
@@ -140,6 +141,7 @@
 - `gl/mesh/tests_MeshData`: index data size calculation, vertex count derivation, and type alignment checks
 - `gl/mesh/tests_Primitive`: primitive mesh layout/count/index-range checks
 
+- `gl/pipeline/tests_Bindings`: validates UBO and texture binding slot uniqueness, alias mapping, and range separation
 - `gl/pipeline/tests_CullingUtils`: validates frustum culling decisions and world-space bound transforms (`AABB` first, `Sphere` fallback)
 - `gl/pipeline/tests_ForwardRenderPathWiring`: validates automatic target texture wiring between passes (geometry output routed to overlays/transparent/outline)
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior

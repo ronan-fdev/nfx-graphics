@@ -31,8 +31,9 @@ namespace nfx::graphics::gl
 
         bool hasShadow = false; ///< Activates HAS_SHADOW permutation - shadow map is bound by FrameData
 
-        bool hasEnvMap = false;   ///< Activates HAS_ENV_MAP permutation - environment map is bound by FrameData
-        float envIntensity = 1.f; ///< Reflection strength multiplier used when HAS_ENV_MAP is enabled
+        bool hasEnvMap = false;     ///< Activates HAS_ENV_MAP permutation - environment map is bound by FrameData
+        bool useIblSplitSum = true; ///< Uses split-sum IBL when frame-global IBL resources are available
+        float envIntensity = 1.f;   ///< Reflection strength multiplier used when HAS_ENV_MAP is enabled
 
         /**
          * \brief Builds or retrieves a runtime Material from the descriptor.

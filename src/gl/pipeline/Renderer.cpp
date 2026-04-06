@@ -207,6 +207,10 @@ namespace nfx::graphics::gl
         {
             m_shadowMatricesUbo.emplace();
         }
+        if (!m_iblFrameUbo)
+        {
+            m_iblFrameUbo.emplace();
+        }
         if (!m_punctualLightsSsbo)
         {
             m_punctualLightsSsbo.emplace();
@@ -223,6 +227,14 @@ namespace nfx::graphics::gl
 
         m_directionalUbo->upload(frame.directionalLight);
         m_directionalUbo->bind(UboBindings::DirectionalLightBlock);
+
+        IblFrameBlockData iblFrame;
+        iblFrame.flags[0] = frame.hasEnvMap ? 1 : 0;
+        iblFrame.flags[1] = frame.hasIrradianceMap ? 1 : 0;
+        iblFrame.flags[2] = frame.hasPrefilteredEnvMap ? 1 : 0;
+        iblFrame.flags[3] = frame.hasBrdfLut ? 1 : 0;
+        m_iblFrameUbo->upload(iblFrame);
+        m_iblFrameUbo->bind(UboBindings::IblFrameBlock);
 
         // Shadow matrices block built from FrameData so all fields are correct
         // When hasDirShadow=false, use a sentinel that makes proj.z = 2.0 > 1.0 for any
@@ -345,6 +357,73 @@ namespace nfx::graphics::gl
                 Sampler::unbind(envUnit);
             }
         }
+
+        if (frame.hasIrradianceMap)
+        {
+            if (const TextureCube* tex = m_resources->texturesCube.get(frame.irradianceMap))
+            {
+                tex->bind(TextureBindings::IrradianceMap);
+            }
+            else
+            {
+                TextureCube::unbind(TextureBindings::IrradianceMap);
+            }
+        }
+        else
+        {
+            TextureCube::unbind(TextureBindings::IrradianceMap);
+        }
+
+        if (frame.hasPrefilteredEnvMap)
+        {
+            if (const TextureCube* tex = m_resources->texturesCube.get(frame.prefilteredEnvMap))
+            {
+                tex->bind(TextureBindings::PrefilteredEnvMap);
+            }
+            else
+            {
+                TextureCube::unbind(TextureBindings::PrefilteredEnvMap);
+            }
+        }
+        else
+        {
+            TextureCube::unbind(TextureBindings::PrefilteredEnvMap);
+        }
+
+        if (frame.hasEnvSampler)
+        {
+            if (const Sampler* sampler = m_resources->samplers.get(frame.envSampler))
+            {
+                sampler->bind(TextureBindings::IrradianceMap);
+                sampler->bind(TextureBindings::PrefilteredEnvMap);
+            }
+            else
+            {
+                Sampler::unbind(TextureBindings::IrradianceMap);
+                Sampler::unbind(TextureBindings::PrefilteredEnvMap);
+            }
+        }
+        else
+        {
+            Sampler::unbind(TextureBindings::IrradianceMap);
+            Sampler::unbind(TextureBindings::PrefilteredEnvMap);
+        }
+
+        if (frame.hasBrdfLut)
+        {
+            if (const Texture2D* tex = m_resources->textures2D.get(frame.brdfLut))
+            {
+                tex->bind(TextureBindings::BrdfLut);
+            }
+            else
+            {
+                Texture2D::unbind(TextureBindings::BrdfLut);
+            }
+        }
+        else
+        {
+            Texture2D::unbind(TextureBindings::BrdfLut);
+        }
     }
 
     void Renderer::validatePermutations()
@@ -385,18 +464,18 @@ namespace nfx::graphics::gl
         const int spotCount = std::clamp(frame.spotShadowCount, 0, static_cast<int>(PipelineLimits::MaxSpotShadows));
         const int pointCount = std::clamp(frame.pointShadowCount, 0, static_cast<int>(PipelineLimits::MaxPointShadows));
 
-        if (frame.hasEnvMap && frame.envMap.id == 0)
+        if (frame.hasEnvMap && !m_resources->texturesCube.get(frame.envMap))
         {
             fail(
-                "[Renderer] WARNING: hasEnvMap=true but envMap handle is invalid\n",
-                "[Renderer] ERROR: hasEnvMap=true but envMap handle is invalid\n");
+                "[Renderer] WARNING: hasEnvMap=true but envMap does not resolve to a cached cubemap\n",
+                "[Renderer] ERROR: hasEnvMap=true but envMap does not resolve to a cached cubemap\n");
         }
 
-        if (frame.hasEnvSampler && frame.envSampler.id == 0)
+        if (frame.hasEnvSampler && !m_resources->samplers.get(frame.envSampler))
         {
             fail(
-                "[Renderer] WARNING: hasEnvSampler=true but envSampler handle is invalid\n",
-                "[Renderer] ERROR: hasEnvSampler=true but envSampler handle is invalid\n");
+                "[Renderer] WARNING: hasEnvSampler=true but envSampler does not resolve to a cached sampler\n",
+                "[Renderer] ERROR: hasEnvSampler=true but envSampler does not resolve to a cached sampler\n");
         }
 
         if (frame.hasEnvSampler && !frame.hasEnvMap)
@@ -404,6 +483,40 @@ namespace nfx::graphics::gl
             fail(
                 "[Renderer] WARNING: hasEnvSampler=true while hasEnvMap=false\n",
                 "[Renderer] ERROR: hasEnvSampler=true while hasEnvMap=false\n");
+        }
+
+        if (frame.hasIrradianceMap && !m_resources->texturesCube.get(frame.irradianceMap))
+        {
+            fail(
+                "[Renderer] WARNING: hasIrradianceMap=true but irradianceMap does not resolve to a cached cubemap\n",
+                "[Renderer] ERROR: hasIrradianceMap=true but irradianceMap does not resolve to a cached cubemap\n");
+        }
+
+        if (frame.hasPrefilteredEnvMap && !m_resources->texturesCube.get(frame.prefilteredEnvMap))
+        {
+            fail(
+                "[Renderer] WARNING: hasPrefilteredEnvMap=true but prefilteredEnvMap does not resolve to a cached "
+                "cubemap\n",
+                "[Renderer] ERROR: hasPrefilteredEnvMap=true but prefilteredEnvMap does not resolve to a cached "
+                "cubemap\n");
+        }
+
+        if (frame.hasBrdfLut && !m_resources->textures2D.get(frame.brdfLut))
+        {
+            fail(
+                "[Renderer] WARNING: hasBrdfLut=true but brdfLut does not resolve to a cached 2D texture\n",
+                "[Renderer] ERROR: hasBrdfLut=true but brdfLut does not resolve to a cached 2D texture\n");
+        }
+
+        const bool hasAnySplitSumResource = frame.hasIrradianceMap || frame.hasPrefilteredEnvMap || frame.hasBrdfLut;
+        const bool hasCompleteSplitSum = frame.hasIrradianceMap && frame.hasPrefilteredEnvMap && frame.hasBrdfLut;
+        if (hasAnySplitSumResource && !hasCompleteSplitSum)
+        {
+            fail(
+                "[Renderer] WARNING: split-sum resources are incomplete (need hasIrradianceMap, "
+                "prefilteredEnvMap and brdfLut)\n",
+                "[Renderer] ERROR: split-sum resources are incomplete (need hasIrradianceMap, "
+                "prefilteredEnvMap and brdfLut)\n");
         }
 
         // Validate shadow data consistency:

@@ -75,6 +75,12 @@ layout(std140, binding = 3) uniform ShadowMatricesBlock
 }
 shadowMatrices;
 
+layout(std140, binding = 5) uniform IblFrameBlock
+{
+    ivec4 flags;
+}
+iblFrame;
+
 //==============================
 // Material scope (set=1)
 //==============================
@@ -85,6 +91,9 @@ layout(binding = 12) uniform sampler2D uShadowMap;
 
 #ifdef HAS_ENV_MAP
 layout(binding = 13) uniform samplerCube uEnvMap;
+layout(binding = 14) uniform samplerCube uIrradianceMap;
+layout(binding = 15) uniform samplerCube uPrefilteredEnvMap;
+layout(binding = 20) uniform sampler2D uBrdfLut;
 #endif
 
 layout(binding = 4) uniform samplerCube uPointShadowMaps[4];
@@ -113,7 +122,7 @@ layout(binding = 19) uniform sampler2D uOcclusionMap;
 layout(std140, binding = 16) uniform MaterialBlock
 {
     vec4 baseColor_alpha;
-    vec4 specColor_shine; // x=metallic, y=roughness, z=ao, w=unused
+    vec4 specColor_shine; // x=metallic, y=roughness, z=ao, w=useSplitSumIbl
     vec4 emissive_env;
 }
 material;
@@ -150,6 +159,11 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 float pcfSpot(sampler2D sm, vec2 uv, float depth, float bias)
@@ -353,7 +367,31 @@ void main()
     roughness = clamp(roughness, 0.045, 1.0);
     ao = clamp(ao, 0.0, 1.0);
 
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
     vec3 color = ambient.colorIntensity.rgb * ambient.colorIntensity.w * albedo * ao;
+
+#ifdef HAS_ENV_MAP
+    bool hasSplitSumIbl = (iblFrame.flags.y != 0) && (iblFrame.flags.z != 0) && (iblFrame.flags.w != 0) &&
+                          (material.specColor_shine.w > 0.5);
+    if (hasSplitSumIbl)
+    {
+        float NdotV = max(dot(N, V), 0.0);
+        vec3 F = fresnelSchlickRoughness(NdotV, F0, roughness);
+        vec3 kS = F;
+        vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
+
+        vec3 irradiance = texture(uIrradianceMap, N).rgb;
+        vec3 diffuseIbl = irradiance * albedo;
+
+        vec3 R = reflect(-V, N);
+        float maxLod = float(textureQueryLevels(uPrefilteredEnvMap) - 1);
+        vec3 prefilteredColor = textureLod(uPrefilteredEnvMap, R, roughness * maxLod).rgb;
+        vec2 brdf = texture(uBrdfLut, vec2(NdotV, roughness)).rg;
+        vec3 specularIbl = prefilteredColor * (F * brdf.x + brdf.y);
+
+        color = (kD * diffuseIbl + specularIbl) * ao;
+    }
+#endif
 
     vec3 dirL = normalize(-dirLight.direction.xyz);
     vec3 dirRadiance = dirLight.colorIntensity.rgb * dirLight.colorIntensity.w;
@@ -419,11 +457,13 @@ void main()
     }
 
 #ifdef HAS_ENV_MAP
-    vec3 R = reflect(-V, N);
-    vec3 env = texture(uEnvMap, R).rgb;
-    vec3 F0 = mix(vec3(0.04), albedo, metallic);
-    vec3 F = fresnelSchlick(max(dot(N, V), 0.0), F0);
-    color += env * F * material.emissive_env.w * ao;
+    if (!hasSplitSumIbl)
+    {
+        vec3 R = reflect(-V, N);
+        vec3 env = texture(uEnvMap, R).rgb;
+        vec3 F = fresnelSchlick(max(dot(N, V), 0.0), F0);
+        color += env * F * material.emissive_env.w * ao;
+    }
 #endif
 
     color += material.emissive_env.rgb;
