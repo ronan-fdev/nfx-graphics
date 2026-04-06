@@ -12,6 +12,7 @@
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/shadows/ShadowMatricesBlock.h"
+#include "ViewportRect.h"
 
 #include <memory>
 #include <optional>
@@ -122,6 +123,16 @@ namespace nfx::graphics::gl
         void resetFrameData() { m_frameData.reset(); }
 
         /**
+         * \brief Sets an optional active viewport applied to passes that consume viewport contracts.
+         */
+        void setViewport(const ViewportRect& viewport) { m_viewport = viewport; }
+
+        /**
+         * \brief Clears the active viewport override.
+         */
+        void resetViewport() { m_viewport.reset(); }
+
+        /**
          * \brief Sets permutation/frame-globals validation behavior.
          */
         void setValidationMode(ValidationMode mode) noexcept { m_validationMode = mode; }
@@ -143,6 +154,7 @@ namespace nfx::graphics::gl
         // Frame-globals state
         RenderResources* m_resources = nullptr;
         std::optional<FrameData> m_frameData;
+        std::optional<ViewportRect> m_viewport;
 
         // GPU buffers
         std::optional<UniformBuffer<Camera::GpuData>> m_cameraUbo;

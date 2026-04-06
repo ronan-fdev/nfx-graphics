@@ -2,6 +2,7 @@
 
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
+#include "nfx/graphics/gl/pipeline/ViewportRect.h"
 
 #include <embedded_shaders.h>
 
@@ -56,6 +57,11 @@ namespace nfx::graphics::gl
         rs.depthWrite = false;
         rs.blend = false;
         rs.apply();
+
+        if (const ViewportRect* viewport = currentViewport())
+        {
+            Context::current().functions().glViewport(viewport->x, viewport->y, viewport->width, viewport->height);
+        }
 
         inputTex->bind(0);
 

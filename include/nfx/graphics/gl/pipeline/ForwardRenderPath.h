@@ -22,6 +22,7 @@
 #include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/resources/TextureCubeCache.h"
 #include "Renderer.h"
+#include "ViewportRect.h"
 
 #include <cassert>
 #include <cstdio>
@@ -253,6 +254,16 @@ namespace nfx::graphics::gl
          * \param height Viewport height in pixels.
          */
         void render(const FrameData& frame, int width, int height);
+
+        /**
+         * \brief Executes all passes for one frame using an explicit surface extent and active viewport rectangle.
+         *
+         * \param frame Frame-scoped camera, light, and environment data.
+         * \param surfaceWidth Render-surface width in pixels used for target allocation.
+         * \param surfaceHeight Render-surface height in pixels used for target allocation.
+         * \param viewport Active viewport rectangle in pixel coordinates.
+         */
+        void render(const FrameData& frame, int surfaceWidth, int surfaceHeight, const ViewportRect& viewport);
 
         /**
          * \brief Returns the underlying renderer for advanced use.

@@ -169,6 +169,7 @@ namespace nfx::graphics::gl
             }
 
             passPtr->m_frameData = m_frameData ? &*m_frameData : nullptr;
+            passPtr->m_viewport = m_viewport ? &*m_viewport : nullptr;
             passPtr->begin();
             passPtr->execute(*m_resources);
             passPtr->end();

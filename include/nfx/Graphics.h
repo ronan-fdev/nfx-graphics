@@ -48,6 +48,7 @@
 #include "nfx/graphics/gl/pipeline/Renderer.h"
 #include "nfx/graphics/gl/pipeline/RenderMode.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
+#include "nfx/graphics/gl/pipeline/ViewportRect.h"
 
 // Resources
 #include "nfx/graphics/gl/resources/Handle.h"

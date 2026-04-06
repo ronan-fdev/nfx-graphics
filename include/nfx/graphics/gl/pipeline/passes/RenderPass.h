@@ -14,6 +14,7 @@
 namespace nfx::graphics::gl
 {
     struct FrameData;
+    struct ViewportRect;
 
     /**
      * \brief Abstract base class representing one stage of the renderer pipeline.
@@ -110,10 +111,16 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] const FrameData* currentFrameData() const noexcept { return m_frameData; }
 
+        /**
+         * \brief Returns the active viewport override currently bound to the pass, when available.
+         */
+        [[nodiscard]] const ViewportRect* currentViewport() const noexcept { return m_viewport; }
+
     private:
         std::string m_name;
         bool m_enabled = true;
         bool m_initialized = false;
         const FrameData* m_frameData = nullptr;
+        const ViewportRect* m_viewport = nullptr;
     };
 } // namespace nfx::graphics::gl

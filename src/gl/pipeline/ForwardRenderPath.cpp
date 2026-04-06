@@ -1,4 +1,5 @@
 #include "nfx/graphics/gl/pipeline/ForwardRenderPath.h"
+#include "detail/ViewportValidation.h"
 
 #include <cstdio>
 
@@ -129,6 +130,48 @@ namespace nfx::graphics::gl
         }
 
         m_renderer.setFrameData(frame);
+        m_renderer.resetViewport();
+        m_renderer.render();
+    }
+
+    void ForwardRenderPath::render(
+        const FrameData& frame, int surfaceWidth, int surfaceHeight, const ViewportRect& viewport)
+    {
+        if (!m_initialized || !m_resources || !m_geometryPass)
+        {
+            std::fprintf(stderr, "[ForwardRenderPath] render() called before successful initialize()\n");
+            assert(false && "ForwardRenderPath::render called before initialize");
+            return;
+        }
+
+        const int safeW = (surfaceWidth > 0) ? surfaceWidth : 1;
+        const int safeH = (surfaceHeight > 0) ? surfaceHeight : 1;
+
+        if (!detail::isViewportInsideSurface(viewport, safeW, safeH))
+        {
+            std::fprintf(
+                stderr,
+                "[ForwardRenderPath] render: viewport (%d,%d,%d,%d) outside surface (%d,%d), skipping\n",
+                viewport.x,
+                viewport.y,
+                viewport.width,
+                viewport.height,
+                safeW,
+                safeH);
+            return;
+        }
+
+        if (safeW != m_lastWidth || safeH != m_lastHeight)
+        {
+            m_lastWidth = safeW;
+            m_lastHeight = safeH;
+
+            m_geometryPass->setOutputSize(m_resources->textures2D, safeW, safeH);
+            rewireTargets();
+        }
+
+        m_renderer.setFrameData(frame);
+        m_renderer.setViewport(viewport);
         m_renderer.render();
     }
 

@@ -82,6 +82,7 @@
 - `RenderMode`: primitive topology enum mapped to OpenGL draw modes
 - `RenderState`: pipeline state descriptor with `apply()` helper and `opaque()` / `transparent()` / `shadowCaster()` presets
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
+- `ViewportRect`: pixel-space rectangle (x, y, width, height) for multi-viewport rendering contracts
 
 - `ForwardRenderPath`: forward rendering pipeline assembler - fluent pass configuration (`addShadowPass<T>`, `setSkybox`, `enableTransparency<T>`, `addOverlay<T>`), automatic color/depth target wiring, viewport resize handling, and typed pass access via `get<T>(name)`
 
@@ -147,6 +148,8 @@
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping
+- `gl/pipeline/tests_ViewportRect`: validates ViewportRect invariants, coordinate system, and multi-viewport composition contracts
+- `gl/pipeline/tests_ViewportValidation`: validates viewport-inside-surface bounds check including invalid dimensions and out-of-bounds rectangles
 
 - `gl/resources/tests_ResourceCache`: validates typed handle/cache behavior and failure-path cache invariants
 

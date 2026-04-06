@@ -19,6 +19,8 @@ add_executable(nfx-graphics-gl-tests
     pipeline/tests_Renderer.cpp
     pipeline/tests_RenderQueue.cpp
     pipeline/tests_RenderState.cpp
+    pipeline/tests_ViewportRect.cpp
+    pipeline/tests_ViewportValidation.cpp
 
     mesh/tests_Mesh.cpp
     mesh/tests_MeshData.cpp
