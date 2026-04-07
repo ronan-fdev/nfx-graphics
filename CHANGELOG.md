@@ -202,6 +202,7 @@
 - `forward-rendering-environment-pass`: reflective sphere sample using `BlinnPhongMaterial` (`hasEnvMap=true`) with `EnvironmentPass`
 - `forward-rendering-pbr-minimal`: minimal ForwardRenderPath sample with two PBR materials using packed ARM maps (`R=ao`, `G=roughness`, `B=metallic`)
 - `forward-rendering-multi-view`: two-viewport split-screen sample with a shared geometry queue, distinct cameras per view, and grid/axes overlays
+- `forward-rendering-primitives-showcase`: forward sample showcasing 3D primitives in a circular layout with orbit camera
 
 - `forward-rendering-pbr-ibl-showcase`: visual comparison sample of fallback env reflection vs split-sum IBL across four PBR materials
 
