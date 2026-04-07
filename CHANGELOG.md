@@ -47,7 +47,7 @@
 
 - `Mesh`: runtime wrapper for vertex/index GPU buffers, VAO setup, and optional instance attribute streams
 - `MeshData`: CPU-side packed mesh container (`vertices`, `indices`, `layout`)
-- `Primitive`: mesh generators (`cube`, `uvSphere`, `plane`, `quad`) with tangent-ready layouts for lit primitives
+- `Primitive`: mesh generators (`cube`, `uvSphere`, `icosphere`, `cylinder`, `cone`, `capsule`, `disk`, `pyramid`, `tetrahedron`, `tube`, `pipe`, `plane`, `quad`, `torus`) with tangent-ready layouts for lit primitives
 
 ##### Pipeline
 
