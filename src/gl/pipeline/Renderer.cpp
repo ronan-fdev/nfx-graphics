@@ -6,6 +6,7 @@
 #include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GridPass.h"
+#include "nfx/graphics/gl/pipeline/passes/OutlinePass.h"
 #include "nfx/graphics/gl/pipeline/passes/PointShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
@@ -46,6 +47,10 @@ namespace nfx::graphics::gl
             if (dynamic_cast<const GridPass*>(&pass) || dynamic_cast<const AxesPass*>(&pass))
             {
                 return 4;
+            }
+            if (dynamic_cast<const OutlinePass*>(&pass))
+            {
+                return 5;
             }
             if (dynamic_cast<const PresentPass*>(&pass))
             {

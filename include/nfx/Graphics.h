@@ -33,6 +33,7 @@
 #include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GridPass.h"
+#include "nfx/graphics/gl/pipeline/passes/OutlinePass.h"
 #include "nfx/graphics/gl/pipeline/passes/PointShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PostProcessPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"

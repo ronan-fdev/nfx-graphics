@@ -12,6 +12,7 @@
 #include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GridPass.h"
+#include "nfx/graphics/gl/pipeline/passes/OutlinePass.h"
 #include "nfx/graphics/gl/pipeline/passes/PointShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
@@ -183,6 +184,15 @@ namespace nfx::graphics::gl
         }
 
         /**
+         * \brief Enables selection-outline compositing via OutlinePass.
+         *
+         * Must be called before initialize().
+         * \param color Outline RGB color in [0..1].
+         * \param thickness Outline thickness in texel units.
+         */
+        void enableOutline(const float (&color)[3], float thickness = 1.0f) noexcept;
+
+        /**
          * \brief Sets the PresentPass exposure.
          * \param exposure Exposure multiplier applied during presentation.
          */
@@ -225,6 +235,12 @@ namespace nfx::graphics::gl
          * \return Non-owning pointer to the transparent pass, or nullptr when disabled.
          */
         [[nodiscard]] RenderPass* transparentPass() noexcept { return m_transparentPass; }
+
+        /**
+         * \brief Returns the outline pass, or nullptr if outline is disabled.
+         * \return Non-owning pointer to OutlinePass when enabled, nullptr otherwise.
+         */
+        [[nodiscard]] OutlinePass* outlinePass() noexcept { return m_outlinePass; }
 
         /**
          * \brief Returns a typed pointer to a named pass, or nullptr when not found.
@@ -272,9 +288,16 @@ namespace nfx::graphics::gl
         [[nodiscard]] Renderer& renderer() noexcept { return m_renderer; }
 
     private:
+        // clang-format off
         static constexpr std::string_view kReservedNames[] = {
-            "Geometry", "Skybox", "Environment", "Transparent", "Present"
-        };
+            "Geometry",
+            "Skybox",
+            "Environment",
+            "Transparent",
+            "Outline",
+            "Present"
+         };
+        // clang-format on
 
         static bool isReservedName(std::string_view name) noexcept
         {
@@ -301,6 +324,7 @@ namespace nfx::graphics::gl
         SkyboxPass* m_skyboxPass = nullptr;
         EnvironmentPass* m_environmentPass = nullptr;
         RenderPass* m_transparentPass = nullptr;
+        OutlinePass* m_outlinePass = nullptr;
         std::vector<RenderPass*> m_overlayPasses;
 
         // Pre-initialize configuration
@@ -315,6 +339,10 @@ namespace nfx::graphics::gl
 
         bool m_wantsTransparentPass = false;
         std::function<RenderPass*()> m_transparentPassFactory;
+
+        bool m_wantsOutlinePass = false;
+        float m_outlineColor[3] = { 1.0f, 0.9f, 0.1f };
+        float m_outlineThickness = 1.0f;
 
         float m_exposure = 1.0f;
         bool m_tonemapEnabled = true;

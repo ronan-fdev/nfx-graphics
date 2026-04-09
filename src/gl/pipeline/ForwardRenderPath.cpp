@@ -48,6 +48,22 @@ namespace nfx::graphics::gl
         m_hasEnvPass = true;
     }
 
+    void ForwardRenderPath::enableOutline(const float (&color)[3], float thickness) noexcept
+    {
+        if (m_initialized)
+        {
+            std::fprintf(stderr, "[ForwardRenderPath] enableOutline: cannot change after initialize()\n");
+            assert(false && "ForwardRenderPath::enableOutline: called after initialize");
+            return;
+        }
+
+        m_wantsOutlinePass = true;
+        m_outlineColor[0] = color[0];
+        m_outlineColor[1] = color[1];
+        m_outlineColor[2] = color[2];
+        m_outlineThickness = thickness;
+    }
+
     void ForwardRenderPath::initialize(RenderResources& resources)
     {
         if (m_initialized)
@@ -87,6 +103,13 @@ namespace nfx::graphics::gl
         if (m_wantsTransparentPass && m_transparentPassFactory)
         {
             m_transparentPass = m_transparentPassFactory();
+        }
+
+        if (m_wantsOutlinePass)
+        {
+            m_outlinePass = m_renderer.createPass<OutlinePass>("Outline");
+            m_outlinePass->setOutlineColor(m_outlineColor);
+            m_outlinePass->setThickness(m_outlineThickness);
         }
 
         // Present pass
@@ -252,7 +275,16 @@ namespace nfx::graphics::gl
 
         if (m_presentPass)
         {
-            m_presentPass->setInput(color);
+            if (m_outlinePass)
+            {
+                m_outlinePass->setInput(color, depth, m_geometryPass->outputFramebuffer());
+                m_outlinePass->setOutputSize(m_resources->textures2D, m_lastWidth, m_lastHeight);
+                m_presentPass->setInput(m_outlinePass->colorOutput());
+            }
+            else
+            {
+                m_presentPass->setInput(color);
+            }
         }
     }
 } // namespace nfx::graphics::gl
