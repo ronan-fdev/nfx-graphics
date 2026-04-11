@@ -263,6 +263,11 @@ namespace nfx::graphics::gl
                 axes->setTargetTextures(color, depth);
                 wiredOverlay = true;
             }
+            else if (auto* imagePlane = dynamic_cast<ImagePlanePass*>(overlay))
+            {
+                imagePlane->setTargetTextures(color, depth);
+                wiredOverlay = true;
+            }
 
             if (!wiredOverlay)
             {

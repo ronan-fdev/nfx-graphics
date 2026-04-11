@@ -66,6 +66,7 @@
 - `WboitPass`: weighted blended OIT pass with accumulation/reveal targets and fullscreen composite
 - `EnvironmentPass`: environment cubemap composition pass with configurable intensity and explicit target color/depth wiring
 - `OutlinePass`: selection outline compositing pass rendering selected geometry into a mask, extracting edges via Sobel filter, and compositing outlines with configurable color/thickness and viewport support
+- `ImagePlanePass`: world-space reference image overlay pass with configurable transform, opacity, and depth testing
 
 - `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
 - `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light
