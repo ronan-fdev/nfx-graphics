@@ -206,6 +206,7 @@
 - `forward-rendering-multi-view`: two-viewport split-screen sample with a shared geometry queue, distinct cameras per view, and grid/axes overlays
 - `forward-rendering-primitives-showcase`: forward sample showcasing 3D primitives in a circular layout with orbit camera
 - `forward-rendering-basic-outline-showcase`: selection outline sample with rock, torus and sphere, left-click picking and Sobel edge feedback via OutlinePass
+- `forward-rendering-image-plane`: ForwardRenderPath sample showing world-space reference image planes
 
 - `forward-rendering-pbr-ibl-showcase`: visual comparison sample of fallback env reflection vs split-sum IBL across four PBR materials
 
