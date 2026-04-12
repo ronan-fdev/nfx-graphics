@@ -7,6 +7,7 @@
 
 #include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/core/shaders/Uniforms.h"
+#include "nfx/graphics/gl/core/GlTypes.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/resources/Handle.h"
 #include "MaterialBlock.h"
@@ -16,6 +17,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 #include <unordered_map>
 
 namespace nfx::graphics::gl
@@ -165,11 +167,29 @@ namespace nfx::graphics::gl
         void setTexture(std::string_view name, Texture2DHandle handle);
 
         /**
+         * \brief Associates a texture handle with an explicit texture unit.
+         * \param unit Fixed texture unit index.
+         * \param handle Texture handle resolved through the texture cache.
+         *
+         * This is the preferred path for built-in fixed-slot sampler workflows.
+         * Units in `TextureBindings::UserMaterialFirstUnit..UserMaterialLastUnit`
+         * are reserved for dynamic named sampler bindings and are rejected.
+         */
+        void setTextureUnit(GLuint unit, Texture2DHandle handle);
+
+        /**
          * \brief Returns whether a texture binding exists for \p name.
          * \param name Sampler uniform identifier.
          * \return True when a named texture binding exists, false otherwise.
          */
         [[nodiscard]] bool hasTexture(std::string_view name) const noexcept;
+
+        /**
+         * \brief Returns whether an explicit texture-unit binding exists for \p unit.
+         * \param unit Texture unit index.
+         * \return True when a fixed unit binding exists, false otherwise.
+         */
+        [[nodiscard]] bool hasTextureUnit(GLuint unit) const noexcept;
 
         /**
          * \brief Removes one texture binding.
@@ -178,9 +198,20 @@ namespace nfx::graphics::gl
         void clearTexture(std::string_view name);
 
         /**
+         * \brief Removes one explicit texture-unit binding.
+         * \param unit Texture unit index.
+         */
+        void clearTextureUnit(GLuint unit);
+
+        /**
          * \brief Removes all texture bindings.
          */
         void clearTextures();
+
+        /**
+         * \brief Removes all explicit texture-unit bindings.
+         */
+        void clearTextureUnits();
 
         /**
          * \brief Sets the MaterialBlock UBO data
@@ -238,7 +269,8 @@ namespace nfx::graphics::gl
         RenderState m_state;
         std::unordered_map<std::string, Uniform, StringHash, std::equal_to<>> m_uniforms;
         std::map<std::string, Texture2DHandle, std::less<>> m_textures;
-        std::size_t m_lastBoundCount = 0; ///< Number of texture units bound in the last bind() call
+        std::map<GLuint, Texture2DHandle> m_texturesByUnit;
+        std::vector<GLuint> m_lastBoundUnits;
 
         std::optional<MaterialBlockData> m_materialBlock;
         std::optional<UniformBuffer<MaterialBlockData>> m_materialBlockUbo;

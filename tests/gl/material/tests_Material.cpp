@@ -3,6 +3,8 @@
 #include <nfx/graphics/gl/material/Material.h>
 #include <nfx/graphics/gl/material/MaterialBlock.h>
 #include <nfx/graphics/gl/material/BlinnPhong.h>
+#include <nfx/graphics/gl/material/Pbr.h>
+#include <nfx/graphics/gl/pipeline/Bindings.h>
 #include <nfx/graphics/gl/pipeline/RenderState.h>
 #include <nfx/graphics/gl/resources/Handle.h>
 
@@ -244,6 +246,80 @@ TEST_SUITE("Material")
         CHECK(!mat.hasTexture("uB"));
     }
 
+    TEST_CASE("setTextureUnit / hasTextureUnit")
+    {
+        auto mat = makeMaterial();
+        CHECK(!mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+
+        mat.setTextureUnit(TextureBindings::MaterialSlot0, Texture2DHandle{ 42 });
+        CHECK(mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+    }
+
+    TEST_CASE("clearTextureUnit removes one explicit binding")
+    {
+        auto mat = makeMaterial();
+        mat.setTextureUnit(TextureBindings::MaterialSlot0, Texture2DHandle{ 1 });
+        mat.setTextureUnit(TextureBindings::MaterialSlot1, Texture2DHandle{ 2 });
+
+        mat.clearTextureUnit(TextureBindings::MaterialSlot0);
+        CHECK(!mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+        CHECK(mat.hasTextureUnit(TextureBindings::MaterialSlot1));
+    }
+
+    TEST_CASE("clearTextureUnits removes all explicit bindings")
+    {
+        auto mat = makeMaterial();
+        mat.setTextureUnit(TextureBindings::MaterialSlot0, Texture2DHandle{ 1 });
+        mat.setTextureUnit(TextureBindings::MaterialSlot1, Texture2DHandle{ 2 });
+
+        mat.clearTextureUnits();
+        CHECK(!mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+        CHECK(!mat.hasTextureUnit(TextureBindings::MaterialSlot1));
+    }
+
+    TEST_CASE("named and fixed-unit bindings are independent")
+    {
+        auto mat = makeMaterial();
+        mat.setTexture("uCustom", Texture2DHandle{ 1 });
+        mat.setTextureUnit(TextureBindings::MaterialSlot0, Texture2DHandle{ 2 });
+
+        CHECK(mat.hasTexture("uCustom"));
+        CHECK(mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+
+        mat.clearTextures();
+        CHECK(!mat.hasTexture("uCustom"));
+        CHECK(mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+
+        mat.clearTextureUnits();
+        CHECK(!mat.hasTextureUnit(TextureBindings::MaterialSlot0));
+    }
+
+    TEST_CASE("setTextureUnit rejects units in dynamic user range")
+    {
+        auto mat = makeMaterial();
+        mat.setTextureUnit(TextureBindings::UserMaterialFirstUnit, Texture2DHandle{ 77 });
+        CHECK(!mat.hasTextureUnit(TextureBindings::UserMaterialFirstUnit));
+    }
+
+    TEST_CASE("dynamic user range does not overlap built-in material slots")
+    {
+        CHECK(
+            static_cast<GLuint>(TextureBindings::MaterialSlot0) <
+            static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit));
+        CHECK(
+            static_cast<GLuint>(TextureBindings::MaterialSlot1) <
+            static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit));
+        CHECK(
+            static_cast<GLuint>(TextureBindings::MaterialSlot2) <
+            static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit));
+        CHECK(
+            static_cast<GLuint>(TextureBindings::MaterialSlot3) <
+            static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit));
+        CHECK(
+            static_cast<GLuint>(TextureBindings::BrdfLut) <
+            static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit));
+    }
+
     TEST_CASE("Material is move-constructible")
     {
         auto mat = makeMaterial();
@@ -288,7 +364,7 @@ TEST_SUITE("Material")
             CHECK(mat.renderState().blend == false);
         }
 
-        TEST_CASE("apply() binds all provided texture maps")
+        TEST_CASE("apply() binds all provided texture maps to fixed slots")
         {
             BlinnPhongMaterial bp;
             bp.diffuseMap = Texture2DHandle{ 11 };
@@ -298,17 +374,17 @@ TEST_SUITE("Material")
             auto mat = makeMaterial();
             bp.apply(mat);
 
-            CHECK(mat.hasTexture("uDiffuseMap"));
-            CHECK(mat.hasTexture("uNormalMap"));
-            CHECK(mat.hasTexture("uSpecularMap"));
+            CHECK(mat.hasTextureUnit(TextureBindings::DiffuseMap));
+            CHECK(mat.hasTextureUnit(TextureBindings::NormalMap));
+            CHECK(mat.hasTextureUnit(TextureBindings::SpecularMap));
         }
 
-        TEST_CASE("apply() clears map bindings when handles are invalid")
+        TEST_CASE("apply() clears fixed slot bindings when handles are invalid")
         {
             auto mat = makeMaterial();
-            mat.setTexture("uDiffuseMap", Texture2DHandle{ 21 });
-            mat.setTexture("uNormalMap", Texture2DHandle{ 22 });
-            mat.setTexture("uSpecularMap", Texture2DHandle{ 23 });
+            mat.setTextureUnit(TextureBindings::DiffuseMap, Texture2DHandle{ 21 });
+            mat.setTextureUnit(TextureBindings::NormalMap, Texture2DHandle{ 22 });
+            mat.setTextureUnit(TextureBindings::SpecularMap, Texture2DHandle{ 23 });
 
             BlinnPhongMaterial bp;
             bp.diffuseMap = {};
@@ -317,9 +393,72 @@ TEST_SUITE("Material")
 
             bp.apply(mat);
 
-            CHECK(!mat.hasTexture("uDiffuseMap"));
-            CHECK(!mat.hasTexture("uNormalMap"));
-            CHECK(!mat.hasTexture("uSpecularMap"));
+            CHECK(!mat.hasTextureUnit(TextureBindings::DiffuseMap));
+            CHECK(!mat.hasTextureUnit(TextureBindings::NormalMap));
+            CHECK(!mat.hasTextureUnit(TextureBindings::SpecularMap));
+        }
+
+        TEST_SUITE("PbrMaterial")
+        {
+            TEST_CASE("apply() uses fixed slots for baseColor/normal/arm")
+            {
+                PbrMaterial p;
+                p.baseColorMap = Texture2DHandle{ 101 };
+                p.normalMap = Texture2DHandle{ 102 };
+                p.armMap = Texture2DHandle{ 103 };
+
+                auto mat = makeMaterial();
+                p.apply(mat);
+
+                CHECK(mat.hasTextureUnit(TextureBindings::BaseColorMap));
+                CHECK(mat.hasTextureUnit(TextureBindings::NormalMap));
+                CHECK(mat.hasTextureUnit(TextureBindings::ArmMap));
+            }
+
+            TEST_CASE("apply() uses fixed slots for metallicRoughness/occlusion when ARM is absent")
+            {
+                PbrMaterial p;
+                p.baseColorMap = Texture2DHandle{ 111 };
+                p.normalMap = Texture2DHandle{ 112 };
+                p.metallicRoughnessMap = Texture2DHandle{ 113 };
+                p.occlusionMap = Texture2DHandle{ 114 };
+
+                auto mat = makeMaterial();
+                p.apply(mat);
+
+                CHECK(mat.hasTextureUnit(TextureBindings::BaseColorMap));
+                CHECK(mat.hasTextureUnit(TextureBindings::NormalMap));
+                CHECK(mat.hasTextureUnit(TextureBindings::MetallicRoughnessMap));
+                CHECK(mat.hasTextureUnit(TextureBindings::OcclusionMap));
+            }
+
+            TEST_CASE("apply() clears separate slots when ARM map is used")
+            {
+                auto mat = makeMaterial();
+                mat.setTextureUnit(TextureBindings::MetallicRoughnessMap, Texture2DHandle{ 201 });
+                mat.setTextureUnit(TextureBindings::OcclusionMap, Texture2DHandle{ 202 });
+
+                PbrMaterial p;
+                p.armMap = Texture2DHandle{ 203 };
+                p.apply(mat);
+
+                CHECK(mat.hasTextureUnit(TextureBindings::ArmMap));
+                CHECK(!mat.hasTextureUnit(TextureBindings::MetallicRoughnessMap));
+            }
+
+            TEST_CASE("apply() clears shared slot when ARM and occlusion are absent")
+            {
+                auto mat = makeMaterial();
+                mat.setTextureUnit(TextureBindings::ArmMap, Texture2DHandle{ 301 });
+
+                PbrMaterial p;
+                p.metallicRoughnessMap = Texture2DHandle{ 302 };
+                p.apply(mat);
+
+                CHECK(!mat.hasTextureUnit(TextureBindings::ArmMap));
+                CHECK(mat.hasTextureUnit(TextureBindings::MetallicRoughnessMap));
+                CHECK(!mat.hasTextureUnit(TextureBindings::OcclusionMap));
+            }
         }
     }
 }

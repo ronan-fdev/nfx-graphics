@@ -169,47 +169,47 @@ namespace nfx::graphics::gl
 
         if (baseColorMap.isValid())
         {
-            mat.setTexture("uBaseColorMap", baseColorMap);
+            mat.setTextureUnit(TextureBindings::BaseColorMap, baseColorMap);
         }
         else
         {
-            mat.clearTexture("uBaseColorMap");
+            mat.clearTextureUnit(TextureBindings::BaseColorMap);
         }
 
         if (normalMap.isValid())
         {
-            mat.setTexture("uNormalMap", normalMap);
+            mat.setTextureUnit(TextureBindings::NormalMap, normalMap);
         }
         else
         {
-            mat.clearTexture("uNormalMap");
+            mat.clearTextureUnit(TextureBindings::NormalMap);
         }
 
         if (armMap.isValid())
         {
-            mat.setTexture("uArmMap", armMap);
-            mat.clearTexture("uMetallicRoughnessMap");
-            mat.clearTexture("uOcclusionMap");
+            mat.setTextureUnit(TextureBindings::ArmMap, armMap);
+            mat.clearTextureUnit(TextureBindings::MetallicRoughnessMap);
         }
         else
         {
-            mat.clearTexture("uArmMap");
+            mat.clearTextureUnit(TextureBindings::ArmMap);
+
             if (metallicRoughnessMap.isValid())
             {
-                mat.setTexture("uMetallicRoughnessMap", metallicRoughnessMap);
+                mat.setTextureUnit(TextureBindings::MetallicRoughnessMap, metallicRoughnessMap);
             }
             else
             {
-                mat.clearTexture("uMetallicRoughnessMap");
+                mat.clearTextureUnit(TextureBindings::MetallicRoughnessMap);
             }
 
             if (occlusionMap.isValid())
             {
-                mat.setTexture("uOcclusionMap", occlusionMap);
+                mat.setTextureUnit(TextureBindings::OcclusionMap, occlusionMap);
             }
             else
             {
-                mat.clearTexture("uOcclusionMap");
+                mat.clearTextureUnit(TextureBindings::OcclusionMap);
             }
         }
     }

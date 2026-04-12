@@ -155,29 +155,29 @@ namespace nfx::graphics::gl
 
         if (diffuseMap.isValid())
         {
-            mat.setTexture("uDiffuseMap", diffuseMap);
+            mat.setTextureUnit(TextureBindings::DiffuseMap, diffuseMap);
         }
         else
         {
-            mat.clearTexture("uDiffuseMap");
+            mat.clearTextureUnit(TextureBindings::DiffuseMap);
         }
 
         if (normalMap.isValid())
         {
-            mat.setTexture("uNormalMap", normalMap);
+            mat.setTextureUnit(TextureBindings::NormalMap, normalMap);
         }
         else
         {
-            mat.clearTexture("uNormalMap");
+            mat.clearTextureUnit(TextureBindings::NormalMap);
         }
 
         if (specularMap.isValid())
         {
-            mat.setTexture("uSpecularMap", specularMap);
+            mat.setTextureUnit(TextureBindings::SpecularMap, specularMap);
         }
         else
         {
-            mat.clearTexture("uSpecularMap");
+            mat.clearTextureUnit(TextureBindings::SpecularMap);
         }
     }
 } // namespace nfx::graphics::gl

@@ -154,9 +154,32 @@ namespace nfx::graphics::gl
         m_textures[std::string{ name }] = handle;
     }
 
+    void Material::setTextureUnit(GLuint unit, Texture2DHandle handle)
+    {
+        const GLuint userFirst = static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit);
+        const GLuint userLast = static_cast<GLuint>(TextureBindings::UserMaterialLastUnit);
+        if (unit >= userFirst && unit <= userLast)
+        {
+            std::fprintf(
+                stderr,
+                "[Material] WARNING: fixed texture unit %u is in user dynamic range [%u..%u], binding ignored\n",
+                static_cast<unsigned>(unit),
+                static_cast<unsigned>(userFirst),
+                static_cast<unsigned>(userLast));
+            return;
+        }
+
+        m_texturesByUnit[unit] = handle;
+    }
+
     bool Material::hasTexture(std::string_view name) const noexcept
     {
         return m_textures.find(name) != m_textures.end();
+    }
+
+    bool Material::hasTextureUnit(GLuint unit) const noexcept
+    {
+        return m_texturesByUnit.find(unit) != m_texturesByUnit.end();
     }
 
     void Material::clearTexture(std::string_view name)
@@ -167,9 +190,22 @@ namespace nfx::graphics::gl
         }
     }
 
+    void Material::clearTextureUnit(GLuint unit)
+    {
+        if (auto it = m_texturesByUnit.find(unit); it != m_texturesByUnit.end())
+        {
+            m_texturesByUnit.erase(it);
+        }
+    }
+
     void Material::clearTextures()
     {
         m_textures.clear();
+    }
+
+    void Material::clearTextureUnits()
+    {
+        m_texturesByUnit.clear();
     }
 
     void Material::setMaterialBlock(const MaterialBlockData& block)
@@ -210,20 +246,52 @@ namespace nfx::graphics::gl
             std::visit([&](const auto& v) { shader->setUniform(name, v); }, uniform);
         }
 
-        // Unbind units bound in the previous call
-        for (std::size_t i = 0; i < m_lastBoundCount; ++i)
+        // Unbind units touched in the previous call
+        for (GLuint unit : m_lastBoundUnits)
         {
-            Texture2D::unbind(static_cast<GLuint>(i));
+            Texture2D::unbind(unit);
         }
+        m_lastBoundUnits.clear();
 
-        // Bind textures in map order (alphabetical); unit index = insertion order
-        GLuint unit = 0;
-        for (const auto& [name, handle] : m_textures)
+        // Bind fixed-slot textures first (explicit texture unit -> texture handle)
+        for (const auto& [unit, handle] : m_texturesByUnit)
         {
             if (const Texture2D* tex = textureCache.get(handle))
             {
                 tex->bind(unit);
+                m_lastBoundUnits.push_back(unit);
+            }
+            else
+            {
+                std::fprintf(
+                    stderr,
+                    "[Material] WARNING: missing texture handle (%llu) for fixed unit %u\n",
+                    static_cast<unsigned long long>(handle.id),
+                    static_cast<unsigned>(unit));
+            }
+        }
+
+        // Bind named samplers in user-safe dynamic range and set sampler uniforms
+        GLuint unit = static_cast<GLuint>(TextureBindings::UserMaterialFirstUnit);
+        const GLuint lastUnit = static_cast<GLuint>(TextureBindings::UserMaterialLastUnit);
+        for (const auto& [name, handle] : m_textures)
+        {
+            if (unit > lastUnit)
+            {
+                std::fprintf(
+                    stderr,
+                    "[Material] WARNING: sampler '%s' skipped, no free user texture unit in [%u..%u]\n",
+                    name.c_str(),
+                    static_cast<unsigned>(TextureBindings::UserMaterialFirstUnit),
+                    static_cast<unsigned>(TextureBindings::UserMaterialLastUnit));
+                break;
+            }
+
+            if (const Texture2D* tex = textureCache.get(handle))
+            {
+                tex->bind(unit);
                 shader->setUniform(name, static_cast<int>(unit));
+                m_lastBoundUnits.push_back(unit);
                 ++unit;
             }
             else
@@ -235,6 +303,5 @@ namespace nfx::graphics::gl
                     name.c_str());
             }
         }
-        m_lastBoundCount = unit;
     }
 } // namespace nfx::graphics::gl
