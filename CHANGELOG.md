@@ -207,6 +207,7 @@
 - `forward-rendering-primitives-showcase`: forward sample showcasing 3D primitives in a circular layout with orbit camera
 - `forward-rendering-basic-outline-showcase`: selection outline sample with rock, torus and sphere, left-click picking and Sobel edge feedback via OutlinePass
 - `forward-rendering-image-plane`: ForwardRenderPath sample showing world-space reference image planes
+- `forward-rendering-shape-reference-views`: front/side reference-view sample for shape comparison with image-plane overlays
 
 - `forward-rendering-pbr-ibl-showcase`: visual comparison sample of fallback env reflection vs split-sum IBL across four PBR materials
 
