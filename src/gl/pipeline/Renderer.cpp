@@ -12,6 +12,7 @@
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"
+#include "nfx/graphics/gl/pipeline/passes/TextPass.h"
 #include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
@@ -46,7 +47,7 @@ namespace nfx::graphics::gl
                 return 3;
             }
             if (dynamic_cast<const GridPass*>(&pass) || dynamic_cast<const AxesPass*>(&pass) ||
-                dynamic_cast<const ImagePlanePass*>(&pass))
+                dynamic_cast<const ImagePlanePass*>(&pass) || dynamic_cast<const TextPass*>(&pass))
             {
                 return 4;
             }

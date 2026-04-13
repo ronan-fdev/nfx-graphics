@@ -46,6 +46,12 @@ namespace nfx::graphics::gl
     struct TextureCubeTag ///< Marker type for cube texture handles
     {
     };
+    struct FontTag ///< Marker type for font handles
+    {
+    };
+    struct TextItemTag ///< Marker type for text item handles
+    {
+    };
 
     using MaterialHandle = Handle<MaterialTag>;       ///< Opaque handle referencing a cached material resource
     using MeshHandle = Handle<MeshTag>;               ///< Opaque handle referencing a cached mesh resource
@@ -53,6 +59,8 @@ namespace nfx::graphics::gl
     using ShaderHandle = Handle<ShaderTag>;           ///< Opaque handle referencing a cached shader resource
     using Texture2DHandle = Handle<Texture2DTag>;     ///< Opaque handle referencing a cached 2D texture resource
     using TextureCubeHandle = Handle<TextureCubeTag>; ///< Opaque handle referencing a cached cube texture resource
+    using FontHandle = Handle<FontTag>;               ///< Opaque handle referencing a cached font resource
+    using TextItemHandle = Handle<TextItemTag>;       ///< Opaque handle referencing a text item in TextPass
 } // namespace nfx::graphics::gl
 
 /**

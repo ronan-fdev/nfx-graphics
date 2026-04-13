@@ -19,6 +19,7 @@
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"
+#include "nfx/graphics/gl/pipeline/passes/TextPass.h"
 #include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"

@@ -60,7 +60,7 @@ nfx-graphics/
 │       │   │   ├── RenderMode.h          # Primitive topology enum
 │       │   │   ├── RenderState.h         # Pipeline state descriptor
 │       │   │   └── RenderTarget.h        # High-level framebuffer wrapper
-│       │   ├── resources/                # Resource caches (meshes, shaders, textures)
+│       │   ├── resources/                # Resource caches (meshes, shaders, textures, fonts)
 │       │   └── scene/
 │       │       ├── cameras/              # Camera types and orbit camera
 │       │       └── lights/               # Camera Light descriptors

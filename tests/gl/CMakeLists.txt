@@ -32,6 +32,8 @@ add_executable(nfx-graphics-gl-tests
     scene/tests_OrbitCamera.cpp
 
     shaders/tests_ShaderFeatures.cpp
+
+    text/tests_TextTypes.cpp
 )
 
 set_target_properties(nfx-graphics-gl-tests PROPERTIES DEBUG_POSTFIX "-d")

@@ -37,10 +37,21 @@ TEST_SUITE("ForwardRenderPath - Overlay Wiring Contract")
               gl::Texture2DHandle>);
     }
 
+    TEST_CASE("TextPass overlay has public setTargetTextures(color, depth) method")
+    {
+        CHECK(std::is_member_function_pointer_v<decltype(&gl::TextPass::setTargetTextures)>);
+        CHECK(std::is_invocable_v<
+              decltype(&gl::TextPass::setTargetTextures),
+              gl::TextPass*,
+              gl::Texture2DHandle,
+              gl::Texture2DHandle>);
+    }
+
     TEST_CASE("All overlay types inherit from RenderPass")
     {
         CHECK((std::is_base_of_v<gl::RenderPass, gl::GridPass>));
         CHECK((std::is_base_of_v<gl::RenderPass, gl::AxesPass>));
         CHECK((std::is_base_of_v<gl::RenderPass, gl::ImagePlanePass>));
+        CHECK((std::is_base_of_v<gl::RenderPass, gl::TextPass>));
     }
 }
