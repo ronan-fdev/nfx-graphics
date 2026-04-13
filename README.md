@@ -90,5 +90,7 @@ MIT - see [LICENSE](LICENSE).
 ## Third-party sample dependencies
 
 - [stb_image](https://github.com/nothings/stb) by Sean Barrett and contributors (MIT)
+- [stb_truetype](https://github.com/nothings/stb) by Sean Barrett and contributors (MIT)
 - [LearnOpenGL](https://github.com/JoeyDeVries/LearnOpenGL) resources by Joey de Vries (MIT)
 - [Polyhaven](https://polyhaven.com/) (CC0 / Public Domain)
+- [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) by JetBrains (SIL Open Font License 1.1)

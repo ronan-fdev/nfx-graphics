@@ -13,7 +13,9 @@ endif()
 
 add_library(nfx-sample-common SHARED
     ${NFX_GRAPHICS_SAMPLE_APP_SRC}
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/src/FontLoader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/app/src/StbImageImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/src/StbTruetypeImpl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/app/src/ObjLoader.cpp
 )
 
@@ -42,6 +44,8 @@ add_subdirectory(basic)
 add_subdirectory(direct-rendering)
 add_subdirectory(forward-rendering)
 
+include(FetchContent)
+
 #----------------------------------------------
 # Third-party sample dependencies
 #----------------------------------------------
@@ -62,6 +66,24 @@ if(NOT EXISTS "${NFX_GRAPHICS_SAMPLE_STB_IMAGE_HEADER}")
     if(NOT _stb_image_dl_code EQUAL 0)
         list(GET _stb_image_dl_status 1 _stb_image_dl_err)
         message(WARNING "[nfx] Failed to download stb_image.h: ${_stb_image_dl_err}")
+    endif()
+endif()
+
+# stb_truetype.h - https://github.com/nothings/stb - MIT License
+set(NFX_GRAPHICS_SAMPLE_STB_TRUETYPE_HEADER "${NFX_GRAPHICS_SAMPLE_STB_DIR}/stb_truetype.h")
+if(NOT EXISTS "${NFX_GRAPHICS_SAMPLE_STB_TRUETYPE_HEADER}")
+    file(MAKE_DIRECTORY "${NFX_GRAPHICS_SAMPLE_STB_DIR}")
+    message(STATUS "[nfx] Downloading stb_truetype.h ...")
+    file(DOWNLOAD
+        "https://raw.githubusercontent.com/nothings/stb/master/stb_truetype.h"
+        "${NFX_GRAPHICS_SAMPLE_STB_TRUETYPE_HEADER}"
+        SHOW_PROGRESS
+        STATUS _stb_truetype_dl_status
+    )
+    list(GET _stb_truetype_dl_status 0 _stb_truetype_dl_code)
+    if(NOT _stb_truetype_dl_code EQUAL 0)
+        list(GET _stb_truetype_dl_status 1 _stb_truetype_dl_err)
+        message(WARNING "[nfx] Failed to download stb_truetype.h: ${_stb_truetype_dl_err}")
     endif()
 endif()
 
@@ -192,6 +214,24 @@ nfx_graphics_download_assets(
         concrete_slab_wall_02_arm_1k.jpg
 )
 
+# JetBrains Mono by JetBrains - https://www.jetbrains.com/lp/mono/ - SIL Open Font License 1.1
+FetchContent_Declare(
+    font_jbmono
+        URL       "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip"
+        URL_HASH  "SHA256=6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf"
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(font_jbmono)
+
+set(_jetbrains_mono_font_dir "${CMAKE_CURRENT_SOURCE_DIR}/app/resources/fonts/JetBrains/mono")
+file(MAKE_DIRECTORY "${_jetbrains_mono_font_dir}")
+foreach(_w Regular Bold)
+    if(NOT EXISTS "${_jetbrains_mono_font_dir}/JetBrainsMono-${_w}.ttf")
+        file(COPY "${font_jbmono_SOURCE_DIR}/fonts/ttf/JetBrainsMono-${_w}.ttf"
+             DESTINATION "${_jetbrains_mono_font_dir}")
+    endif()
+endforeach()
+
 nfx_graphics_embed_resources(
     TARGET          nfx-sample-common
     RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/textures
@@ -209,5 +249,15 @@ nfx_graphics_embed_resources(
     NAMESPACE       nfx::samples::models
     REGISTRY_NAME   embedded_objects
     PATTERN         "*.obj" "*.jpg" "*.png"
+    RECURSE
+)
+
+nfx_graphics_embed_resources(
+    TARGET          nfx-sample-common
+    RESOURCE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/app/resources/fonts
+    OUTPUT_DIR      ${CMAKE_BINARY_DIR}/gen/samples/fonts
+    NAMESPACE       nfx::samples::fonts
+    REGISTRY_NAME   embedded_fonts
+    PATTERN         "*.ttf"
     RECURSE
 )

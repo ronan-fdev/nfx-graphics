@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Clock.h"
+#include "FontLoader.h"
 #include "ObjLoader.h"
 #include "SkyboxLoader.h"
 #include "TextureLoader.h"
