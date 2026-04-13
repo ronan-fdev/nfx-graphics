@@ -213,6 +213,8 @@
 
 - `forward-rendering-pbr-ibl-showcase`: visual comparison sample of fallback env reflection vs split-sum IBL across four PBR materials
 
+- `text-rendering-text-pass`: TextPass sample rendering embedded JetBrains Mono text with UTF-8 input and live text updates
+
 ### Changed
 
 - NIL
