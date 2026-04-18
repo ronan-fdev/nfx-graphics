@@ -46,6 +46,83 @@ namespace nfx::samples
         std::function<void(int, int)> s_onMouseMove;
         std::function<void(int, bool)> s_onMouseButton;
         std::function<void(float)> s_onScroll;
+        std::function<void(int, bool)> s_onKey;
+
+        int normalizeVirtualKey(WPARAM wParam)
+        {
+            if (wParam >= 'A' && wParam <= 'Z')
+            {
+                return static_cast<int>(wParam);
+            }
+            if (wParam >= '0' && wParam <= '9')
+            {
+                return static_cast<int>(wParam);
+            }
+            if (wParam == VK_SPACE)
+            {
+                return static_cast<int>(KeyCode::Space);
+            }
+            if (wParam == VK_ESCAPE)
+            {
+                return static_cast<int>(KeyCode::Escape);
+            }
+            if (wParam == VK_RETURN)
+            {
+                return static_cast<int>(KeyCode::Enter);
+            }
+            if (wParam == VK_BACK)
+            {
+                return static_cast<int>(KeyCode::Backspace);
+            }
+            if (wParam == VK_TAB)
+            {
+                return static_cast<int>(KeyCode::Tab);
+            }
+            if (wParam == VK_LEFT)
+            {
+                return static_cast<int>(KeyCode::Left);
+            }
+            if (wParam == VK_RIGHT)
+            {
+                return static_cast<int>(KeyCode::Right);
+            }
+            if (wParam == VK_UP)
+            {
+                return static_cast<int>(KeyCode::Up);
+            }
+            if (wParam == VK_DOWN)
+            {
+                return static_cast<int>(KeyCode::Down);
+            }
+            return 0;
+        }
+
+        void releaseKnownKeys(const std::function<void(int, bool)>& onKey)
+        {
+            if (!onKey)
+            {
+                return;
+            }
+
+            for (int c = static_cast<int>('A'); c <= static_cast<int>('Z'); ++c)
+            {
+                onKey(c, false);
+            }
+            for (int c = static_cast<int>('0'); c <= static_cast<int>('9'); ++c)
+            {
+                onKey(c, false);
+            }
+
+            onKey(static_cast<int>(KeyCode::Space), false);
+            onKey(static_cast<int>(KeyCode::Escape), false);
+            onKey(static_cast<int>(KeyCode::Enter), false);
+            onKey(static_cast<int>(KeyCode::Backspace), false);
+            onKey(static_cast<int>(KeyCode::Tab), false);
+            onKey(static_cast<int>(KeyCode::Left), false);
+            onKey(static_cast<int>(KeyCode::Right), false);
+            onKey(static_cast<int>(KeyCode::Up), false);
+            onKey(static_cast<int>(KeyCode::Down), false);
+        }
 
         LRESULT CALLBACK wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
@@ -57,11 +134,31 @@ namespace nfx::samples
                     PostQuitMessage(0);
                     return 0;
                 case WM_KEYDOWN:
-                    if (wParam == VK_ESCAPE)
+                {
+                    const int normalized = normalizeVirtualKey(wParam);
+                    if (s_onKey && normalized != 0)
+                    {
+                        s_onKey(normalized, true);
+                    }
+                    if (normalized == static_cast<int>(KeyCode::Escape))
                     {
                         s_running = false;
                         PostQuitMessage(0);
                     }
+                    return 0;
+                }
+                case WM_KEYUP:
+                    if (s_onKey)
+                    {
+                        const int normalized = normalizeVirtualKey(wParam);
+                        if (normalized != 0)
+                        {
+                            s_onKey(normalized, false);
+                        }
+                    }
+                    return 0;
+                case WM_KILLFOCUS:
+                    releaseKnownKeys(s_onKey);
                     return 0;
                 case WM_SIZE:
                     s_width = LOWORD(lParam);
@@ -128,7 +225,8 @@ namespace nfx::samples
         std::function<void()> onShutdown,
         std::function<void(int x, int y)> onMouseMove,
         std::function<void(int button, bool pressed)> onMouseButton,
-        std::function<void(float delta)> onScroll)
+        std::function<void(float delta)> onScroll,
+        std::function<void(int key, bool pressed)> onKey)
     {
         if (!onRender)
         {
@@ -141,6 +239,7 @@ namespace nfx::samples
         s_running = true;
         s_width = config.width;
         s_height = config.height;
+        s_onKey = onKey;
         s_onMouseMove = onMouseMove;
         s_onMouseButton = onMouseButton;
         s_onScroll = onScroll;

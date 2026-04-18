@@ -13,6 +13,89 @@ typedef GLXContext (*PFNGLXCREATECONTEXTATTRIBSARBPROC)(Display*, GLXFBConfig, G
 
 namespace nfx::samples
 {
+    namespace
+    {
+        int normalizeKeySym(KeySym key)
+        {
+            if (key >= XK_A && key <= XK_Z)
+            {
+                return static_cast<int>('A' + (key - XK_A));
+            }
+            if (key >= XK_a && key <= XK_z)
+            {
+                return static_cast<int>('A' + (key - XK_a));
+            }
+            if (key >= XK_0 && key <= XK_9)
+            {
+                return static_cast<int>('0' + (key - XK_0));
+            }
+            if (key == XK_space)
+            {
+                return static_cast<int>(KeyCode::Space);
+            }
+            if (key == XK_Escape)
+            {
+                return static_cast<int>(KeyCode::Escape);
+            }
+            if (key == XK_Return)
+            {
+                return static_cast<int>(KeyCode::Enter);
+            }
+            if (key == XK_BackSpace)
+            {
+                return static_cast<int>(KeyCode::Backspace);
+            }
+            if (key == XK_Tab)
+            {
+                return static_cast<int>(KeyCode::Tab);
+            }
+            if (key == XK_Left)
+            {
+                return static_cast<int>(KeyCode::Left);
+            }
+            if (key == XK_Right)
+            {
+                return static_cast<int>(KeyCode::Right);
+            }
+            if (key == XK_Up)
+            {
+                return static_cast<int>(KeyCode::Up);
+            }
+            if (key == XK_Down)
+            {
+                return static_cast<int>(KeyCode::Down);
+            }
+            return 0;
+        }
+
+        void releaseKnownKeys(const std::function<void(int, bool)>& onKey)
+        {
+            if (!onKey)
+            {
+                return;
+            }
+
+            for (int c = static_cast<int>('A'); c <= static_cast<int>('Z'); ++c)
+            {
+                onKey(c, false);
+            }
+            for (int c = static_cast<int>('0'); c <= static_cast<int>('9'); ++c)
+            {
+                onKey(c, false);
+            }
+
+            onKey(static_cast<int>(KeyCode::Space), false);
+            onKey(static_cast<int>(KeyCode::Escape), false);
+            onKey(static_cast<int>(KeyCode::Enter), false);
+            onKey(static_cast<int>(KeyCode::Backspace), false);
+            onKey(static_cast<int>(KeyCode::Tab), false);
+            onKey(static_cast<int>(KeyCode::Left), false);
+            onKey(static_cast<int>(KeyCode::Right), false);
+            onKey(static_cast<int>(KeyCode::Up), false);
+            onKey(static_cast<int>(KeyCode::Down), false);
+        }
+    } // namespace
+
     int run(
         const AppConfig& config,
         std::function<void()> onInit,
@@ -20,7 +103,8 @@ namespace nfx::samples
         std::function<void()> onShutdown,
         std::function<void(int x, int y)> onMouseMove,
         std::function<void(int button, bool pressed)> onMouseButton,
-        std::function<void(float delta)> onScroll)
+        std::function<void(float delta)> onScroll,
+        std::function<void(int key, bool pressed)> onKey)
     {
         if (!onRender)
         {
@@ -118,8 +202,8 @@ namespace nfx::samples
         }
 
         swa.colormap = colormap;
-        swa.event_mask =
-            ExposureMask | KeyPressMask | StructureNotifyMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
+        swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | PointerMotionMask |
+                         ButtonPressMask | ButtonReleaseMask | FocusChangeMask;
 
         win = XCreateWindow(
             display,
@@ -241,11 +325,40 @@ namespace nfx::samples
                 }
                 if (ev.type == KeyPress)
                 {
-                    KeySym key = XLookupKeysym(&ev.xkey, 0);
-                    if (key == XK_Escape)
+                    const KeySym key = XLookupKeysym(&ev.xkey, 0);
+                    const int normalized = normalizeKeySym(key);
+                    if (onKey && normalized != 0)
+                    {
+                        onKey(normalized, true);
+                    }
+                    if (normalized == static_cast<int>(KeyCode::Escape))
                     {
                         running = false;
                     }
+                }
+                if (ev.type == KeyRelease && onKey)
+                {
+                    if (XPending(display))
+                    {
+                        XEvent nextEv;
+                        XPeekEvent(display, &nextEv);
+                        if (nextEv.type == KeyPress && nextEv.xkey.time == ev.xkey.time &&
+                            nextEv.xkey.keycode == ev.xkey.keycode)
+                        {
+                            continue;
+                        }
+                    }
+
+                    const KeySym key = XLookupKeysym(&ev.xkey, 0);
+                    const int normalized = normalizeKeySym(key);
+                    if (normalized != 0)
+                    {
+                        onKey(normalized, false);
+                    }
+                }
+                if (ev.type == FocusOut && onKey)
+                {
+                    releaseKnownKeys(onKey);
                 }
                 if (ev.type == ConfigureNotify)
                 {
