@@ -20,6 +20,7 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/pipeline/passes/ImagePlanePass.cpp
     src/gl/pipeline/passes/OutlinePass.cpp
     src/gl/pipeline/passes/PointShadowPass.cpp
+    src/gl/pipeline/passes/Polygon2DPass.cpp
     src/gl/pipeline/passes/PostProcessPass.cpp
     src/gl/pipeline/passes/PresentPass.cpp
     src/gl/pipeline/passes/SpotShadowPass.cpp

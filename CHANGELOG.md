@@ -72,6 +72,8 @@
 - `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light
 - `PointShadowPass`: depth-only point-light shadow pass producing layered cube-map depth shadows
 
+- `Polygon2DPass`: screen-space filled convex polygon overlay pass with `addRect` and `addConvexPolygon` helpers
+
 - `TextPass`: screen-space text overlay pass with text item lifecycle and target framebuffer wiring
 
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key

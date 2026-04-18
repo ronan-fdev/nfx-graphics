@@ -273,6 +273,11 @@ namespace nfx::graphics::gl
                 text->setTargetTextures(color, depth);
                 wiredOverlay = true;
             }
+            else if (auto* poly2d = dynamic_cast<Polygon2DPass*>(overlay))
+            {
+                poly2d->setTargetTextures(color, depth);
+                wiredOverlay = true;
+            }
 
             if (!wiredOverlay)
             {
