@@ -203,6 +203,8 @@ namespace nfx::graphics::gl
     void WboitPass::begin()
     {
         m_targetBound = false;
+        m_executionStats = {};
+        m_executionStats.commandsSubmitted = static_cast<std::uint32_t>(m_commands.size());
         if (m_commands.empty())
         {
             return;
@@ -217,6 +219,7 @@ namespace nfx::graphics::gl
 
         // Bind accumulation FBO with both MRT targets
         m_accumFbo.bind();
+        ++m_executionStats.fboBinds;
         gl.glViewport(0, 0, m_width, m_height);
 
         const GLenum drawBuffers[2] = { COLOR_ATTACHMENT0, COLOR_ATTACHMENT0 + 1 };
@@ -255,11 +258,13 @@ namespace nfx::graphics::gl
         gl.glBlendFunci(1, ZERO, ONE_MINUS_SRC_COLOR); // dst *= (1 - reveal)
 
         m_accumShader.bind();
+        ++m_executionStats.shaderBinds;
 
         for (const auto& cmd : m_commands)
         {
             if (!cmd.mesh.isValid())
             {
+                ++m_executionStats.commandsInvalid;
                 continue;
             }
 
@@ -270,6 +275,8 @@ namespace nfx::graphics::gl
                     stderr,
                     "[WboitPass] material handle %llu not found, skipping\n",
                     static_cast<unsigned long long>(cmd.material.id));
+
+                ++m_executionStats.commandsInvalid;
 
                 continue;
             }
@@ -292,10 +299,18 @@ namespace nfx::graphics::gl
                     stderr,
                     "[WboitPass] mesh handle %llu not found, skipping\n",
                     static_cast<unsigned long long>(cmd.mesh.id));
+                ++m_executionStats.commandsInvalid;
                 continue;
             }
 
             drawMesh(gl, *mesh, cmd);
+            ++m_executionStats.commandsDrawn;
+            ++m_executionStats.vaoBinds;
+            ++m_executionStats.vboBinds;
+            if (cmd.instanceCount > 1)
+            {
+                ++m_executionStats.instancedDraws;
+            }
         }
 
         // Done with accumulation target
@@ -324,6 +339,7 @@ namespace nfx::graphics::gl
         }
 
         m_targetFbo.bind();
+        ++m_executionStats.fboBinds;
         m_targetFbo.attachColorTexture(*targetColor, 0);
         m_targetBound = true;
         gl.glViewport(0, 0, m_width, m_height);
@@ -339,6 +355,7 @@ namespace nfx::graphics::gl
         gl.glBlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
 
         m_compositeShader.bind();
+        ++m_executionStats.shaderBinds;
 
         const Texture2D* accum = textureCache.get(m_accumHandle);
         const Texture2D* reveal = textureCache.get(m_revealHandle);
@@ -353,6 +370,7 @@ namespace nfx::graphics::gl
 
         accum->bind(0);
         reveal->bind(1);
+        m_executionStats.textureBinds += 2;
         m_compositeShader.setUniform("uAccum", 0);
         m_compositeShader.setUniform("uReveal", 1);
 

@@ -13,6 +13,8 @@
 #include "nfx/graphics/math/Mat4.h"
 #include "RenderPass.h"
 
+#include <cstdint>
+
 namespace nfx::graphics::gl
 {
     /**
@@ -23,6 +25,20 @@ namespace nfx::graphics::gl
         friend class Renderer;
 
     public:
+        /**
+         * \brief Per-frame execution counters produced by DirectionalShadowPass::execute().
+         */
+        struct ExecutionStats
+        {
+            std::uint32_t commandsSubmitted = 0; ///< Number of queued shadow commands
+            std::uint32_t commandsDrawn = 0;     ///< Number of shadow draw calls effectively executed
+            std::uint32_t commandsInvalid = 0;   ///< Number of commands rejected due to invalid mesh
+            std::uint32_t vaoBinds = 0;          ///< Number of mesh VAO binds applied
+            std::uint32_t vboBinds = 0;          ///< Number of vertex-buffer binding changes applied
+            std::uint32_t fboBinds = 0;          ///< Number of framebuffer bind calls applied
+            std::uint32_t instancedDraws = 0;    ///< Number of draw calls using instanceCount > 1
+        };
+
         /**
          * \brief Submits one draw command to the directional shadow queue.
          * \param cmd Draw command to enqueue for the next shadow pass execution.
@@ -77,6 +93,11 @@ namespace nfx::graphics::gl
          * \brief Returns the shadow map height in pixels.
          */
         [[nodiscard]] virtual int outputHeight() const noexcept override { return m_height; }
+
+        /**
+         * \brief Returns execution counters from the most recent execute() call.
+         */
+        [[nodiscard]] const ExecutionStats& executionStats() const noexcept { return m_executionStats; }
 
         /**
          * \brief Builds a light-space matrix (projection * view) for directional shadow mapping.
@@ -140,6 +161,7 @@ namespace nfx::graphics::gl
         int m_width = 1024;
         int m_height = 1024;
         bool m_dirty = true; ///< resolution changed - reallocate depth texture
+        ExecutionStats m_executionStats;
 
         GLint m_savedViewport[4] = {};
     };

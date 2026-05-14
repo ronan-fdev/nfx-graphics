@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <utility>
 
@@ -64,6 +65,24 @@ namespace nfx::graphics::gl
             return 5;
         }
     } // namespace
+
+    Renderer::~Renderer()
+    {
+        if (!m_gpuQueriesInitialized)
+        {
+            return;
+        }
+        if (!Context::isInitialized())
+        {
+            return;
+        }
+
+        const auto& gl = Context::current().functions();
+        gl.glDeleteQueries(static_cast<GLsizei>(m_gpuFrameQueries.size()), m_gpuFrameQueries.data());
+
+        m_gpuQueriesInitialized = false;
+        m_gpuFrameQueries = { 0u, 0u };
+    }
 
     void Renderer::addPass(std::unique_ptr<RenderPass> pass)
     {
@@ -144,12 +163,34 @@ namespace nfx::graphics::gl
             return;
         }
 
+        const auto frameStart = std::chrono::steady_clock::now();
+
+        m_frameStats = {};
+        m_frameStats.frameIndex = ++m_nextFrameIndex;
+
         bindFrameScope();
         validatePermutations();
 
         const auto& ctx = Context::current();
         const auto& gl = ctx.functions();
         const bool debugGroups = ctx.isVersionSupported(4, 3);
+
+        m_gpuTimingSupported = ctx.isVersionSupported(3, 3);
+        if (m_gpuTimingSupported)
+        {
+            if (!m_gpuQueriesInitialized)
+            {
+                gl.glGenQueries(static_cast<GLsizei>(m_gpuFrameQueries.size()), m_gpuFrameQueries.data());
+                m_gpuQueriesInitialized = true;
+                m_gpuQueryWriteIndex = 0;
+            }
+
+            gl.glBeginQuery(TIME_ELAPSED, m_gpuFrameQueries[m_gpuQueryWriteIndex]);
+        }
+        else
+        {
+            m_frameStats.gpuFrameMs = 0.0f;
+        }
 
         for (auto& passPtr : m_passes)
         {
@@ -184,11 +225,161 @@ namespace nfx::graphics::gl
             passPtr->execute(*m_resources);
             passPtr->end();
 
+            ++m_frameStats.passesExecuted;
+
+            if (const auto* geometry = dynamic_cast<const GeometryPass*>(passPtr.get()))
+            {
+                const auto queueSize = geometry->queue().size();
+                const auto& culling = geometry->cullingStats();
+                const auto& execution = geometry->executionStats();
+
+                m_frameStats.commandsSubmitted += static_cast<std::uint32_t>(queueSize);
+                m_frameStats.commandsRejected += culling.commandsInvalid;
+                m_frameStats.opaqueDraws += culling.commandsDrawn;
+                m_frameStats.drawCalls += culling.commandsDrawn;
+                m_frameStats.commandsDrawn += culling.commandsDrawn;
+                m_frameStats.frustumTested += culling.commandsTested;
+                m_frameStats.frustumCulled += culling.commandsCulled;
+                m_frameStats.invalidBounds += culling.invalidBounds;
+                m_frameStats.accepted += culling.commandsDrawn;
+                m_frameStats.shaderBinds += execution.shaderBinds;
+                m_frameStats.vaoBinds += execution.vaoBinds;
+                m_frameStats.vboBinds += execution.vboBinds;
+                m_frameStats.textureBinds += execution.textureBinds;
+                m_frameStats.fboBinds += execution.fboBinds;
+                m_frameStats.instancedDraws += execution.instancedDraws;
+
+                m_stats.totalCulledCommands += culling.commandsCulled;
+            }
+            else if (const auto* transparent = dynamic_cast<const TransparentPass*>(passPtr.get()))
+            {
+                const auto& execution = transparent->executionStats();
+
+                m_frameStats.commandsSubmitted += execution.commandsSubmitted;
+                m_frameStats.commandsRejected += execution.commandsInvalid;
+                m_frameStats.transparentDraws += execution.commandsDrawn;
+                m_frameStats.transparentRejected += execution.commandsInvalid;
+                m_frameStats.drawCalls += execution.commandsDrawn;
+                m_frameStats.commandsDrawn += execution.commandsDrawn;
+                m_frameStats.shaderBinds += execution.shaderBinds;
+                m_frameStats.vaoBinds += execution.vaoBinds;
+                m_frameStats.vboBinds += execution.vboBinds;
+                m_frameStats.textureBinds += execution.textureBinds;
+                m_frameStats.fboBinds += execution.fboBinds;
+                m_frameStats.instancedDraws += execution.instancedDraws;
+            }
+            else if (const auto* wboit = dynamic_cast<const WboitPass*>(passPtr.get()))
+            {
+                const auto& execution = wboit->executionStats();
+
+                m_frameStats.commandsSubmitted += execution.commandsSubmitted;
+                m_frameStats.commandsRejected += execution.commandsInvalid;
+                m_frameStats.transparentDraws += execution.commandsDrawn;
+                m_frameStats.transparentRejected += execution.commandsInvalid;
+                m_frameStats.drawCalls += execution.commandsDrawn;
+                m_frameStats.commandsDrawn += execution.commandsDrawn;
+                m_frameStats.shaderBinds += execution.shaderBinds;
+                m_frameStats.vaoBinds += execution.vaoBinds;
+                m_frameStats.vboBinds += execution.vboBinds;
+                m_frameStats.textureBinds += execution.textureBinds;
+                m_frameStats.fboBinds += execution.fboBinds;
+                m_frameStats.instancedDraws += execution.instancedDraws;
+            }
+            else if (const auto* dirShadow = dynamic_cast<const DirectionalShadowPass*>(passPtr.get()))
+            {
+                const auto& execution = dirShadow->executionStats();
+
+                m_frameStats.commandsSubmitted += execution.commandsSubmitted;
+                m_frameStats.commandsRejected += execution.commandsInvalid;
+                m_frameStats.shadowDraws += execution.commandsDrawn;
+                m_frameStats.shadowRejected += execution.commandsInvalid;
+                if (execution.commandsSubmitted > 0)
+                {
+                    ++m_frameStats.lightsCastingShadows;
+                }
+                m_frameStats.drawCalls += execution.commandsDrawn;
+                m_frameStats.commandsDrawn += execution.commandsDrawn;
+                m_frameStats.vaoBinds += execution.vaoBinds;
+                m_frameStats.vboBinds += execution.vboBinds;
+                m_frameStats.fboBinds += execution.fboBinds;
+                m_frameStats.instancedDraws += execution.instancedDraws;
+            }
+            else if (const auto* spotShadow = dynamic_cast<const SpotShadowPass*>(passPtr.get()))
+            {
+                const auto& execution = spotShadow->executionStats();
+
+                m_frameStats.commandsSubmitted += execution.commandsSubmitted;
+                m_frameStats.commandsRejected += execution.commandsInvalid;
+                m_frameStats.shadowDraws += execution.commandsDrawn;
+                m_frameStats.shadowRejected += execution.commandsInvalid;
+                m_frameStats.lightsCastingShadows += static_cast<std::uint32_t>(std::max(spotShadow->lightCount(), 0));
+                m_frameStats.drawCalls += execution.commandsDrawn;
+                m_frameStats.commandsDrawn += execution.commandsDrawn;
+                m_frameStats.vaoBinds += execution.vaoBinds;
+                m_frameStats.vboBinds += execution.vboBinds;
+                m_frameStats.fboBinds += execution.fboBinds;
+                m_frameStats.instancedDraws += execution.instancedDraws;
+            }
+            else if (const auto* pointShadow = dynamic_cast<const PointShadowPass*>(passPtr.get()))
+            {
+                const auto& execution = pointShadow->executionStats();
+
+                m_frameStats.commandsSubmitted += execution.commandsSubmitted;
+                m_frameStats.commandsRejected += execution.commandsInvalid;
+                m_frameStats.shadowDraws += execution.commandsDrawn;
+                m_frameStats.shadowRejected += execution.commandsInvalid;
+                m_frameStats.lightsCastingShadows += static_cast<std::uint32_t>(std::max(pointShadow->lightCount(), 0));
+                m_frameStats.drawCalls += execution.commandsDrawn;
+                m_frameStats.commandsDrawn += execution.commandsDrawn;
+                m_frameStats.vaoBinds += execution.vaoBinds;
+                m_frameStats.vboBinds += execution.vboBinds;
+                m_frameStats.fboBinds += execution.fboBinds;
+                m_frameStats.instancedDraws += execution.instancedDraws;
+            }
+            else
+            {
+                const auto& stats = passPtr->runtimeStats();
+                m_frameStats.drawCalls += stats.drawCalls;
+                m_frameStats.shaderBinds += stats.shaderBinds;
+                m_frameStats.vaoBinds += stats.vaoBinds;
+                m_frameStats.vboBinds += stats.vboBinds;
+                m_frameStats.fboBinds += stats.fboBinds;
+                m_frameStats.textureBinds += stats.textureBinds;
+            }
+
             if (debugGroups)
             {
                 gl.glPopDebugGroup();
             }
         }
+
+        if (m_gpuTimingSupported)
+        {
+            gl.glEndQuery(TIME_ELAPSED);
+
+            GLuint64 elapsedNs = 0;
+            gl.glGetQueryObjectui64v(m_gpuFrameQueries[m_gpuQueryWriteIndex], QUERY_RESULT, &elapsedNs);
+            m_lastGpuFrameMs = static_cast<float>(static_cast<double>(elapsedNs) / 1.0e6);
+            m_frameStats.gpuFrameMs = m_lastGpuFrameMs;
+
+            m_gpuQueryWriteIndex = 1 - m_gpuQueryWriteIndex;
+        }
+
+        ++m_stats.totalFrames;
+        m_stats.totalPasses += m_frameStats.passesExecuted;
+        m_stats.totalDrawCalls += m_frameStats.drawCalls;
+        m_stats.totalInstancedDraws += m_frameStats.instancedDraws;
+        m_stats.totalTextureBinds += m_frameStats.textureBinds;
+        m_stats.totalFboBinds += m_frameStats.fboBinds;
+        m_stats.totalVboBinds += m_frameStats.vboBinds;
+        m_stats.totalStateChanges +=
+            static_cast<std::uint64_t>(m_frameStats.shaderBinds) + static_cast<std::uint64_t>(m_frameStats.vaoBinds) +
+            static_cast<std::uint64_t>(m_frameStats.vboBinds) + static_cast<std::uint64_t>(m_frameStats.textureBinds) +
+            static_cast<std::uint64_t>(m_frameStats.fboBinds);
+
+        const auto frameEnd = std::chrono::steady_clock::now();
+        m_frameStats.cpuFrameMs = std::chrono::duration<float, std::milli>(frameEnd - frameStart).count();
+        m_frameStats.fps = (m_frameStats.cpuFrameMs > 0.0f) ? (1000.0f / m_frameStats.cpuFrameMs) : 0.0f;
     }
 
     void Renderer::bindFrameScope()

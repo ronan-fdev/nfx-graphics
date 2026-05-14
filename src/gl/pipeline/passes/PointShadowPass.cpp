@@ -193,6 +193,8 @@ namespace nfx::graphics::gl
 
     void PointShadowPass::begin()
     {
+        m_executionStats = {};
+
         if (m_dirty && m_texCache)
         {
             bool resizeOk = true;
@@ -241,6 +243,8 @@ namespace nfx::graphics::gl
 
         m_lightCount = m_pendingCount;
         m_pendingCount = 0;
+        m_executionStats.commandsSubmitted =
+            static_cast<std::uint32_t>(m_queue.size() * static_cast<std::size_t>(m_lightCount));
 
         const auto& gl = Context::current().functions();
         gl.glGetIntegerv(VIEWPORT, m_savedViewport);
@@ -286,6 +290,7 @@ namespace nfx::graphics::gl
             m_depthUbo.upload(uboData);
 
             m_framebuffers[i].bind();
+            ++m_executionStats.fboBinds;
             gl.glViewport(0, 0, m_size, m_size);
             gl.glClear(DEPTH_BUFFER_BIT);
 
@@ -294,6 +299,7 @@ namespace nfx::graphics::gl
             {
                 if (!cmd.mesh.isValid())
                 {
+                    ++m_executionStats.commandsInvalid;
                     continue;
                 }
 
@@ -304,11 +310,19 @@ namespace nfx::graphics::gl
                         stderr,
                         "[PointShadowPass] mesh handle %llu not found, skipping\n",
                         static_cast<unsigned long long>(cmd.mesh.id));
+                    ++m_executionStats.commandsInvalid;
                     continue;
                 }
 
                 m_depthShader.setUniformMat4("uModel", cmd.transform.data());
                 drawMeshDepth(gl, *mesh, cmd);
+                ++m_executionStats.commandsDrawn;
+                ++m_executionStats.vaoBinds;
+                ++m_executionStats.vboBinds;
+                if (cmd.instanceCount > 1)
+                {
+                    ++m_executionStats.instancedDraws;
+                }
             }
         }
     }

@@ -38,6 +38,7 @@ namespace nfx::graphics::gl
     void ImagePlanePass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     void ImagePlanePass::execute(RenderResources& resources)
@@ -68,6 +69,7 @@ namespace nfx::graphics::gl
         }
 
         m_targetFbo.bind();
+        ++m_runtimeStats.fboBinds;
         m_targetFbo.attachColorTexture(*colorTex, 0);
         if (m_targetDepth.isValid())
         {
@@ -99,12 +101,16 @@ namespace nfx::graphics::gl
         const float safeOpacity = std::clamp(m_opacity, 0.0f, 1.0f);
 
         imageTex->bind(0);
+        ++m_runtimeStats.textureBinds;
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniformMat4("uModel", m_transform);
         m_shader.setUniform("uImage", 0);
         m_shader.setUniform("uOpacity", safeOpacity);
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 6);
         m_vao.unbind();
     }

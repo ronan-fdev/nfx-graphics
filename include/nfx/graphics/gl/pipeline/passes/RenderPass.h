@@ -9,12 +9,23 @@
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/resources/Handle.h"
 
+#include <cstdint>
 #include <string>
 
 namespace nfx::graphics::gl
 {
     struct FrameData;
     struct ViewportRect;
+
+    struct PassRuntimeStats
+    {
+        std::uint32_t drawCalls = 0;
+        std::uint32_t shaderBinds = 0;
+        std::uint32_t vaoBinds = 0;
+        std::uint32_t vboBinds = 0;
+        std::uint32_t fboBinds = 0;
+        std::uint32_t textureBinds = 0;
+    };
 
     /**
      * \brief Abstract base class representing one stage of the renderer pipeline.
@@ -75,6 +86,11 @@ namespace nfx::graphics::gl
          */
         void setEnabled(bool enabled) noexcept { m_enabled = enabled; }
 
+        /**
+         * \brief Returns generic runtime counters from the most recent pass execution.
+         */
+        [[nodiscard]] const PassRuntimeStats& runtimeStats() const noexcept { return m_runtimeStats; }
+
     protected:
         /**
          * \brief Creates a render pass with a fixed display name.
@@ -115,6 +131,10 @@ namespace nfx::graphics::gl
          * \brief Returns the active viewport override currently bound to the pass, when available.
          */
         [[nodiscard]] const ViewportRect* currentViewport() const noexcept { return m_viewport; }
+
+        void resetRuntimeStats() noexcept { m_runtimeStats = {}; }
+
+        PassRuntimeStats m_runtimeStats;
 
     private:
         std::string m_name;

@@ -6,19 +6,22 @@
  */
 
 #include "nfx/graphics/gl/core/buffers/ShaderStorageBuffer.h"
-#include "nfx/graphics/gl/material/ibl/IblFrameBlock.h"
 #include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
+#include "nfx/graphics/gl/core/GlTypes.h"
+#include "nfx/graphics/gl/material/ibl/IblFrameBlock.h"
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/shadows/ShadowMatricesBlock.h"
 #include "ViewportRect.h"
 
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <optional>
-#include <unordered_set>
 #include <string_view>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 
 namespace nfx::graphics::gl
@@ -40,6 +43,56 @@ namespace nfx::graphics::gl
     {
     public:
         /**
+         * \brief Per-frame renderer counters reset at the start of render().
+         */
+        struct FrameStats
+        {
+            std::uint64_t frameIndex = 0;
+            float cpuFrameMs = 0.0f;
+            float gpuFrameMs = 0.0f;
+            float fps = 0.0f;
+
+            std::uint32_t drawCalls = 0;
+            std::uint32_t passesExecuted = 0;
+            std::uint32_t shaderBinds = 0;
+            std::uint32_t vaoBinds = 0;
+            std::uint32_t vboBinds = 0;
+            std::uint32_t fboBinds = 0;
+            std::uint32_t textureBinds = 0;
+            std::uint32_t opaqueDraws = 0;
+            std::uint32_t transparentDraws = 0;
+            std::uint32_t transparentRejected = 0;
+            std::uint32_t shadowDraws = 0;
+            std::uint32_t shadowRejected = 0;
+            std::uint32_t lightsCastingShadows = 0;
+            std::uint32_t instancedDraws = 0;
+            std::uint32_t commandsSubmitted = 0; ///< Total submitted command attempts across executed passes
+            std::uint32_t commandsRejected = 0;  ///< Commands rejected for invalid mesh/material/shader
+            std::uint32_t commandsDrawn = 0;
+
+            std::uint32_t frustumTested = 0;
+            std::uint32_t frustumCulled = 0;
+            std::uint32_t invalidBounds = 0;
+            std::uint32_t accepted = 0;
+        };
+
+        /**
+         * \brief Cumulative renderer counters across all successful render() calls.
+         */
+        struct RendererStats
+        {
+            std::uint64_t totalFrames = 0;
+            std::uint64_t totalDrawCalls = 0;
+            std::uint64_t totalPasses = 0;
+            std::uint64_t totalStateChanges = 0;
+            std::uint64_t totalCulledCommands = 0;
+            std::uint64_t totalInstancedDraws = 0;
+            std::uint64_t totalTextureBinds = 0;
+            std::uint64_t totalFboBinds = 0;
+            std::uint64_t totalVboBinds = 0;
+        };
+
+        /**
          * \brief Controls how permutation vs. frame-globals mismatches are reported.
          *
          * - Off    : no validation performed.
@@ -54,6 +107,7 @@ namespace nfx::graphics::gl
         };
 
         Renderer() = default;
+        ~Renderer();
 
         Renderer(const Renderer&) = delete;
         Renderer& operator=(const Renderer&) = delete;
@@ -145,6 +199,25 @@ namespace nfx::graphics::gl
          */
         void render();
 
+        /**
+         * \brief Returns counters from the most recent render() call.
+         */
+        [[nodiscard]] const FrameStats& frameStats() const noexcept { return m_frameStats; }
+
+        /**
+         * \brief Returns cumulative renderer counters.
+         */
+        [[nodiscard]] const RendererStats& stats() const noexcept { return m_stats; }
+
+        /**
+         * \brief Clears both frame and cumulative stats.
+         */
+        void clearStats() noexcept
+        {
+            m_frameStats = {};
+            m_stats = {};
+        }
+
     private:
         void bindFrameScope();
         void validatePermutations();
@@ -167,5 +240,16 @@ namespace nfx::graphics::gl
         // Validation
         ValidationMode m_validationMode = ValidationMode::Warn;
         std::unordered_set<std::uint32_t> m_validatedPermutations;
+
+        // Stats
+        FrameStats m_frameStats;
+        RendererStats m_stats;
+        std::uint64_t m_nextFrameIndex = 0;
+
+        bool m_gpuTimingSupported = false;
+        bool m_gpuQueriesInitialized = false;
+        int m_gpuQueryWriteIndex = 0;
+        std::array<GLuint, 2> m_gpuFrameQueries = { 0u, 0u };
+        float m_lastGpuFrameMs = 0.0f;
     };
 } // namespace nfx::graphics::gl

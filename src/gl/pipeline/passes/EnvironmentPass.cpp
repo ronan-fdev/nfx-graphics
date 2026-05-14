@@ -36,6 +36,7 @@ namespace nfx::graphics::gl
     void EnvironmentPass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     void EnvironmentPass::execute(RenderResources& resources)
@@ -64,6 +65,7 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*color);
             if (m_targetDepth.isValid())
             {
@@ -79,10 +81,13 @@ namespace nfx::graphics::gl
         RenderState::skybox().apply();
 
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniform("uEnvMap", static_cast<int>(TextureBindings::EnvMap));
         m_shader.setUniform("uEnvIntensity", std::max(0.0f, m_intensity));
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 36);
         m_vao.unbind();
     }

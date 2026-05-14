@@ -12,6 +12,7 @@
 #include "nfx/graphics/gl/resources/Handle.h"
 #include "MaterialBlock.h"
 
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <optional>
@@ -252,8 +253,10 @@ namespace nfx::graphics::gl
          * \brief Binds the material shader, applies the render state and uploads uniforms/textures.
          * \param shaderCache Shader cache used to resolve the shader handle.
          * \param textureCache Texture cache used to resolve texture handles.
+         * \param textureBindCount Optional output count of successful texture bind calls.
          */
-        void bind(ShaderCache& shaderCache, const Texture2DCache& textureCache);
+        void bind(
+            ShaderCache& shaderCache, const Texture2DCache& textureCache, std::uint32_t* textureBindCount = nullptr);
 
     private:
         Material() = default;

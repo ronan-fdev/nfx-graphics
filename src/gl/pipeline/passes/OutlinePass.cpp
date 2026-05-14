@@ -197,6 +197,7 @@ namespace nfx::graphics::gl
 
     void OutlinePass::begin()
     {
+        resetRuntimeStats();
         if (m_dirty)
         {
             reallocateTargets();
@@ -217,15 +218,18 @@ namespace nfx::graphics::gl
 
         gl.glBindFramebuffer(READ_FRAMEBUFFER, m_geoFbo->id());
         gl.glBindFramebuffer(DRAW_FRAMEBUFFER, m_maskFbo.id());
+        ++m_runtimeStats.fboBinds;
         gl.glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, DEPTH_BUFFER_BIT, NEAREST);
 
         m_maskFbo.bind();
+        ++m_runtimeStats.fboBinds;
         gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         gl.glClear(COLOR_BUFFER_BIT);
         m_maskFbo.unbind();
 
         gl.glBindFramebuffer(READ_FRAMEBUFFER, m_geoFbo->id());
         gl.glBindFramebuffer(DRAW_FRAMEBUFFER, m_outputFbo.id());
+        ++m_runtimeStats.fboBinds;
         gl.glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, COLOR_BUFFER_BIT, NEAREST);
         gl.glBindFramebuffer(FRAMEBUFFER, 0);
     }
@@ -258,6 +262,7 @@ namespace nfx::graphics::gl
             maskState.apply();
 
             m_maskFbo.bind();
+            ++m_runtimeStats.fboBinds;
             if (currentViewport())
             {
                 const auto* vp = currentViewport();
@@ -268,6 +273,7 @@ namespace nfx::graphics::gl
                 gl.glViewport(0, 0, m_width, m_height);
             }
             m_maskShader.bind();
+            ++m_runtimeStats.shaderBinds;
 
             for (const RenderCommand& cmd : m_queue.commands())
             {
@@ -288,6 +294,9 @@ namespace nfx::graphics::gl
 
                 m_maskShader.setUniformMat4("uModel", cmd.transform.data());
                 drawMesh(gl, *mesh, cmd);
+                ++m_runtimeStats.drawCalls;
+                ++m_runtimeStats.vaoBinds;
+                ++m_runtimeStats.vboBinds;
             }
 
             m_queue.clear();
@@ -300,6 +309,7 @@ namespace nfx::graphics::gl
             sobelState.apply();
 
             m_outputFbo.bind();
+            ++m_runtimeStats.fboBinds;
             if (currentViewport())
             {
                 const auto* vp = currentViewport();
@@ -313,6 +323,7 @@ namespace nfx::graphics::gl
             if (const Texture2D* maskTex = resources.textures2D.get(m_maskColorHandle))
             {
                 maskTex->bind(0);
+                ++m_runtimeStats.textureBinds;
             }
             else
             {
@@ -321,6 +332,7 @@ namespace nfx::graphics::gl
             }
 
             m_sobelShader.bind();
+            ++m_runtimeStats.shaderBinds;
             m_sobelShader.setUniform("uMaskTexture", 0);
             m_sobelShader.setUniformVec3("uOutlineColor", m_outlineColor);
             m_sobelShader.setUniform("uThickness", m_thickness);
@@ -335,6 +347,8 @@ namespace nfx::graphics::gl
     void OutlinePass::drawFullscreenTriangle()
     {
         m_dummyVAO.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 3);
         m_dummyVAO.unbind();
     }

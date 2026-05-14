@@ -182,6 +182,7 @@ namespace nfx::graphics::gl
     void Polygon2DPass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     void Polygon2DPass::execute(RenderResources& resources)
@@ -205,6 +206,7 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*targetColor);
             if (m_targetDepth.isValid())
             {
@@ -236,6 +238,7 @@ namespace nfx::graphics::gl
         state.apply();
 
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniform("uViewport", UniformVec2{ vpW, vpH });
 
         std::vector<Vertex2D> verts;
@@ -283,10 +286,13 @@ namespace nfx::graphics::gl
         }
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
         m_vbo.bind();
+        ++m_runtimeStats.vboBinds;
         m_vbo.setData(
             verts.data(), static_cast<std::size_t>(verts.size() * sizeof(Vertex2D)), Buffer::Usage::StreamDraw);
 
+        ++m_runtimeStats.drawCalls;
         gl.glDrawArrays(TRIANGLES, 0, static_cast<GLsizei>(verts.size()));
 
         m_vbo.unbind();

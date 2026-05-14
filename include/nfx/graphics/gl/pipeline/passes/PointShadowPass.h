@@ -13,6 +13,7 @@
 #include "RenderPass.h"
 
 #include <array>
+#include <cstdint>
 
 namespace nfx::graphics::gl
 {
@@ -27,6 +28,20 @@ namespace nfx::graphics::gl
         friend class Renderer;
 
     public:
+        /**
+         * \brief Per-frame execution counters produced by PointShadowPass::execute().
+         */
+        struct ExecutionStats
+        {
+            std::uint32_t commandsSubmitted = 0; ///< Number of submitted command attempts across all active lights
+            std::uint32_t commandsDrawn = 0;     ///< Number of draw calls executed across all active lights
+            std::uint32_t commandsInvalid = 0;   ///< Number of rejected command attempts across all active lights
+            std::uint32_t vaoBinds = 0;          ///< Number of mesh VAO binds applied
+            std::uint32_t vboBinds = 0;          ///< Number of vertex-buffer binding changes applied
+            std::uint32_t fboBinds = 0;          ///< Number of framebuffer bind calls applied
+            std::uint32_t instancedDraws = 0;    ///< Number of draw calls using instanceCount > 1
+        };
+
         /**
          * \brief Submits one draw command to the point shadow queue.
          * \param cmd Draw command to enqueue for the next shadow pass execution.
@@ -64,6 +79,11 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] int lightCount() const noexcept { return m_lightCount; }
 
+        /**
+         * \brief Returns execution counters from the most recent execute() call.
+         */
+        [[nodiscard]] const ExecutionStats& executionStats() const noexcept { return m_executionStats; }
+
     private:
         explicit PointShadowPass(std::string name = "PointShadowPass")
             : RenderPass{ std::move(name) }
@@ -99,6 +119,7 @@ namespace nfx::graphics::gl
         // Per-frame state
         int m_lightCount = 0;
         int m_pendingCount = 0;
+        ExecutionStats m_executionStats;
 
         GLint m_savedViewport[4] = {};
     };

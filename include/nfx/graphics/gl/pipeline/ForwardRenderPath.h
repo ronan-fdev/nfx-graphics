@@ -290,6 +290,16 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] Renderer& renderer() noexcept { return m_renderer; }
 
+        /**
+         * \brief Returns frame stats from the most recent render() call.
+         */
+        [[nodiscard]] const Renderer::FrameStats& frameStats() const noexcept { return m_renderer.frameStats(); }
+
+        /**
+         * \brief Returns cumulative backend renderer stats.
+         */
+        [[nodiscard]] const Renderer::RendererStats& stats() const noexcept { return m_renderer.stats(); }
+
     private:
         // clang-format off
         static constexpr std::string_view kReservedNames[] = {

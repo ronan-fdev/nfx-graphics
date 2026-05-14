@@ -153,6 +153,7 @@ namespace nfx::graphics::gl
     void TextPass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     bool TextPass::initialize()
@@ -214,6 +215,7 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*targetColor);
             if (m_targetDepth.isValid())
             {
@@ -244,10 +246,12 @@ namespace nfx::graphics::gl
         blendState.apply();
 
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniform("uViewport", UniformVec2{ vpW, vpH });
         m_shader.setUniform("uAtlas", 0);
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
 
         std::vector<GlyphVertex> quadVerts;
         quadVerts.reserve(1024);
@@ -379,16 +383,19 @@ namespace nfx::graphics::gl
             }
 
             atlas->bind(0);
+            ++m_runtimeStats.textureBinds;
             m_shader.setUniform(
                 "uColor",
                 UniformVec4{ item.style.color[0], item.style.color[1], item.style.color[2], item.style.alpha });
 
             m_vbo.bind();
+            ++m_runtimeStats.vboBinds;
             m_vbo.setData(
                 quadVerts.data(),
                 static_cast<std::ptrdiff_t>(quadVerts.size() * sizeof(GlyphVertex)),
                 Buffer::Usage::StreamDraw);
 
+            ++m_runtimeStats.drawCalls;
             gl.glDrawArrays(TRIANGLES, 0, static_cast<GLsizei>(quadVerts.size()));
 
             m_vbo.unbind();

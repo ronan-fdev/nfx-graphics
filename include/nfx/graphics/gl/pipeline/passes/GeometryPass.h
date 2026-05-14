@@ -34,9 +34,27 @@ namespace nfx::graphics::gl
          */
         struct CullingStats
         {
-            std::uint32_t commandsTested = 0; ///< Number of commands tested against frustum bounds
-            std::uint32_t commandsCulled = 0; ///< Number of commands rejected by frustum culling
-            std::uint32_t commandsDrawn = 0;  ///< Number of commands effectively drawn
+            std::uint32_t commandsTested = 0;  ///< Number of valid commands tested against frustum bounds
+            std::uint32_t commandsCulled = 0;  ///< Number of commands rejected by frustum culling
+            std::uint32_t commandsDrawn = 0;   ///< Number of commands effectively drawn
+            std::uint32_t invalidBounds = 0;   ///< Number of commands drawn without usable bounds for frustum culling
+            std::uint32_t commandsInvalid = 0; ///< Number of commands rejected due to invalid mesh/material/shader
+        };
+
+        /**
+         * \brief Per-frame execution counters produced by GeometryPass::execute().
+         */
+        struct ExecutionStats
+        {
+            std::uint32_t shaderBinds = 0;        ///< Number of shader/material bind changes applied
+            std::uint32_t vaoBinds = 0;           ///< Number of mesh VAO binds applied
+            std::uint32_t vboBinds = 0;           ///< Number of vertex-buffer binding changes applied
+            std::uint32_t textureBinds = 0;       ///< Number of texture bind calls applied
+            std::uint32_t fboBinds = 0;           ///< Number of framebuffer bind calls applied
+            std::uint32_t instancedDraws = 0;     ///< Number of draw calls using instanceCount > 1
+            std::uint32_t verticesSubmitted = 0;  ///< Number of non-indexed vertices submitted
+            std::uint32_t indicesSubmitted = 0;   ///< Number of indexed elements submitted
+            std::uint32_t instancesSubmitted = 0; ///< Total instance count submitted across draws
         };
 
         /**
@@ -151,6 +169,11 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] const CullingStats& cullingStats() const noexcept { return m_cullingStats; }
 
+        /**
+         * \brief Returns execution counters from the most recent execute() call.
+         */
+        [[nodiscard]] const ExecutionStats& executionStats() const noexcept { return m_executionStats; }
+
     private:
         explicit GeometryPass(std::string name = "GeometryPass")
             : RenderPass{ std::move(name) }
@@ -171,6 +194,7 @@ namespace nfx::graphics::gl
         int m_width = 0;
         int m_height = 0;
         CullingStats m_cullingStats;
+        ExecutionStats m_executionStats;
 
         struct ClearColor
         {

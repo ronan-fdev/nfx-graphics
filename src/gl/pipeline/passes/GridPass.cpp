@@ -34,6 +34,7 @@ namespace nfx::graphics::gl
     void GridPass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     void GridPass::execute(RenderResources& resources)
@@ -56,6 +57,7 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*color);
             if (m_targetDepth.isValid())
             {
@@ -83,11 +85,14 @@ namespace nfx::graphics::gl
         state.apply();
 
         m_gridShader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_gridShader.setUniform("uGridSize", m_params.gridSize);
         m_gridShader.setUniform("uFadeDistance", m_params.fadeDistance);
         m_gridShader.setUniformVec3("uGridColor", m_params.color);
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 6);
         m_vao.unbind();
     }

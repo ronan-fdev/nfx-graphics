@@ -76,6 +76,7 @@ namespace nfx::graphics::gl
     void AxesPass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     void AxesPass::execute(RenderResources& resources)
@@ -98,6 +99,7 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*color);
             if (m_targetDepth.isValid())
             {
@@ -122,6 +124,7 @@ namespace nfx::graphics::gl
         if (m_dirty)
         {
             rebuildGeometry();
+            ++m_runtimeStats.vboBinds;
         }
 
         RenderState state = RenderState::transparent();
@@ -130,10 +133,13 @@ namespace nfx::graphics::gl
         state.apply();
 
         m_axesShader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_axesShader.setUniform("uFadeDistance", m_params.fadeDistance);
         m_axesShader.setUniform("uOccludedAlpha", 1.0f);
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(LINES, 0, 12);
         m_vao.unbind();
     }

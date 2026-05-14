@@ -65,10 +65,14 @@ namespace nfx::graphics::gl
     void TransparentPass::begin()
     {
         m_targetBound = false;
+        m_executionStats = {};
+        resetRuntimeStats();
     }
 
     void TransparentPass::execute(RenderResources& resources)
     {
+        m_executionStats.commandsSubmitted = static_cast<std::uint32_t>(m_queue.size());
+
         if (m_queue.empty())
         {
             return;
@@ -89,6 +93,8 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_executionStats.fboBinds;
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*color);
             if (m_targetDepth.isValid())
             {
@@ -132,6 +138,63 @@ namespace nfx::graphics::gl
             return a->sortKey < b->sortKey;
         });
 
+        struct ValidTransparentCommand
+        {
+            const RenderCommand* cmd = nullptr;
+            Material* mat = nullptr;
+            ShaderProgram* shader = nullptr;
+            Mesh* mesh = nullptr;
+        };
+
+        std::vector<ValidTransparentCommand> valid;
+        valid.reserve(sorted.size());
+
+        for (const RenderCommand* cmdPtr : sorted)
+        {
+            const RenderCommand& cmd = *cmdPtr;
+            if (!cmd.mesh.isValid())
+            {
+                ++m_executionStats.commandsInvalid;
+                continue;
+            }
+
+            Mesh* mesh = resources.meshes.get(cmd.mesh);
+            if (!mesh)
+            {
+                std::fprintf(
+                    stderr,
+                    "[TransparentPass] mesh handle %llu not found, skipping\n",
+                    static_cast<unsigned long long>(cmd.mesh.id));
+                ++m_executionStats.commandsInvalid;
+                continue;
+            }
+
+            Material* mat = resources.materials.get(cmd.material);
+            if (!mat)
+            {
+                std::fprintf(
+                    stderr,
+                    "[TransparentPass] material handle %llu not found, skipping\n",
+                    static_cast<unsigned long long>(cmd.material.id));
+                ++m_executionStats.commandsInvalid;
+                continue;
+            }
+
+            ShaderProgram* shader = resources.shaders.get(mat->shader());
+            if (!shader)
+            {
+                std::fprintf(
+                    stderr,
+                    "[TransparentPass] shader handle %llu not found for material %llu, skipping\n",
+                    static_cast<unsigned long long>(mat->shader().id),
+                    static_cast<unsigned long long>(cmd.material.id));
+                ++m_executionStats.commandsInvalid;
+                continue;
+            }
+
+            valid.push_back({ cmdPtr, mat, shader, mesh });
+        }
+
         // Force blending on and depth write off for all transparent draws
         gl.glEnable(BLEND);
         gl.glBlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
@@ -147,27 +210,15 @@ namespace nfx::graphics::gl
             gl.glCullFace(pass == 0 ? static_cast<GLenum>(FRONT) : static_cast<GLenum>(BACK));
             lastMaterial = nullptr;
 
-            for (const RenderCommand* cmdPtr : sorted)
+            for (const ValidTransparentCommand& entry : valid)
             {
-                const RenderCommand& cmd = *cmdPtr;
-                if (!cmd.mesh.isValid())
-                {
-                    continue;
-                }
-
-                Material* mat = resources.materials.get(cmd.material);
-                if (!mat)
-                {
-                    std::fprintf(
-                        stderr,
-                        "[TransparentPass] material handle %llu not found, skipping\n",
-                        static_cast<unsigned long long>(cmd.material.id));
-                    continue;
-                }
+                const RenderCommand& cmd = *entry.cmd;
+                Material* mat = entry.mat;
 
                 if (mat != lastMaterial)
                 {
-                    mat->bind(resources.shaders, resources.textures2D);
+                    std::uint32_t textureBinds = 0;
+                    mat->bind(resources.shaders, resources.textures2D, &textureBinds);
                     gl.glDepthMask(false);
                     gl.glEnable(BLEND);
                     gl.glBlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
@@ -175,37 +226,32 @@ namespace nfx::graphics::gl
                     gl.glEnable(CULL_FACE);
                     gl.glCullFace(pass == 0 ? static_cast<GLenum>(FRONT) : static_cast<GLenum>(BACK));
                     lastMaterial = mat;
+                    ++m_executionStats.shaderBinds;
+                    m_executionStats.textureBinds += textureBinds;
+                    ++m_runtimeStats.shaderBinds;
+                    m_runtimeStats.textureBinds += textureBinds;
                 }
 
-                if (ShaderProgram* shader = resources.shaders.get(mat->shader()))
-                {
-                    shader->setUniformMat4("uModel", cmd.transform.data());
+                ShaderProgram* shader = entry.shader;
+                shader->setUniformMat4("uModel", cmd.transform.data());
 
-                    float normalMatrix[9];
-                    math::mat3InverseTranspose(normalMatrix, cmd.transform.data());
-                    shader->setUniformMat3("uNormalMatrix", normalMatrix);
-                }
-                else
-                {
-                    std::fprintf(
-                        stderr,
-                        "[TransparentPass] shader handle %llu not found for material %llu, skipping\n",
-                        static_cast<unsigned long long>(mat->shader().id),
-                        static_cast<unsigned long long>(cmd.material.id));
-                    continue;
-                }
+                float normalMatrix[9];
+                math::mat3InverseTranspose(normalMatrix, cmd.transform.data());
+                shader->setUniformMat3("uNormalMatrix", normalMatrix);
 
-                Mesh* mesh = resources.meshes.get(cmd.mesh);
-                if (!mesh)
-                {
-                    std::fprintf(
-                        stderr,
-                        "[TransparentPass] mesh handle %llu not found, skipping\n",
-                        static_cast<unsigned long long>(cmd.mesh.id));
-                    continue;
-                }
+                Mesh* mesh = entry.mesh;
 
                 drawMesh(gl, *mesh, cmd);
+                ++m_executionStats.commandsDrawn;
+                ++m_executionStats.vaoBinds;
+                ++m_executionStats.vboBinds;
+                ++m_runtimeStats.drawCalls;
+                ++m_runtimeStats.vaoBinds;
+                ++m_runtimeStats.vboBinds;
+                if (cmd.instanceCount > 1)
+                {
+                    ++m_executionStats.instancedDraws;
+                }
             }
         }
 

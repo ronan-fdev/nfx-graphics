@@ -34,6 +34,7 @@ namespace nfx::graphics::gl
     void SkyboxPass::begin()
     {
         m_targetBound = false;
+        resetRuntimeStats();
     }
 
     void SkyboxPass::execute(RenderResources& resources)
@@ -56,6 +57,7 @@ namespace nfx::graphics::gl
             }
 
             m_targetFbo.bind();
+            ++m_runtimeStats.fboBinds;
             m_targetFbo.attachColorTexture(*color);
             if (m_targetDepth.isValid())
             {
@@ -77,10 +79,14 @@ namespace nfx::graphics::gl
         RenderState::skybox().apply();
 
         cube->bind(0);
+        ++m_runtimeStats.textureBinds;
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniform("uSkybox", 0);
 
         m_vao.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 36);
         m_vao.unbind();
     }

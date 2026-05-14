@@ -33,7 +33,10 @@ namespace nfx::graphics::gl
         return true;
     }
 
-    void PresentPass::begin() {}
+    void PresentPass::begin()
+    {
+        resetRuntimeStats();
+    }
 
     void PresentPass::execute(RenderResources& resources)
     {
@@ -64,8 +67,10 @@ namespace nfx::graphics::gl
         }
 
         inputTex->bind(0);
+        ++m_runtimeStats.textureBinds;
 
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniform("uColorInput", 0);
         m_shader.setUniform("uExposure", std::max(m_exposure, 0.001f));
         m_shader.setUniform("uGamma", std::max(m_gamma, 0.001f));
@@ -73,6 +78,8 @@ namespace nfx::graphics::gl
         m_shader.setUniform("uGammaEnabled", m_gammaEnabled ? 1 : 0);
 
         m_dummyVAO.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 3);
         m_dummyVAO.unbind();
     }

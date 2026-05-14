@@ -121,6 +121,7 @@ namespace nfx::graphics::gl
 
     void PostProcessPass::begin()
     {
+        resetRuntimeStats();
         if (m_shaderDirty)
         {
             if (!initialize())
@@ -137,6 +138,7 @@ namespace nfx::graphics::gl
 
         Context::current().functions().glGetIntegerv(VIEWPORT, m_savedViewport);
         m_outputFbo.bind();
+        ++m_runtimeStats.fboBinds;
         Context::current().functions().glViewport(0, 0, m_width, m_height);
     }
 
@@ -163,7 +165,9 @@ namespace nfx::graphics::gl
         rs.apply();
 
         inputTex->bind(0);
+        ++m_runtimeStats.textureBinds;
         m_shader.bind();
+        ++m_runtimeStats.shaderBinds;
         m_shader.setUniform("uColorInput", 0);
 
         for (const auto& [name, val] : m_floatUniforms)
@@ -176,6 +180,8 @@ namespace nfx::graphics::gl
         }
 
         m_dummyVAO.bind();
+        ++m_runtimeStats.vaoBinds;
+        ++m_runtimeStats.drawCalls;
         Context::current().functions().glDrawArrays(TRIANGLES, 0, 3);
         m_dummyVAO.unbind();
     }

@@ -190,6 +190,8 @@ namespace nfx::graphics::gl
 
     void SpotShadowPass::begin()
     {
+        m_executionStats = {};
+
         // Reallocate textures if resolution changed
         if (m_dirty && m_texCache)
         {
@@ -239,6 +241,8 @@ namespace nfx::graphics::gl
         // Commit lights registered via addLight() before render(), reset for next frame
         m_lightCount = m_pendingCount;
         m_pendingCount = 0;
+        m_executionStats.commandsSubmitted =
+            static_cast<std::uint32_t>(m_queue.size() * static_cast<std::size_t>(m_lightCount));
         for (int i = 0; i < m_lightCount; ++i)
         {
             buildSpotLightSpaceMatrix(m_shadowMaps[i].lightSpaceMatrix, m_lights[i]);
@@ -265,6 +269,7 @@ namespace nfx::graphics::gl
         for (int i = 0; i < m_lightCount; ++i)
         {
             m_framebuffers[i].bind();
+            ++m_executionStats.fboBinds;
             gl.glViewport(0, 0, m_width, m_height);
             gl.glClear(DEPTH_BUFFER_BIT);
 
@@ -278,6 +283,7 @@ namespace nfx::graphics::gl
             {
                 if (!cmd.mesh.isValid())
                 {
+                    ++m_executionStats.commandsInvalid;
                     continue;
                 }
 
@@ -288,11 +294,19 @@ namespace nfx::graphics::gl
                         stderr,
                         "[SpotShadowPass] mesh handle %llu not found, skipping\n",
                         static_cast<unsigned long long>(cmd.mesh.id));
+                    ++m_executionStats.commandsInvalid;
                     continue;
                 }
 
                 m_depthShader.setUniformMat4("uModel", cmd.transform.data());
                 drawMeshDepth(gl, *mesh, cmd);
+                ++m_executionStats.commandsDrawn;
+                ++m_executionStats.vaoBinds;
+                ++m_executionStats.vboBinds;
+                if (cmd.instanceCount > 1)
+                {
+                    ++m_executionStats.instancedDraws;
+                }
             }
         }
     }

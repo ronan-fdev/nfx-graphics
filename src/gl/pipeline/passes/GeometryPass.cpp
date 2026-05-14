@@ -132,6 +132,10 @@ namespace nfx::graphics::gl
     {
         const auto& gl = Context::current().functions();
 
+        m_cullingStats = {};
+        m_executionStats = {};
+        resetRuntimeStats();
+
         if (!m_colorHandle.isValid() || !m_depthHandle.isValid())
         {
             assert(false && "GeometryPass::begin: setOutputSize() must be called before rendering");
@@ -139,6 +143,8 @@ namespace nfx::graphics::gl
         }
 
         m_framebuffer.bind();
+        ++m_executionStats.fboBinds;
+        ++m_runtimeStats.fboBinds;
         gl.glViewport(0, 0, m_width, m_height);
 
         m_state.apply();
@@ -175,6 +181,12 @@ namespace nfx::graphics::gl
         const auto& ctx = Context::current();
         const auto& gl = ctx.functions();
 
+        std::optional<math::Frustum> frustum;
+        if (const FrameData* frame = currentFrameData())
+        {
+            frustum = math::Frustum::fromViewProj(frame->camera.viewProj);
+        }
+
         m_queue.sort(m_order);
         const auto& commands = m_queue.commands();
 
@@ -189,6 +201,18 @@ namespace nfx::graphics::gl
         {
             if (!cmd.mesh.isValid())
             {
+                ++m_cullingStats.commandsInvalid;
+                continue;
+            }
+
+            Mesh* mesh = resources.meshes.get(cmd.mesh);
+            if (!mesh)
+            {
+                std::fprintf(
+                    stderr,
+                    "[GeometryPass] mesh handle %llu not found, skipping\n",
+                    static_cast<unsigned long long>(cmd.mesh.id));
+                ++m_cullingStats.commandsInvalid;
                 continue;
             }
 
@@ -205,43 +229,61 @@ namespace nfx::graphics::gl
                         stderr,
                         "[GeometryPass] material handle %llu not found, skipping\n",
                         static_cast<unsigned long long>(cmd.material.id));
+                    ++m_cullingStats.commandsInvalid;
                     continue;
                 }
             }
 
-            if (mat != lastMaterial)
-            {
-                mat->bind(resources.shaders, resources.textures2D);
-                lastMaterial = mat;
-            }
-
-            if (ShaderProgram* shader = resources.shaders.get(mat->shader()))
-            {
-                shader->setUniformMat4("uModel", cmd.transform.data());
-
-                float normalMatrix[9];
-                math::mat3InverseTranspose(normalMatrix, cmd.transform.data());
-                shader->setUniformMat3("uNormalMatrix", normalMatrix);
-            }
-            else
+            ShaderProgram* shader = resources.shaders.get(mat->shader());
+            if (!shader)
             {
                 std::fprintf(
                     stderr,
                     "[GeometryPass] shader handle %llu not found for material %llu, skipping\n",
                     static_cast<unsigned long long>(mat->shader().id),
                     static_cast<unsigned long long>(cmd.material.id));
+                ++m_cullingStats.commandsInvalid;
                 continue;
             }
 
-            Mesh* mesh = resources.meshes.get(cmd.mesh);
-            if (!mesh)
+            ++m_cullingStats.commandsTested;
+
+            if (frustum.has_value())
             {
-                std::fprintf(
-                    stderr,
-                    "[GeometryPass] mesh handle %llu not found, skipping\n",
-                    static_cast<unsigned long long>(cmd.mesh.id));
-                continue;
+                const auto decision = detail::decideFrustumCulling(
+                    *frustum,
+                    cmd.transform,
+                    cmd.boundsAABB,
+                    cmd.boundsSphere,
+                    mesh->boundsAABB(),
+                    mesh->boundsSphere());
+                if (!decision.tested)
+                {
+                    ++m_cullingStats.invalidBounds;
+                }
+                if (decision.tested && decision.culled)
+                {
+                    ++m_cullingStats.commandsCulled;
+                    continue;
+                }
             }
+
+            if (mat != lastMaterial)
+            {
+                std::uint32_t textureBinds = 0;
+                mat->bind(resources.shaders, resources.textures2D, &textureBinds);
+                lastMaterial = mat;
+                ++m_executionStats.shaderBinds;
+                m_executionStats.textureBinds += textureBinds;
+                ++m_runtimeStats.shaderBinds;
+                m_runtimeStats.textureBinds += textureBinds;
+            }
+
+            shader->setUniformMat4("uModel", cmd.transform.data());
+
+            float normalMatrix[9];
+            math::mat3InverseTranspose(normalMatrix, cmd.transform.data());
+            shader->setUniformMat3("uNormalMatrix", normalMatrix);
 
             if (cmd.mode == RenderMode::Patches && !patchStateApplied)
             {
@@ -250,6 +292,30 @@ namespace nfx::graphics::gl
             }
 
             drawMesh(gl, *mesh, cmd);
+            ++m_cullingStats.commandsDrawn;
+            ++m_executionStats.vaoBinds;
+            ++m_executionStats.vboBinds;
+            ++m_runtimeStats.drawCalls;
+            ++m_runtimeStats.vaoBinds;
+            ++m_runtimeStats.vboBinds;
+
+            if (cmd.instanceCount > 1)
+            {
+                ++m_executionStats.instancedDraws;
+            }
+
+            if (mesh->isIndexed())
+            {
+                m_executionStats.indicesSubmitted +=
+                    static_cast<std::uint32_t>(mesh->indexCount() * static_cast<std::size_t>(cmd.instanceCount));
+            }
+            else
+            {
+                m_executionStats.verticesSubmitted +=
+                    static_cast<std::uint32_t>(mesh->vertexCount() * static_cast<std::size_t>(cmd.instanceCount));
+            }
+
+            m_executionStats.instancesSubmitted += static_cast<std::uint32_t>(cmd.instanceCount);
         }
     }
 

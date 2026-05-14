@@ -213,8 +213,13 @@ namespace nfx::graphics::gl
         m_materialBlock = block;
     }
 
-    void Material::bind(ShaderCache& shaderCache, const Texture2DCache& textureCache)
+    void Material::bind(ShaderCache& shaderCache, const Texture2DCache& textureCache, std::uint32_t* textureBindCount)
     {
+        if (textureBindCount)
+        {
+            *textureBindCount = 0;
+        }
+
         ShaderProgram* shader = shaderCache.get(m_shader);
         if (!shader)
         {
@@ -260,6 +265,10 @@ namespace nfx::graphics::gl
             {
                 tex->bind(unit);
                 m_lastBoundUnits.push_back(unit);
+                if (textureBindCount)
+                {
+                    ++(*textureBindCount);
+                }
             }
             else
             {
@@ -292,6 +301,10 @@ namespace nfx::graphics::gl
                 tex->bind(unit);
                 shader->setUniform(name, static_cast<int>(unit));
                 m_lastBoundUnits.push_back(unit);
+                if (textureBindCount)
+                {
+                    ++(*textureBindCount);
+                }
                 ++unit;
             }
             else

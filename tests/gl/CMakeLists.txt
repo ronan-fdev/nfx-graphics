@@ -16,6 +16,8 @@ add_executable(nfx-graphics-gl-tests
     pipeline/tests_Bindings.cpp
     pipeline/tests_CullingUtils.cpp
     pipeline/tests_ForwardRenderPathWiring.cpp
+    pipeline/tests_GeometryPassStats.cpp
+    pipeline/tests_PassStatsSemantics.cpp
     pipeline/tests_Renderer.cpp
     pipeline/tests_RenderQueue.cpp
     pipeline/tests_RenderState.cpp

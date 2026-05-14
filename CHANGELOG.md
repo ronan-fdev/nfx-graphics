@@ -31,7 +31,7 @@
 
 ##### Materials
 
-- `Material`: high-level material combining shader, render state and named uniform/texture bindings
+- `Material`: high-level material combining shader, render state and named uniform/texture bindings, with optional texture-bind count reporting in `bind(...)`
 - `MaterialBlock`: std140-compatible CPU mirror of MaterialBlock UBO (baseColor+alpha, specColor+shininess, emissive+envIntensity)
 - `IblFrameBlock`: std140 frame-global IBL state block used to bind split-sum resources
 
@@ -57,20 +57,20 @@
 - `AxesPass`: world-axes overlay pass with embedded shader, configurable axis length/fade distance, and optional target framebuffer
 - `GridPass`: infinite anti-aliased ground grid overlay pass with configurable cell size, fade distance, and color
 
-- `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state and output accessors
-- `GeometryPass`: opaque geometry pass with queue submission, material/mesh/shader resolution, fallback material, render target, sort order, patch vertex count, and per-frame clear control
+- `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state, output accessors, and generic runtime stats access
+- `GeometryPass`: opaque geometry pass with queue submission, material/mesh/shader resolution, fallback material, render target, sort order, patch vertex count, per-frame clear control, and per-frame culling/execution stats
 - `PresentPass`: final fullscreen pass for presentation (input color, optional tonemap, optional gamma)
-- `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, and target framebuffer compositing
+- `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, target framebuffer compositing, and per-frame execution stats
 - `PostProcessPass`: generic fullscreen post-process pass with custom fragment source, input color handle, output texture target, and dynamic uniforms
 - `SkyboxPass`: cubemap skybox pass rendered behind opaque scene geometry
-- `WboitPass`: weighted blended OIT pass with accumulation/reveal targets and fullscreen composite
+- `WboitPass`: weighted blended OIT pass with accumulation/reveal targets, fullscreen composite, and per-frame execution stats
 - `EnvironmentPass`: environment cubemap composition pass with configurable intensity and explicit target color/depth wiring
 - `OutlinePass`: selection outline compositing pass rendering selected geometry into a mask, extracting edges via Sobel filter, and compositing outlines with configurable color/thickness and viewport support
 - `ImagePlanePass`: world-space reference image overlay pass with configurable transform, opacity, and depth testing
 
-- `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix)
-- `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light
-- `PointShadowPass`: depth-only point-light shadow pass producing layered cube-map depth shadows
+- `DirectionalShadowPass`: depth-only directional shadow-map pass producing a `ShadowMap` payload (depth texture + light-space matrix), with per-frame execution stats
+- `SpotShadowPass`: depth-only spot shadow-map pass producing one 2D depth map per spot light, with per-frame execution stats
+- `PointShadowPass`: depth-only point-light shadow pass producing layered cube-map depth shadows, with per-frame execution stats
 
 - `Polygon2DPass`: screen-space filled convex polygon overlay pass with `addRect` and `addConvexPolygon` helpers
 
@@ -84,13 +84,13 @@
 - `ShadowMatricesBlock`: std140 block for shadow matrices
 
 - `Bindings.h`: shared UBO/SSBO/texture binding-point conventions for pipeline and materials
-- `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding
+- `Renderer`: frame renderer orchestrating an ordered sequence of render passes with frame-scoped UBO/SSBO binding, plus per-frame/cumulative stats, CPU/GPU frame timing, and stats access/reset helpers
 - `RenderMode`: primitive topology enum mapped to OpenGL draw modes
 - `RenderState`: pipeline state descriptor with `apply()` helper and `opaque()` / `transparent()` / `shadowCaster()` presets
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 - `ViewportRect`: pixel-space rectangle (x, y, width, height) for multi-viewport rendering contracts
 
-- `ForwardRenderPath`: forward rendering pipeline assembler - fluent pass configuration (`addShadowPass<T>`, `setSkybox`, `enableTransparency<T>`, `addOverlay<T>`), automatic color/depth target wiring, viewport resize handling, and typed pass access via `get<T>(name)`
+- `ForwardRenderPath`: forward rendering pipeline assembler - fluent pass configuration (`addShadowPass<T>`, `setSkybox`, `enableTransparency<T>`, `addOverlay<T>`), automatic color/depth target wiring, viewport resize handling, typed pass access via `get<T>(name)`, and forwarded renderer stats access
 
 ##### Resources
 
@@ -151,6 +151,8 @@
 - `gl/pipeline/tests_Bindings`: validates UBO and texture binding slot uniqueness, alias mapping, and range separation
 - `gl/pipeline/tests_CullingUtils`: validates frustum culling decisions and world-space bound transforms (`AABB` first, `Sphere` fallback)
 - `gl/pipeline/tests_ForwardRenderPathWiring`: validates automatic target texture wiring between passes (geometry output routed to overlays/transparent/outline)
+- `gl/pipeline/tests_GeometryPassStats`: validates per-frame stats semantics (commandsTested, commandsCulled for frustum-only, commandsInvalid for resource errors, and executionStats for binds and submission details)
+- `gl/pipeline/tests_PassStatsSemantics`: validates per-pass stats contracts (`TransparentPass`, `WboitPass`, `DirectionalShadowPass`, `SpotShadowPass`, `PointShadowPass`) and `Renderer::FrameStats` aggregated draw-call accounting
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping

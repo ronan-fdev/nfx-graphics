@@ -9,6 +9,7 @@
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "RenderPass.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -31,6 +32,22 @@ namespace nfx::graphics::gl
         friend class Renderer;
 
     public:
+        /**
+         * \brief Per-frame execution counters produced by TransparentPass::execute().
+         */
+        struct ExecutionStats
+        {
+            std::uint32_t commandsSubmitted = 0; ///< Number of queued transparent commands
+            std::uint32_t commandsDrawn = 0;     ///< Number of transparent draw calls effectively executed
+            std::uint32_t commandsInvalid = 0;   ///< Number of commands rejected due to invalid mesh/material/shader
+            std::uint32_t shaderBinds = 0;       ///< Number of shader/material bind changes applied
+            std::uint32_t vaoBinds = 0;          ///< Number of mesh VAO binds applied
+            std::uint32_t vboBinds = 0;          ///< Number of vertex-buffer binding changes applied
+            std::uint32_t textureBinds = 0;      ///< Number of texture bind calls applied
+            std::uint32_t fboBinds = 0;          ///< Number of framebuffer bind calls applied
+            std::uint32_t instancedDraws = 0;    ///< Number of draw calls using instanceCount > 1
+        };
+
         /**
          * \brief Submits one transparent draw command.
          * \param cmd Draw command to enqueue.
@@ -75,6 +92,11 @@ namespace nfx::graphics::gl
         [[nodiscard]] std::size_t size() const noexcept { return m_queue.size(); }
 
         /**
+         * \brief Returns execution counters from the most recent execute() call.
+         */
+        [[nodiscard]] const ExecutionStats& executionStats() const noexcept { return m_executionStats; }
+
+        /**
          * \brief Returns the target framebuffer receiving this pass output.
          */
         [[nodiscard]] virtual const Framebuffer* outputFramebuffer() const noexcept override
@@ -98,5 +120,6 @@ namespace nfx::graphics::gl
         bool m_targetBound = false;
         RenderQueue m_queue;
         float m_cameraPos[3] = { 0.f, 0.f, 0.f };
+        ExecutionStats m_executionStats;
     };
 } // namespace nfx::graphics::gl

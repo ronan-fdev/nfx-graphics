@@ -9,6 +9,7 @@
 #include "RenderPass.h"
 
 #include <cassert>
+#include <cstdint>
 #include <vector>
 
 namespace nfx::graphics::gl
@@ -24,6 +25,22 @@ namespace nfx::graphics::gl
         friend class Renderer;
 
     public:
+        /**
+         * \brief Per-frame execution counters produced by WboitPass::execute().
+         */
+        struct ExecutionStats
+        {
+            std::uint32_t commandsSubmitted = 0; ///< Number of queued transparent commands
+            std::uint32_t commandsDrawn = 0;     ///< Number of transparent draw calls effectively executed
+            std::uint32_t commandsInvalid = 0;   ///< Number of commands rejected due to invalid mesh/material
+            std::uint32_t shaderBinds = 0;       ///< Number of shader/material bind changes applied
+            std::uint32_t vaoBinds = 0;          ///< Number of mesh VAO binds applied
+            std::uint32_t vboBinds = 0;          ///< Number of vertex-buffer binding changes applied
+            std::uint32_t textureBinds = 0;      ///< Number of texture bind calls applied
+            std::uint32_t fboBinds = 0;          ///< Number of framebuffer bind calls applied
+            std::uint32_t instancedDraws = 0;    ///< Number of draw calls using instanceCount > 1
+        };
+
         /**
          * \brief Submits one transparent draw command to the WBOIT accumulation pass.
          * \param cmd Draw command to enqueue.
@@ -74,6 +91,11 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] std::size_t size() const noexcept { return m_commands.size(); }
 
+        /**
+         * \brief Returns execution counters from the most recent execute() call.
+         */
+        [[nodiscard]] const ExecutionStats& executionStats() const noexcept { return m_executionStats; }
+
     private:
         explicit WboitPass(std::string name = "WboitPass")
             : RenderPass{ std::move(name) }
@@ -108,5 +130,6 @@ namespace nfx::graphics::gl
         int m_height = 0;
 
         std::vector<RenderCommand> m_commands;
+        ExecutionStats m_executionStats;
     };
 } // namespace nfx::graphics::gl

@@ -156,6 +156,9 @@ namespace nfx::graphics::gl
 
     void DirectionalShadowPass::begin()
     {
+        m_executionStats = {};
+        m_executionStats.commandsSubmitted = static_cast<std::uint32_t>(m_queue.size());
+
         if (m_dirty && m_texCache)
         {
             // Remove old depth texture from cache and allocate a new one
@@ -190,6 +193,7 @@ namespace nfx::graphics::gl
         const auto& gl = Context::current().functions();
         gl.glGetIntegerv(VIEWPORT, m_savedViewport);
         m_framebuffer.bind();
+        ++m_executionStats.fboBinds;
         gl.glViewport(0, 0, m_width, m_height);
 
         m_shadowState.apply();
@@ -211,6 +215,7 @@ namespace nfx::graphics::gl
         {
             if (!cmd.mesh.isValid())
             {
+                ++m_executionStats.commandsInvalid;
                 continue;
             }
 
@@ -221,11 +226,19 @@ namespace nfx::graphics::gl
                     stderr,
                     "[DirectionalShadowPass] mesh handle %llu not found, skipping\n",
                     static_cast<unsigned long long>(cmd.mesh.id));
+                ++m_executionStats.commandsInvalid;
                 continue;
             }
 
             m_depthShader.setUniformMat4("uModel", cmd.transform.data());
             drawMeshDepth(gl, *mesh, cmd);
+            ++m_executionStats.commandsDrawn;
+            ++m_executionStats.vaoBinds;
+            ++m_executionStats.vboBinds;
+            if (cmd.instanceCount > 1)
+            {
+                ++m_executionStats.instancedDraws;
+            }
         }
     }
 
