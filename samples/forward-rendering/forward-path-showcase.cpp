@@ -2,9 +2,11 @@
 
 #include <nfx/Graphics.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <optional>
+#include <string>
 
 namespace gl = nfx::graphics::gl;
 namespace math = nfx::graphics::math;
@@ -25,6 +27,11 @@ namespace
     constexpr float kOrbRadius = 3.5f;
     constexpr float kOrbHeight = 2.0f;
     constexpr float kOrbSpeed = 0.6f;
+
+    constexpr float kHudTextX = 12.0f;
+    constexpr float kHudTextY = 34.0f;
+    constexpr float kHudUpdatePeriod = 0.1f;
+    constexpr float kHudPanelHeight = 350.0f;
 } // namespace
 
 struct Scene
@@ -35,12 +42,18 @@ struct Scene
     gl::Texture2DCache texture2DCache;
     gl::TextureCubeCache textureCubeCache;
     gl::SamplerCache samplerCache;
+    gl::FontCache fontCache;
     std::optional<gl::RenderResources> renderResources;
 
     gl::ForwardRenderPath path;
 
     gl::DirectionalShadowPass* dirShadow = nullptr;
     gl::PointShadowPass* pointShadow = nullptr;
+    gl::Polygon2DPass* hudPass = nullptr;
+    gl::TextPass* textPass = nullptr;
+    gl::FontHandle statsFont;
+    gl::TextItemHandle statsTextHandle;
+    gl::TextItemHandle statsTextShadowHandle;
 
     gl::MeshHandle sphereHandle;
     gl::MeshHandle cubeHandle;
@@ -63,6 +76,9 @@ struct Scene
     gl::OrbitCamera orbitCamera;
     smp::Clock clock;
     float time = 0.0f;
+    float hudUpdateAccum = kHudUpdatePeriod;
+    int hudViewportW = 0;
+    int hudViewportH = 0;
 
     bool middleDown = false;
     bool rightDown = false;
@@ -205,6 +221,47 @@ int main()
                 return;
             }
 
+            scene->hudPass = scene->path.addOverlay<gl::Polygon2DPass>("StatsPanel");
+            if (!scene->hudPass)
+            {
+                std::fprintf(stderr, "forward-path-showcase: failed to create Polygon2DPass overlay\n");
+                return;
+            }
+
+            scene->textPass = scene->path.addOverlay<gl::TextPass>("StatsText");
+            if (!scene->textPass)
+            {
+                std::fprintf(stderr, "forward-path-showcase: failed to create TextPass overlay\n");
+                return;
+            }
+            scene->statsFont = smp::FontLoader::fromEmbedded(
+                scene->texture2DCache, scene->fontCache, "JetBrains/mono/JetBrainsMono-Regular.ttf", 32.0f, 32u, 126u);
+            if (!scene->statsFont.isValid())
+            {
+                std::fprintf(stderr, "forward-path-showcase: failed to load font\n");
+                return;
+            }
+            scene->textPass->setFontCache(scene->fontCache);
+
+            // HUD
+            gl::TextStyle hudShadowStyle;
+            hudShadowStyle.sizePx = 16.0f;
+            hudShadowStyle.color[0] = 0.0f;
+            hudShadowStyle.color[1] = 0.0f;
+            hudShadowStyle.color[2] = 0.0f;
+            hudShadowStyle.alpha = 1.0f;
+
+            gl::TextStyle hudStyle;
+            hudStyle.sizePx = 16.0f;
+            hudStyle.color[0] = 1.0f;
+            hudStyle.color[1] = 0.2f;
+            hudStyle.color[2] = 0.0f;
+            hudStyle.alpha = 1.0f;
+
+            scene->statsTextShadowHandle =
+                scene->textPass->addTextUtf8(scene->statsFont, "", kHudTextX + 2.0f, kHudTextY + 2.0f, hudShadowStyle);
+            scene->statsTextHandle = scene->textPass->addTextUtf8(scene->statsFont, "", kHudTextX, kHudTextY, hudStyle);
+
             scene->path.setClearColor(0.08f, 0.09f, 0.12f);
             scene->path.setTonemapEnabled(true);
             scene->path.setGammaEnabled(true);
@@ -214,10 +271,13 @@ int main()
             scene->orbitCamera.distance = 14.0f;
             scene->orbitCamera.elevation = 0.45f;
             scene->orbitCamera.target[1] = 0.5f;
+            const bool textReady = scene->textPass != nullptr && scene->statsFont.isValid() &&
+                                   scene->statsTextHandle.isValid() && scene->statsTextShadowHandle.isValid();
             scene->ready = scene->sphereHandle.isValid() && scene->cubeHandle.isValid() &&
                            scene->planeHandle.isValid() && scene->opaqueMat.isValid() && scene->groundMat.isValid() &&
                            scene->transpRed.isValid() && scene->transpGreen.isValid() && scene->transpBlue.isValid() &&
-                           scene->orbMat.isValid() && scene->dirShadow != nullptr && scene->pointShadow != nullptr;
+                           scene->orbMat.isValid() && scene->dirShadow != nullptr && scene->pointShadow != nullptr &&
+                           scene->hudPass != nullptr && textReady;
         },
 
         // onRender
@@ -227,7 +287,8 @@ int main()
                 return;
             }
 
-            scene->time += scene->clock.tick();
+            const float dt = scene->clock.tick();
+            scene->time += dt;
 
             // Light-space matrix
             float dirLS[16];
@@ -353,6 +414,228 @@ int main()
             frame.lights.push_back(orb.toGpuData());
 
             scene->path.render(frame, width, height);
+
+            // HUD
+            if (scene->hudPass)
+            {
+                const int safeW = std::max(width, 1);
+                const int safeH = std::max(height, 1);
+                if (scene->hudViewportW != safeW || scene->hudViewportH != safeH)
+                {
+                    scene->hudViewportW = safeW;
+                    scene->hudViewportH = safeH;
+
+                    scene->hudPass->clear();
+
+                    const float panelX = 6.0f;
+                    const float panelY = 8.0f;
+                    const float panelW = std::min(static_cast<float>(safeW) - 12.0f, 905.0f);
+                    const float panelH = kHudPanelHeight;
+
+                    scene->hudPass->addRect(
+                        panelX, panelY, panelW, panelH, gl::Polygon2DStyle{ { 0.0f, 0.0f, 0.0f }, 0.52f });
+                    scene->hudPass->addRect(
+                        panelX + 1.5f,
+                        panelY + 1.5f,
+                        panelW - 3.0f,
+                        panelH - 3.0f,
+                        gl::Polygon2DStyle{ { 0.06f, 0.08f, 0.12f }, 0.30f });
+                }
+            }
+
+            if (scene->textPass && scene->statsFont.isValid())
+            {
+                scene->hudUpdateAccum += dt;
+                if (scene->hudUpdateAccum < kHudUpdatePeriod)
+                {
+                    return;
+                }
+                scene->hudUpdateAccum = 0.0f;
+
+                const auto& frameStats = scene->path.frameStats();
+                std::string hudText;
+                char tmp[512];
+
+                std::snprintf(
+                    tmp,
+                    sizeof(tmp),
+                    "frame=%lu cpu=%.2fms gpu=%.2fms fps=%.1f\n",
+                    static_cast<unsigned long>(frameStats.frameIndex),
+                    frameStats.cpuFrameMs,
+                    frameStats.gpuFrameMs,
+                    frameStats.fps);
+                hudText += tmp;
+
+                std::snprintf(
+                    tmp,
+                    sizeof(tmp),
+                    "drawcalls=%u opaque=%u transparent=%u shadow=%u instanced=%u passes=%u\n",
+                    frameStats.drawCalls,
+                    frameStats.opaqueDraws,
+                    frameStats.transparentDraws,
+                    frameStats.shadowDraws,
+                    frameStats.instancedDraws,
+                    frameStats.passesExecuted);
+                hudText += tmp;
+
+                std::snprintf(
+                    tmp,
+                    sizeof(tmp),
+                    "commands submitted=%u drawn=%u rejected=%u\n",
+                    frameStats.commandsSubmitted,
+                    frameStats.commandsDrawn,
+                    frameStats.commandsRejected);
+                hudText += tmp;
+
+                std::snprintf(
+                    tmp,
+                    sizeof(tmp),
+                    "frustum culling tested=%u culled=%u accepted=%u invalid-bounds=%u\n",
+                    frameStats.frustumTested,
+                    frameStats.frustumCulled,
+                    frameStats.accepted,
+                    frameStats.invalidBounds);
+                hudText += tmp;
+
+                std::snprintf(
+                    tmp,
+                    sizeof(tmp),
+                    "bindings shaders=%u vao=%u vbo=%u fbo=%u textures=%u shadows=%u\n",
+                    frameStats.shaderBinds,
+                    frameStats.vaoBinds,
+                    frameStats.vboBinds,
+                    frameStats.fboBinds,
+                    frameStats.textureBinds,
+                    frameStats.lightsCastingShadows);
+                hudText += tmp;
+
+                if (const auto* dirShadow = scene->path.get<gl::DirectionalShadowPass>("DirShadow"))
+                {
+                    const auto& s = dirShadow->executionStats();
+                    std::snprintf(
+                        tmp,
+                        sizeof(tmp),
+                        "directional shadow submitted=%u drawn=%u invalid=%u | binds vao=%u vbo=%u fbo=%u",
+                        s.commandsSubmitted,
+                        s.commandsDrawn,
+                        s.commandsInvalid,
+                        s.vaoBinds,
+                        s.vboBinds,
+                        s.fboBinds);
+                    hudText += tmp;
+                }
+                hudText += '\n';
+
+                if (const auto* pointShadow = scene->path.get<gl::PointShadowPass>("PointShadow"))
+                {
+                    const auto& s = pointShadow->executionStats();
+                    std::snprintf(
+                        tmp,
+                        sizeof(tmp),
+                        "point shadow submitted=%u drawn=%u invalid=%u | binds vao=%u vbo=%u fbo=%u",
+                        s.commandsSubmitted,
+                        s.commandsDrawn,
+                        s.commandsInvalid,
+                        s.vaoBinds,
+                        s.vboBinds,
+                        s.fboBinds);
+                    hudText += tmp;
+                }
+                hudText += '\n';
+
+                if (const auto* geometry = scene->path.get<gl::GeometryPass>("Geometry"))
+                {
+                    const auto& culling = geometry->cullingStats();
+                    const auto& execution = geometry->executionStats();
+                    std::snprintf(
+                        tmp,
+                        sizeof(tmp),
+                        "geometry drawn=%u tested=%u culled=%u invalid=%u | binds shader=%u vao=%u vbo=%u fbo=%u",
+                        culling.commandsDrawn,
+                        culling.commandsTested,
+                        culling.commandsCulled,
+                        culling.commandsInvalid,
+                        execution.shaderBinds,
+                        execution.vaoBinds,
+                        execution.vboBinds,
+                        execution.fboBinds);
+                    hudText += tmp;
+                }
+                hudText += '\n';
+
+                auto appendRuntimePassStats = [&](const char* label, const gl::PassRuntimeStats& s) {
+                    std::snprintf(
+                        tmp,
+                        sizeof(tmp),
+                        "%s draws=%u | binds shader=%u vao=%u vbo=%u fbo=%u texture=%u",
+                        label,
+                        s.drawCalls,
+                        s.shaderBinds,
+                        s.vaoBinds,
+                        s.vboBinds,
+                        s.fboBinds,
+                        s.textureBinds);
+                    hudText += '\n';
+                    hudText += tmp;
+                };
+
+                if (const auto* skybox = scene->path.get<gl::SkyboxPass>("Skybox"))
+                {
+                    appendRuntimePassStats("skybox pass", skybox->runtimeStats());
+                }
+
+                if (const auto* environment = scene->path.get<gl::EnvironmentPass>("Environment"))
+                {
+                    appendRuntimePassStats("environment pass", environment->runtimeStats());
+                }
+
+                if (const auto* wboit = scene->path.get<gl::WboitPass>("Transparent"))
+                {
+                    const auto& s = wboit->executionStats();
+                    std::snprintf(
+                        tmp,
+                        sizeof(tmp),
+                        "weighted blended transparency submitted=%u drawn=%u invalid=%u | binds vao=%u vbo=%u fbo=%u "
+                        "texture=%u",
+                        s.commandsSubmitted,
+                        s.commandsDrawn,
+                        s.commandsInvalid,
+                        s.vaoBinds,
+                        s.vboBinds,
+                        s.fboBinds,
+                        s.textureBinds);
+                    hudText += '\n';
+                    hudText += tmp;
+                }
+
+                if (const auto* grid = scene->path.get<gl::GridPass>("Grid"))
+                {
+                    appendRuntimePassStats("grid pass", grid->runtimeStats());
+                }
+
+                if (const auto* axes = scene->path.get<gl::AxesPass>("Axes"))
+                {
+                    appendRuntimePassStats("axes pass", axes->runtimeStats());
+                }
+
+                if (scene->hudPass)
+                {
+                    appendRuntimePassStats("stats panel pass", scene->hudPass->runtimeStats());
+                }
+
+                if (scene->textPass)
+                {
+                    appendRuntimePassStats("text pass", scene->textPass->runtimeStats());
+                }
+
+                if (const auto* present = scene->path.get<gl::PresentPass>("Present"))
+                {
+                    appendRuntimePassStats("present pass", present->runtimeStats());
+                }
+
+                scene->textPass->updateText(scene->statsTextShadowHandle, hudText);
+                scene->textPass->updateText(scene->statsTextHandle, hudText);
+            }
         },
 
         // onShutdown

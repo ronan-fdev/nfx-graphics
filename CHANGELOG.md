@@ -201,7 +201,6 @@
 - `direct-rendering-postprocess-pass`: post-process sample with left-click effect cycling (neutral, mono scanlines, chromatic grain)
 - `direct-rendering-wboit-pass`: weighted blended OIT sample (GeometryPass + WboitPass)
 
-- `forward-rendering-forward-path-showcase`: ForwardRenderPath showcase combining directional + point shadows, skybox background, WBOIT transparency, and grid/axes overlays
 - `forward-rendering-directional-shadow-pass`: directional-light shadow mapping with orbiting rocks and textured terrain floor
 - `forward-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
 - `forward-rendering-point-shadow-pass`: point-light cube-shadow mapping with one levitating rock and one moving light marker
@@ -215,6 +214,7 @@
 - `forward-rendering-image-plane`: ForwardRenderPath sample showing world-space reference image planes
 - `forward-rendering-shape-reference-views`: front/side reference-view sample for shape comparison with image-plane overlays
 - `forward-rendering-rubiks-cube-ui`: Rubik's cube rendering sample with interactive cube rotation and inertial drag
+- `forward-rendering-forward-path-showcase`: ForwardRenderPath showcase combining directional + point shadows, skybox background, WBOIT transparency, grid/axes overlays, and live on-screen renderer/pass stats HUD
 
 - `forward-rendering-pbr-ibl-showcase`: visual comparison sample of fallback env reflection vs split-sum IBL across four PBR materials
 
