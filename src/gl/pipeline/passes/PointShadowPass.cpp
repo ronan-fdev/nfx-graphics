@@ -7,6 +7,7 @@
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/resources/MeshCache.h"
 #include "nfx/graphics/math/Mat4.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -124,7 +125,11 @@ namespace nfx::graphics::gl
         if (size < 1)
         {
             assert(size >= 1 && "PointShadowPass::setResolution: size must be >= 1");
-            std::fprintf(stderr, "[PointShadowPass] setResolution() requires size >= 1\n");
+            internal::runtime::logError(
+                "PointShadowPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "setResolution() requires size >= 1");
             return;
         }
 
@@ -144,7 +149,11 @@ namespace nfx::graphics::gl
         const auto* frag = shaders::find("passes/point_shadow_depth.frag");
         if (!vert || !geom || !frag)
         {
-            std::fprintf(stderr, "[PointShadowPass] Missing embedded point shadow depth shaders\n");
+            internal::runtime::logError(
+                "PointShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded point shadow depth shaders");
             return false;
         }
 
@@ -158,7 +167,11 @@ namespace nfx::graphics::gl
 
         if (!m_texCache)
         {
-            std::fprintf(stderr, "[PointShadowPass] setResolution() must be called before initialize()\n");
+            internal::runtime::logError(
+                "PointShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "setResolution() must be called before initialize()");
             return false;
         }
 
@@ -170,7 +183,11 @@ namespace nfx::graphics::gl
             const TextureCube* cube = m_texCache->get(m_cubeHandles[i]);
             if (!cube)
             {
-                std::fprintf(stderr, "[PointShadowPass] Failed to resolve point shadow cube map from cache\n");
+                internal::runtime::logError(
+                    "PointShadowPass",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "Failed to resolve point shadow cube map from cache");
                 return false;
             }
 
@@ -182,7 +199,11 @@ namespace nfx::graphics::gl
             if (!m_framebuffers[i].isComplete())
             {
                 m_framebuffers[i].unbind();
-                std::fprintf(stderr, "[PointShadowPass] Point shadow framebuffer is incomplete\n");
+                internal::runtime::logError(
+                    "PointShadowPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "Point shadow framebuffer is incomplete");
                 return false;
             }
             m_framebuffers[i].unbind();
@@ -210,7 +231,11 @@ namespace nfx::graphics::gl
                 const TextureCube* cube = m_texCache->get(m_cubeHandles[i]);
                 if (!cube)
                 {
-                    std::fprintf(stderr, "[PointShadowPass] Failed to resolve resized point shadow cube map\n");
+                    internal::runtime::logError(
+                        "PointShadowPass",
+                        internal::runtime::ErrorLevel::Error,
+                        internal::runtime::ErrorKind::External,
+                        "Failed to resolve resized point shadow cube map");
                     resizeOk = false;
                     break;
                 }
@@ -224,11 +249,18 @@ namespace nfx::graphics::gl
                 m_framebuffers[i].unbind();
                 if (!complete)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[PointShadowPass] Point shadow framebuffer[%d] is incomplete after resize: %s\n",
+                    char msg[176];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "Point shadow framebuffer[%d] is incomplete after resize: %s",
                         i,
                         m_framebuffers[i].statusString());
+                    internal::runtime::logError(
+                        "PointShadowPass",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        msg);
                     resizeOk = false;
                     break;
                 }
@@ -309,10 +341,17 @@ namespace nfx::graphics::gl
                 Mesh* mesh = resources.meshes.get(cmd.mesh);
                 if (!mesh)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[PointShadowPass] mesh handle %llu not found, skipping\n",
+                    char msg[128];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "mesh handle %llu not found, skipping",
                         static_cast<unsigned long long>(cmd.mesh.id));
+                    internal::runtime::logError(
+                        "PointShadowPass",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        msg);
                     ++m_executionStats.commandsInvalid;
                     continue;
                 }

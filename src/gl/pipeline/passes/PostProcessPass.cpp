@@ -2,6 +2,7 @@
 
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -74,7 +75,11 @@ namespace nfx::graphics::gl
         const Texture2D* outputTex = m_texCache->get(m_outputHandle);
         if (!outputTex)
         {
-            std::fprintf(stderr, "[PostProcessPass] Failed to resolve output texture from cache\n");
+            internal::runtime::logError(
+                "PostProcessPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to resolve output texture from cache");
             return;
         }
 
@@ -82,7 +87,11 @@ namespace nfx::graphics::gl
         m_outputFbo.attachColorTexture(*outputTex);
         if (!m_outputFbo.isComplete())
         {
-            std::fprintf(stderr, "[PostProcessPass] Output framebuffer is incomplete after color attachment\n");
+            internal::runtime::logError(
+                "PostProcessPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "Output framebuffer is incomplete after color attachment");
         }
         m_outputFbo.unbind();
     }
@@ -91,14 +100,22 @@ namespace nfx::graphics::gl
     {
         if (m_fragSrc.empty())
         {
-            std::fprintf(stderr, "[PostProcessPass] No effect source set - call setEffectSource()\n");
+            internal::runtime::logError(
+                "PostProcessPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "No effect source set - call setEffectSource()");
             return false;
         }
 
         const auto* vertRes = shaders::find("fullscreen.vert");
         if (!vertRes)
         {
-            std::fprintf(stderr, "[PostProcessPass] Builtin 'fullscreen.vert' not found\n");
+            internal::runtime::logError(
+                "PostProcessPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Builtin 'fullscreen.vert' not found");
             return false;
         }
 
@@ -109,7 +126,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[PostProcessPass] Failed to compile effect shader\n");
+            internal::runtime::logError(
+                "PostProcessPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile effect shader");
             return false;
         }
 
@@ -132,7 +153,11 @@ namespace nfx::graphics::gl
 
         if (!m_outputHandle.isValid())
         {
-            std::fprintf(stderr, "[PostProcessPass] No output target set - call setOutputSize()\n");
+            internal::runtime::logError(
+                "PostProcessPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "No output target set - call setOutputSize()");
             return;
         }
 
@@ -152,10 +177,14 @@ namespace nfx::graphics::gl
         const Texture2D* inputTex = resources.textures2D.get(m_inputHandle);
         if (!inputTex)
         {
-            std::fprintf(
-                stderr,
-                "[PostProcessPass] input color handle %llu not found in Texture2DCache\n",
+            char msg[160];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "input color handle %llu not found in Texture2DCache",
                 static_cast<unsigned long long>(m_inputHandle.id));
+            internal::runtime::logError(
+                "PostProcessPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 

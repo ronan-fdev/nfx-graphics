@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/core/textures/Sampler.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -24,7 +25,11 @@ namespace nfx::graphics::gl
     {
         if (!isValidMagFilter(params.magFilter))
         {
-            std::fprintf(stderr, "[Sampler] create: magFilter must be Nearest or Linear\n");
+            internal::runtime::logError(
+                "Sampler",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "create: magFilter must be Nearest or Linear");
             return {};
         }
 

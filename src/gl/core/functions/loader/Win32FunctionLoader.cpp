@@ -1,6 +1,7 @@
 #ifdef _WIN32
 
     #include "FunctionLoader.h"
+    #include "internal/runtime/Error.h"
 
     #include <windows.h>
     #include <cstdio>
@@ -21,7 +22,10 @@ namespace nfx::graphics::gl
         }
         else
         {
-            std::fprintf(stderr, "[nfx::graphics] WARNING: GL function not found: %s\n", p_name);
+            char msg[160];
+            std::snprintf(msg, sizeof(msg), "GL function not found: %s", p_name);
+            internal::runtime::logError(
+                "FunctionLoader", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::External, msg);
             return nullptr;
         }
     }

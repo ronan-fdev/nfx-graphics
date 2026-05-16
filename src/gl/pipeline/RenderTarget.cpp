@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -63,27 +64,41 @@ namespace nfx::graphics::gl
     {
         if (desc.width <= 0 || desc.height <= 0)
         {
-            std::fprintf(stderr, "[RenderTarget] resize: invalid dimensions\n");
+            internal::runtime::logError(
+                "RenderTarget",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "resize: invalid dimensions");
             return;
         }
 
         if (desc.depthOnly && !isDepthTextureFormat(desc.depthFormat))
         {
-            std::fprintf(
-                stderr,
-                "[RenderTarget] resize: depthOnly requires depthFormat to be Depth24, Depth32F, or Depth24Stencil8\n");
+            internal::runtime::logError(
+                "RenderTarget",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "resize: depthOnly requires depthFormat to be Depth24, Depth32F, or Depth24Stencil8");
             return;
         }
 
         if (!desc.depthOnly && !isColorTextureFormat(desc.colorFormat))
         {
-            std::fprintf(stderr, "[RenderTarget] resize: colorFormat must be a color texture format\n");
+            internal::runtime::logError(
+                "RenderTarget",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "resize: colorFormat must be a color texture format");
             return;
         }
 
         if (!isDepthTextureFormat(desc.depthFormat))
         {
-            std::fprintf(stderr, "[RenderTarget] resize: depthFormat must be Depth24, Depth32F, or Depth24Stencil8\n");
+            internal::runtime::logError(
+                "RenderTarget",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "resize: depthFormat must be Depth24, Depth32F, or Depth24Stencil8");
             return;
         }
 
@@ -114,10 +129,14 @@ namespace nfx::graphics::gl
 
             if (!m_framebuffer.isComplete())
             {
-                std::fprintf(
-                    stderr,
-                    "[RenderTarget] resize: depth-only framebuffer incomplete: %s\n",
-                    m_framebuffer.statusString());
+                char msg[160];
+                std::snprintf(
+                    msg, sizeof(msg), "resize: depth-only framebuffer incomplete: %s", m_framebuffer.statusString());
+                internal::runtime::logError(
+                    "RenderTarget",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
             }
 
             m_framebuffer.unbind();
@@ -153,8 +172,14 @@ namespace nfx::graphics::gl
 
             if (!m_framebuffer.isComplete())
             {
-                std::fprintf(
-                    stderr, "[RenderTarget] resize: color framebuffer incomplete: %s\n", m_framebuffer.statusString());
+                char msg[160];
+                std::snprintf(
+                    msg, sizeof(msg), "resize: color framebuffer incomplete: %s", m_framebuffer.statusString());
+                internal::runtime::logError(
+                    "RenderTarget",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
             }
 
             m_framebuffer.unbind();

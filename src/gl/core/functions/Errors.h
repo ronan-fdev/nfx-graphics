@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gl/core/Platform.h"
+#include "internal/runtime/Error.h"
 
 #include <cstdio>
 #include <string>
@@ -76,11 +77,17 @@ inline void checkOpenGLError(const char* glCall, const char* func, int line, con
     GLenum err = ::glGetError();
     if (err != GL_NO_ERROR)
     {
-        std::fprintf(
-            stderr, "[GLDebug] OpenGL error %s at %s:%d - for %s\n", glEnumToString(err).c_str(), func, line, glCall);
+        char msg[320];
+        std::snprintf(
+            msg, sizeof(msg), "OpenGL error %s at %s:%d - for %s", glEnumToString(err).c_str(), func, line, glCall);
+        nfx::graphics::internal::runtime::logError(
+            "GLDebug", nfx::graphics::internal::runtime::ErrorLevel::Warn, "GLDebug", msg);
         if (caller)
         {
-            std::fprintf(stderr, "[GLDebug] called by %s\n", caller);
+            char callerMsg[192];
+            std::snprintf(callerMsg, sizeof(callerMsg), "called by %s", caller);
+            nfx::graphics::internal::runtime::logError(
+                "GLDebug", nfx::graphics::internal::runtime::ErrorLevel::Warn, "GLDebug", callerMsg);
         }
     }
 }

@@ -7,6 +7,7 @@
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/resources/MeshCache.h"
 #include "nfx/graphics/math/Mat4.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -114,7 +115,11 @@ namespace nfx::graphics::gl
         const auto* frag = shaders::find("empty.frag");
         if (!vert || !frag)
         {
-            std::fprintf(stderr, "[DirectionalShadowPass] Missing embedded shadow depth shaders\n");
+            internal::runtime::logError(
+                "DirectionalShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded shadow depth shaders");
             return false;
         }
 
@@ -125,7 +130,11 @@ namespace nfx::graphics::gl
 
         if (!m_texCache)
         {
-            std::fprintf(stderr, "[DirectionalShadowPass] setResolution() must be called before initialize()\n");
+            internal::runtime::logError(
+                "DirectionalShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "setResolution() must be called before initialize()");
             return false;
         }
         Texture2DCache& texCache = *m_texCache;
@@ -135,7 +144,11 @@ namespace nfx::graphics::gl
         const Texture2D* depthTex = texCache.get(m_shadowHandle);
         if (!depthTex)
         {
-            std::fprintf(stderr, "[DirectionalShadowPass] Failed to resolve shadow depth texture from cache\n");
+            internal::runtime::logError(
+                "DirectionalShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to resolve shadow depth texture from cache");
             return false;
         }
 
@@ -148,7 +161,11 @@ namespace nfx::graphics::gl
         m_framebuffer.unbind();
         if (!complete)
         {
-            std::fprintf(stderr, "[DirectionalShadowPass] Shadow framebuffer is incomplete\n");
+            internal::runtime::logError(
+                "DirectionalShadowPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "Shadow framebuffer is incomplete");
             return false;
         }
 
@@ -174,7 +191,11 @@ namespace nfx::graphics::gl
             const Texture2D* depthTex = m_texCache->get(m_shadowHandle);
             if (!depthTex)
             {
-                std::fprintf(stderr, "[DirectionalShadowPass] Failed to resolve resized shadow texture\n");
+                internal::runtime::logError(
+                    "DirectionalShadowPass",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "Failed to resolve resized shadow texture");
                 return;
             }
 
@@ -187,7 +208,11 @@ namespace nfx::graphics::gl
             m_framebuffer.unbind();
             if (!resizeComplete)
             {
-                std::fprintf(stderr, "[DirectionalShadowPass] Shadow framebuffer incomplete after resize\n");
+                internal::runtime::logError(
+                    "DirectionalShadowPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "Shadow framebuffer incomplete after resize");
                 return;
             }
 
@@ -226,10 +251,17 @@ namespace nfx::graphics::gl
             Mesh* mesh = resources.meshes.get(cmd.mesh);
             if (!mesh)
             {
-                std::fprintf(
-                    stderr,
-                    "[DirectionalShadowPass] mesh handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "mesh handle %llu not found, skipping",
                     static_cast<unsigned long long>(cmd.mesh.id));
+                internal::runtime::logError(
+                    "DirectionalShadowPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 ++m_executionStats.commandsInvalid;
                 continue;
             }

@@ -3,6 +3,7 @@
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/core/framebuffers/Framebuffer.h"
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -14,7 +15,11 @@ namespace nfx::graphics::gl
     {
         if (!Context::isInitialized())
         {
-            std::fprintf(stderr, "[BrdfLutGenerator] OpenGL context is not initialized on this thread\n");
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "OpenGL context is not initialized on this thread");
             return;
         }
 
@@ -22,8 +27,11 @@ namespace nfx::graphics::gl
         const EmbeddedResource* frag = shaders::find("material/ibl/brdf_lut.frag");
         if (!vert || !frag)
         {
-            std::fprintf(
-                stderr, "[BrdfLutGenerator] missing embedded shaders: fullscreen.vert / material/ibl/brdf_lut.frag\n");
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "missing embedded shaders: fullscreen.vert / material/ibl/brdf_lut.frag");
             return;
         }
 
@@ -32,7 +40,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[BrdfLutGenerator] shader compilation failed\n");
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "shader compilation failed");
         }
     }
 
@@ -45,13 +57,23 @@ namespace nfx::graphics::gl
     {
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[BrdfLutGenerator] generator is not initialized\n");
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Recoverable,
+                "generator is not initialized");
             return {};
         }
 
         if (desc.width <= 0 || desc.height <= 0)
         {
-            std::fprintf(stderr, "[BrdfLutGenerator] invalid texture size %dx%d\n", desc.width, desc.height);
+            char msg[128];
+            std::snprintf(msg, sizeof(msg), "invalid texture size %dx%d", desc.width, desc.height);
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                msg);
             return {};
         }
 
@@ -67,7 +89,11 @@ namespace nfx::graphics::gl
 
         if (!lut.isValid())
         {
-            std::fprintf(stderr, "[BrdfLutGenerator] failed to allocate LUT texture\n");
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "failed to allocate LUT texture");
             return {};
         }
 
@@ -76,7 +102,13 @@ namespace nfx::graphics::gl
         fbo.attachColorTexture(lut, 0);
         if (!fbo.isComplete())
         {
-            std::fprintf(stderr, "[BrdfLutGenerator] framebuffer incomplete: %s\n", fbo.statusString());
+            char msg[160];
+            std::snprintf(msg, sizeof(msg), "framebuffer incomplete: %s", fbo.statusString());
+            internal::runtime::logError(
+                "BrdfLutGenerator",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                msg);
             fbo.unbind();
             return {};
         }

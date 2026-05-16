@@ -3,6 +3,7 @@
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "ShaderFeatures.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -63,7 +64,11 @@ namespace nfx::graphics::gl
             const EmbeddedResource* frag = shaders::find("material/pbr.frag");
             if (!vert || !frag)
             {
-                std::fprintf(stderr, "[Pbr] Missing embedded shader resources\n");
+                internal::runtime::logError(
+                    "Pbr",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "Missing embedded shader resources");
                 return {};
             }
 
@@ -77,7 +82,10 @@ namespace nfx::graphics::gl
             });
             if (!handle.isValid())
             {
-                std::fprintf(stderr, "[Pbr] Failed to compile shader variant (key=%u)\n", key);
+                char msg[128];
+                std::snprintf(msg, sizeof(msg), "Failed to compile shader variant (key=%u)", key);
+                internal::runtime::logError(
+                    "Pbr", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                 return {};
             }
 
@@ -134,7 +142,11 @@ namespace nfx::graphics::gl
         Material* mat = resources.materials.get(handle);
         if (!mat)
         {
-            std::fprintf(stderr, "[Pbr] Failed to resolve created material handle\n");
+            internal::runtime::logError(
+                "Pbr",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Recoverable,
+                "Failed to resolve created material handle");
             return {};
         }
 

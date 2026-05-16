@@ -19,11 +19,13 @@
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "gl/material/ShaderFeatures.h"
+#include "internal/runtime/Error.h"
 
 #include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
+#include <functional>
 #include <utility>
 
 namespace nfx::graphics::gl
@@ -415,7 +417,11 @@ namespace nfx::graphics::gl
     {
         if (!m_frameData.has_value())
         {
-            std::fprintf(stderr, "[Renderer] WARNING: render() called without setFrameData()\n");
+            internal::runtime::logError(
+                "Renderer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "render() called without setFrameData()");
             return;
         }
         if (!m_resources)
@@ -666,14 +672,25 @@ namespace nfx::graphics::gl
 
         const FrameData& frame = *m_frameData;
 
-        auto fail = [&](const char* warnMsg, const char* errMsg) {
+        auto warnOnce = [&](std::string_view warnMsg) {
+            const auto h = static_cast<std::uint32_t>(std::hash<std::string_view>{}(warnMsg));
+            if (!m_validatedPermutations.insert(h).second)
+            {
+                return;
+            }
+            internal::runtime::logError(
+                "Renderer", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Invariant, warnMsg);
+        };
+
+        auto fail = [&](std::string_view warnMsg, std::string_view errMsg) {
             if (m_validationMode == ValidationMode::Warn)
             {
-                std::fprintf(stderr, "%s", warnMsg);
+                warnOnce(warnMsg);
             }
             else if (m_validationMode == ValidationMode::Strict)
             {
-                std::fprintf(stderr, "%s", errMsg);
+                internal::runtime::logError(
+                    "Renderer", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::Invariant, errMsg);
                 std::abort();
             }
         };
@@ -681,15 +698,15 @@ namespace nfx::graphics::gl
         if (frame.spotShadowCount < 0 || frame.spotShadowCount > static_cast<int>(PipelineLimits::MaxSpotShadows))
         {
             fail(
-                "[Renderer] WARNING: spotShadowCount is out of range for PipelineLimits::MaxSpotShadows\n",
-                "[Renderer] ERROR: spotShadowCount is out of range for PipelineLimits::MaxSpotShadows\n");
+                "spotShadowCount is out of range for PipelineLimits::MaxSpotShadows",
+                "spotShadowCount is out of range for PipelineLimits::MaxSpotShadows");
         }
 
         if (frame.pointShadowCount < 0 || frame.pointShadowCount > static_cast<int>(PipelineLimits::MaxPointShadows))
         {
             fail(
-                "[Renderer] WARNING: pointShadowCount is out of range for PipelineLimits::MaxPointShadows\n",
-                "[Renderer] ERROR: pointShadowCount is out of range for PipelineLimits::MaxPointShadows\n");
+                "pointShadowCount is out of range for PipelineLimits::MaxPointShadows",
+                "pointShadowCount is out of range for PipelineLimits::MaxPointShadows");
         }
 
         const int spotCount = std::clamp(frame.spotShadowCount, 0, static_cast<int>(PipelineLimits::MaxSpotShadows));
@@ -698,45 +715,41 @@ namespace nfx::graphics::gl
         if (frame.hasEnvMap && !m_resources->texturesCube.get(frame.envMap))
         {
             fail(
-                "[Renderer] WARNING: hasEnvMap=true but envMap does not resolve to a cached cubemap\n",
-                "[Renderer] ERROR: hasEnvMap=true but envMap does not resolve to a cached cubemap\n");
+                "hasEnvMap=true but envMap does not resolve to a cached cubemap",
+                "hasEnvMap=true but envMap does not resolve to a cached cubemap");
         }
 
         if (frame.hasEnvSampler && !m_resources->samplers.get(frame.envSampler))
         {
             fail(
-                "[Renderer] WARNING: hasEnvSampler=true but envSampler does not resolve to a cached sampler\n",
-                "[Renderer] ERROR: hasEnvSampler=true but envSampler does not resolve to a cached sampler\n");
+                "hasEnvSampler=true but envSampler does not resolve to a cached sampler",
+                "hasEnvSampler=true but envSampler does not resolve to a cached sampler");
         }
 
         if (frame.hasEnvSampler && !frame.hasEnvMap)
         {
-            fail(
-                "[Renderer] WARNING: hasEnvSampler=true while hasEnvMap=false\n",
-                "[Renderer] ERROR: hasEnvSampler=true while hasEnvMap=false\n");
+            fail("hasEnvSampler=true while hasEnvMap=false", "hasEnvSampler=true while hasEnvMap=false");
         }
 
         if (frame.hasIrradianceMap && !m_resources->texturesCube.get(frame.irradianceMap))
         {
             fail(
-                "[Renderer] WARNING: hasIrradianceMap=true but irradianceMap does not resolve to a cached cubemap\n",
-                "[Renderer] ERROR: hasIrradianceMap=true but irradianceMap does not resolve to a cached cubemap\n");
+                "hasIrradianceMap=true but irradianceMap does not resolve to a cached cubemap",
+                "hasIrradianceMap=true but irradianceMap does not resolve to a cached cubemap");
         }
 
         if (frame.hasPrefilteredEnvMap && !m_resources->texturesCube.get(frame.prefilteredEnvMap))
         {
             fail(
-                "[Renderer] WARNING: hasPrefilteredEnvMap=true but prefilteredEnvMap does not resolve to a cached "
-                "cubemap\n",
-                "[Renderer] ERROR: hasPrefilteredEnvMap=true but prefilteredEnvMap does not resolve to a cached "
-                "cubemap\n");
+                "hasPrefilteredEnvMap=true but prefilteredEnvMap does not resolve to a cached cubemap",
+                "hasPrefilteredEnvMap=true but prefilteredEnvMap does not resolve to a cached cubemap");
         }
 
         if (frame.hasBrdfLut && !m_resources->textures2D.get(frame.brdfLut))
         {
             fail(
-                "[Renderer] WARNING: hasBrdfLut=true but brdfLut does not resolve to a cached 2D texture\n",
-                "[Renderer] ERROR: hasBrdfLut=true but brdfLut does not resolve to a cached 2D texture\n");
+                "hasBrdfLut=true but brdfLut does not resolve to a cached 2D texture",
+                "hasBrdfLut=true but brdfLut does not resolve to a cached 2D texture");
         }
 
         const bool hasAnySplitSumResource = frame.hasIrradianceMap || frame.hasPrefilteredEnvMap || frame.hasBrdfLut;
@@ -744,10 +757,8 @@ namespace nfx::graphics::gl
         if (hasAnySplitSumResource && !hasCompleteSplitSum)
         {
             fail(
-                "[Renderer] WARNING: split-sum resources are incomplete (need hasIrradianceMap, "
-                "prefilteredEnvMap and brdfLut)\n",
-                "[Renderer] ERROR: split-sum resources are incomplete (need hasIrradianceMap, "
-                "prefilteredEnvMap and brdfLut)\n");
+                "split-sum resources are incomplete (need hasIrradianceMap, hasPrefilteredEnvMap and hasBrdfLut)",
+                "split-sum resources are incomplete (need hasIrradianceMap, hasPrefilteredEnvMap and hasBrdfLut)");
         }
 
         // Validate shadow data consistency:
@@ -757,8 +768,8 @@ namespace nfx::graphics::gl
             if (frame.dirShadowMap.texture.id == 0)
             {
                 fail(
-                    "[Renderer] WARNING: hasDirShadow=true but dirShadowMap texture is invalid\n",
-                    "[Renderer] ERROR: hasDirShadow=true but dirShadowMap texture is invalid\n");
+                    "hasDirShadow=true but dirShadowMap texture is invalid",
+                    "hasDirShadow=true but dirShadowMap texture is invalid");
             }
         }
 
@@ -769,19 +780,26 @@ namespace nfx::graphics::gl
             {
                 if (m_validationMode == ValidationMode::Warn)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[Renderer] WARNING: spotShadowCount=%d but spotShadowMaps[%d] texture is invalid\n",
+                    char msg[160];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "spotShadowCount=%d but spotShadowMaps[%d] texture is invalid",
                         frame.spotShadowCount,
                         i);
+                    warnOnce(msg);
                 }
                 else if (m_validationMode == ValidationMode::Strict)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[Renderer] ERROR: spotShadowCount=%d but spotShadowMaps[%d] texture is invalid\n",
+                    char msg[160];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "spotShadowCount=%d but spotShadowMaps[%d] texture is invalid",
                         frame.spotShadowCount,
                         i);
+                    internal::runtime::logError(
+                        "Renderer", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::Invariant, msg);
                     std::abort();
                 }
             }
@@ -794,19 +812,26 @@ namespace nfx::graphics::gl
             {
                 if (m_validationMode == ValidationMode::Warn)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[Renderer] WARNING: pointShadowCount=%d but pointShadowMaps[%d] texture is invalid\n",
+                    char msg[160];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "pointShadowCount=%d but pointShadowMaps[%d] texture is invalid",
                         frame.pointShadowCount,
                         i);
+                    warnOnce(msg);
                 }
                 else if (m_validationMode == ValidationMode::Strict)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[Renderer] ERROR: pointShadowCount=%d but pointShadowMaps[%d] texture is invalid\n",
+                    char msg[160];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "pointShadowCount=%d but pointShadowMaps[%d] texture is invalid",
                         frame.pointShadowCount,
                         i);
+                    internal::runtime::logError(
+                        "Renderer", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::Invariant, msg);
                     std::abort();
                 }
             }

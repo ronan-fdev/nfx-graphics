@@ -4,6 +4,7 @@
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/ViewportRect.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -46,7 +47,11 @@ namespace nfx::graphics::gl
     {
         if (!font.isValid())
         {
-            std::fprintf(stderr, "[TextPass] addTextUtf8: invalid font handle\n");
+            internal::runtime::logError(
+                "TextPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "addTextUtf8: invalid font handle");
             return {};
         }
 
@@ -69,7 +74,11 @@ namespace nfx::graphics::gl
     {
         if (!font.isValid())
         {
-            std::fprintf(stderr, "[TextPass] addGlyphRun: invalid font handle\n");
+            internal::runtime::logError(
+                "TextPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "addGlyphRun: invalid font handle");
             return {};
         }
 
@@ -92,10 +101,14 @@ namespace nfx::graphics::gl
         const auto it = m_itemIndex.find(handle.id);
         if (it == m_itemIndex.end())
         {
-            std::fprintf(
-                stderr,
-                "[TextPass] updateText(utf8): handle %llu not found\n",
+            char msg[128];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "updateText(utf8): handle %llu not found",
                 static_cast<unsigned long long>(handle.id));
+            internal::runtime::logError(
+                "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -110,10 +123,14 @@ namespace nfx::graphics::gl
         const auto it = m_itemIndex.find(handle.id);
         if (it == m_itemIndex.end())
         {
-            std::fprintf(
-                stderr,
-                "[TextPass] updateText(glyphs): handle %llu not found\n",
+            char msg[128];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "updateText(glyphs): handle %llu not found",
                 static_cast<unsigned long long>(handle.id));
+            internal::runtime::logError(
+                "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -127,8 +144,11 @@ namespace nfx::graphics::gl
         const auto it = m_itemIndex.find(handle.id);
         if (it == m_itemIndex.end())
         {
-            std::fprintf(
-                stderr, "[TextPass] removeText: handle %llu not found\n", static_cast<unsigned long long>(handle.id));
+            char msg[128];
+            std::snprintf(
+                msg, sizeof(msg), "removeText: handle %llu not found", static_cast<unsigned long long>(handle.id));
+            internal::runtime::logError(
+                "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -162,7 +182,11 @@ namespace nfx::graphics::gl
         const auto* frag = shaders::find("passes/text.frag");
         if (!vert || !frag)
         {
-            std::fprintf(stderr, "[TextPass] Missing embedded shader resources\n");
+            internal::runtime::logError(
+                "TextPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded shader resources");
             return false;
         }
 
@@ -171,7 +195,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[TextPass] Failed to compile text shader\n");
+            internal::runtime::logError(
+                "TextPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile text shader");
             return false;
         }
 
@@ -196,7 +224,11 @@ namespace nfx::graphics::gl
 
         if (!m_fontCache)
         {
-            std::fprintf(stderr, "[TextPass] execute: font cache not set, call setFontCache() first\n");
+            internal::runtime::logError(
+                "TextPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "execute: font cache not set, call setFontCache() first");
             return;
         }
 
@@ -207,10 +239,14 @@ namespace nfx::graphics::gl
             targetColor = resources.textures2D.get(m_targetColor);
             if (!targetColor)
             {
-                std::fprintf(
-                    stderr,
-                    "[TextPass] target color handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "target color handle %llu not found, skipping",
                     static_cast<unsigned long long>(m_targetColor.id));
+                internal::runtime::logError(
+                    "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 return;
             }
 
@@ -261,20 +297,28 @@ namespace nfx::graphics::gl
             const Font* font = m_fontCache->get(item.font);
             if (!font)
             {
-                std::fprintf(
-                    stderr,
-                    "[TextPass] execute: font handle %llu not found, skipping text item\n",
+                char msg[160];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "execute: font handle %llu not found, skipping text item",
                     static_cast<unsigned long long>(item.font.id));
+                internal::runtime::logError(
+                    "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 continue;
             }
 
             const Texture2D* atlas = resources.textures2D.get(font->atlas);
             if (!atlas)
             {
-                std::fprintf(
-                    stderr,
-                    "[TextPass] execute: atlas handle %llu not found for text item\n",
+                char msg[160];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "execute: atlas handle %llu not found for text item",
                     static_cast<unsigned long long>(font->atlas.id));
+                internal::runtime::logError(
+                    "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 continue;
             }
 
@@ -286,7 +330,10 @@ namespace nfx::graphics::gl
 
             if (scale <= 0.0f)
             {
-                std::fprintf(stderr, "[TextPass] execute: invalid text size %f or font metrics\n", item.style.sizePx);
+                char msg[128];
+                std::snprintf(msg, sizeof(msg), "execute: invalid text size %f or font metrics", item.style.sizePx);
+                internal::runtime::logError(
+                    "TextPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 continue;
             }
 
@@ -297,7 +344,13 @@ namespace nfx::graphics::gl
                     const Glyph* g = font->glyph(p.codepoint);
                     if (!g)
                     {
-                        std::fprintf(stderr, "[TextPass] execute: glyph U+%04X not found in font\n", p.codepoint);
+                        char msg[128];
+                        std::snprintf(msg, sizeof(msg), "execute: glyph U+%04X not found in font", p.codepoint);
+                        internal::runtime::logError(
+                            "TextPass",
+                            internal::runtime::ErrorLevel::Warn,
+                            internal::runtime::ErrorKind::Recoverable,
+                            msg);
                         continue;
                     }
                     appendGlyphQuad(quadVerts, *g, item.x + p.x * scale, item.y + p.y * scale, scale);

@@ -8,8 +8,6 @@
 #include "nfx/graphics/gl/core/textures/TextureCube.h"
 #include "ResourceCache.h"
 
-#include <cstdio>
-
 namespace nfx::graphics::gl
 {
     /**
@@ -27,15 +25,6 @@ namespace nfx::graphics::gl
          * This forwards to TextureCube::fromMemory(). Faces must be square, share identical dimensions,
          * and this upload path currently supports only TextureCube::InternalFormat::RGBA8.
          */
-        [[nodiscard]] TextureCubeHandle upload(const TextureCube::FaceData faces[6], const TextureCube::Params& params)
-        {
-            TextureCube tex = TextureCube::fromMemory(faces, params);
-            if (!tex.isValid())
-            {
-                std::fprintf(stderr, "[TextureCubeCache] upload: cube map creation failed\n");
-                return {};
-            }
-            return add(std::move(tex));
-        }
+        [[nodiscard]] TextureCubeHandle upload(const TextureCube::FaceData faces[6], const TextureCube::Params& params);
     };
 } // namespace nfx::graphics::gl

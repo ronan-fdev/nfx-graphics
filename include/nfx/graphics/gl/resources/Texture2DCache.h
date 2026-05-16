@@ -8,8 +8,6 @@
 #include "nfx/graphics/gl/core/textures/Texture2D.h"
 #include "ResourceCache.h"
 
-#include <cstdio>
-
 namespace nfx::graphics::gl
 {
     /**
@@ -27,15 +25,6 @@ namespace nfx::graphics::gl
          * Uploads currently support only Texture2D::InternalFormat::RGBA8 and
          * Texture2D::InternalFormat::SRGB8_Alpha.
          */
-        [[nodiscard]] Texture2DHandle upload(const Texture2D::Data& data)
-        {
-            Texture2D tex = Texture2D::fromMemory(data.pixels, data.width, data.height, data.params);
-            if (!tex.isValid())
-            {
-                std::fprintf(stderr, "[Texture2DCache] upload: texture creation failed\n");
-                return {};
-            }
-            return add(std::move(tex));
-        }
+        [[nodiscard]] Texture2DHandle upload(const Texture2D::Data& data);
     };
 } // namespace nfx::graphics::gl

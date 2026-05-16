@@ -3,6 +3,7 @@
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/core/framebuffers/Framebuffer.h"
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -14,7 +15,11 @@ namespace nfx::graphics::gl
     {
         if (!Context::isInitialized())
         {
-            std::fprintf(stderr, "[IrradianceMapGenerator] OpenGL context is not initialized on this thread\n");
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "OpenGL context is not initialized on this thread");
             return;
         }
 
@@ -22,10 +27,11 @@ namespace nfx::graphics::gl
         const EmbeddedResource* frag = shaders::find("material/ibl/irradiance_convolution.frag");
         if (!vert || !frag)
         {
-            std::fprintf(
-                stderr,
-                "[IrradianceMapGenerator] missing embedded shaders: fullscreen.vert / "
-                "material/ibl/irradiance_convolution.frag\n");
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "missing embedded shaders: fullscreen.vert / material/ibl/irradiance_convolution.frag");
             return;
         }
 
@@ -34,7 +40,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[IrradianceMapGenerator] shader compilation failed\n");
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "shader compilation failed");
         }
     }
 
@@ -47,19 +57,33 @@ namespace nfx::graphics::gl
     {
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[IrradianceMapGenerator] generator is not initialized\n");
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Recoverable,
+                "generator is not initialized");
             return {};
         }
 
         if (desc.size <= 0)
         {
-            std::fprintf(stderr, "[IrradianceMapGenerator] invalid size %d\n", desc.size);
+            char msg[96];
+            std::snprintf(msg, sizeof(msg), "invalid size %d", desc.size);
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                msg);
             return {};
         }
 
         if (!envMap.isValid())
         {
-            std::fprintf(stderr, "[IrradianceMapGenerator] invalid source environment cubemap\n");
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "invalid source environment cubemap");
             return {};
         }
 
@@ -76,7 +100,11 @@ namespace nfx::graphics::gl
 
         if (!irradiance.isValid())
         {
-            std::fprintf(stderr, "[IrradianceMapGenerator] failed to allocate irradiance cubemap\n");
+            internal::runtime::logError(
+                "IrradianceMapGenerator",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "failed to allocate irradiance cubemap");
             return {};
         }
 
@@ -98,8 +126,13 @@ namespace nfx::graphics::gl
 
             if (!fbo.isComplete())
             {
-                std::fprintf(
-                    stderr, "[IrradianceMapGenerator] FBO incomplete for face %d: %s\n", face, fbo.statusString());
+                char msg[160];
+                std::snprintf(msg, sizeof(msg), "FBO incomplete for face %d: %s", face, fbo.statusString());
+                internal::runtime::logError(
+                    "IrradianceMapGenerator",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 fbo.unbind();
                 return {};
             }

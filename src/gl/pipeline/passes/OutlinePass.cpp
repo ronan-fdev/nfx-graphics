@@ -5,6 +5,7 @@
 #include "nfx/graphics/gl/mesh/Mesh.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/ViewportRect.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -140,7 +141,11 @@ namespace nfx::graphics::gl
 
         if (!maskColor || !maskDepth || !outputTex)
         {
-            std::fprintf(stderr, "[OutlinePass] failed to resolve internal targets from cache\n");
+            internal::runtime::logError(
+                "OutlinePass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "failed to resolve internal targets from cache");
             return;
         }
 
@@ -149,7 +154,11 @@ namespace nfx::graphics::gl
         m_maskFbo.attachDepthTexture(*maskDepth);
         if (!m_maskFbo.isComplete())
         {
-            std::fprintf(stderr, "[OutlinePass] mask framebuffer is incomplete\n");
+            internal::runtime::logError(
+                "OutlinePass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "mask framebuffer is incomplete");
         }
         m_maskFbo.unbind();
 
@@ -157,7 +166,11 @@ namespace nfx::graphics::gl
         m_outputFbo.attachColorTexture(*outputTex);
         if (!m_outputFbo.isComplete())
         {
-            std::fprintf(stderr, "[OutlinePass] output framebuffer is incomplete\n");
+            internal::runtime::logError(
+                "OutlinePass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "output framebuffer is incomplete");
         }
         m_outputFbo.unbind();
     }
@@ -172,7 +185,11 @@ namespace nfx::graphics::gl
 
         if (!maskVert || !maskFrag || !fsVert || !sobelFrag)
         {
-            std::fprintf(stderr, "[OutlinePass] missing embedded shader resources\n");
+            internal::runtime::logError(
+                "OutlinePass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "missing embedded shader resources");
             return false;
         }
 
@@ -180,7 +197,11 @@ namespace nfx::graphics::gl
             { { ShaderProgram::Stage::Vertex, maskVert->str() }, { ShaderProgram::Stage::Fragment, maskFrag->str() } });
         if (!m_maskShader.isValid())
         {
-            std::fprintf(stderr, "[OutlinePass] failed to compile mask shader\n");
+            internal::runtime::logError(
+                "OutlinePass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "failed to compile mask shader");
             return false;
         }
 
@@ -188,7 +209,11 @@ namespace nfx::graphics::gl
             { { ShaderProgram::Stage::Vertex, fsVert->str() }, { ShaderProgram::Stage::Fragment, sobelFrag->str() } });
         if (!m_sobelShader.isValid())
         {
-            std::fprintf(stderr, "[OutlinePass] failed to compile sobel shader\n");
+            internal::runtime::logError(
+                "OutlinePass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "failed to compile sobel shader");
             return false;
         }
 
@@ -285,10 +310,17 @@ namespace nfx::graphics::gl
                 Mesh* mesh = resources.meshes.get(cmd.mesh);
                 if (!mesh)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[OutlinePass] mesh handle %llu not found, skipping\n",
+                    char msg[128];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "mesh handle %llu not found, skipping",
                         static_cast<unsigned long long>(cmd.mesh.id));
+                    internal::runtime::logError(
+                        "OutlinePass",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        msg);
                     continue;
                 }
 

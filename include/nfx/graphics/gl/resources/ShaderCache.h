@@ -7,8 +7,6 @@
 
 #include "nfx/graphics/gl/core/shaders/ShaderProgram.h"
 #include "ResourceCache.h"
-
-#include <cstdio>
 #include <initializer_list>
 
 namespace nfx::graphics::gl
@@ -24,15 +22,6 @@ namespace nfx::graphics::gl
          * \param sources Shader stages and source strings passed to ShaderProgram::fromSources().
          * \return A stable handle referencing the cached program, or an invalid handle on failure.
          */
-        [[nodiscard]] ShaderHandle compile(std::initializer_list<ShaderProgram::ShaderSource> sources)
-        {
-            ShaderProgram program = ShaderProgram::fromSources(sources);
-            if (!program.isValid())
-            {
-                std::fprintf(stderr, "[ShaderCache] compile: shader compilation or linking failed\n");
-                return {};
-            }
-            return add(std::move(program));
-        }
+        [[nodiscard]] ShaderHandle compile(std::initializer_list<ShaderProgram::ShaderSource> sources);
     };
 } // namespace nfx::graphics::gl

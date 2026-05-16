@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/core/framebuffers/Renderbuffer.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <cstdio>
 
@@ -60,13 +61,21 @@ namespace nfx::graphics::gl
     {
         if (width <= 0 || height <= 0)
         {
-            std::fprintf(stderr, "[Renderbuffer] allocate: invalid dimensions\n");
+            internal::runtime::logError(
+                "Renderbuffer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocate: invalid dimensions");
             return;
         }
 
         if (!isValidRenderbufferFormat(format))
         {
-            std::fprintf(stderr, "[Renderbuffer] allocate: invalid format\n");
+            internal::runtime::logError(
+                "Renderbuffer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocate: invalid format");
             return;
         }
 
@@ -90,19 +99,31 @@ namespace nfx::graphics::gl
     {
         if (width <= 0 || height <= 0)
         {
-            std::fprintf(stderr, "[Renderbuffer] allocateMultisample: invalid dimensions\n");
+            internal::runtime::logError(
+                "Renderbuffer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocateMultisample: invalid dimensions");
             return;
         }
 
         if (samples <= 0)
         {
-            std::fprintf(stderr, "[Renderbuffer] allocateMultisample: invalid sample count\n");
+            internal::runtime::logError(
+                "Renderbuffer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocateMultisample: invalid sample count");
             return;
         }
 
         if (!isValidRenderbufferFormat(format))
         {
-            std::fprintf(stderr, "[Renderbuffer] allocateMultisample: invalid format\n");
+            internal::runtime::logError(
+                "Renderbuffer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocateMultisample: invalid format");
             return;
         }
 

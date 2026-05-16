@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/core/Context.h"
 
 #include "Platform.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -45,9 +46,11 @@ namespace nfx::graphics::gl
 
         if (!s_instance.m_initialized)
         {
-            std::fprintf(
-                stderr,
-                "[Context] current(): called before initialize() on this thread; returning uninitialized context\n");
+            internal::runtime::logError(
+                "Context",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Programming,
+                "current(): called before initialize() on this thread; returning uninitialized context");
         }
         return s_instance;
     }

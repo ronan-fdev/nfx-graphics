@@ -2,6 +2,7 @@
 
 #include "nfx/graphics/gl/core/Context.h"
 #include "gl/core/Platform.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -43,7 +44,11 @@ namespace nfx::graphics::gl
         {
             if (!isValidInternalFormat(params.internalFormat))
             {
-                std::fprintf(stderr, "[Texture2D] uploadTexture: invalid internal format\n");
+                internal::runtime::logError(
+                    "Texture2D",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "uploadTexture: invalid internal format");
                 return 0;
             }
 
@@ -53,7 +58,11 @@ namespace nfx::graphics::gl
             gl.glGenTextures(1, &id);
             if (id == 0)
             {
-                std::fprintf(stderr, "[Texture2D] uploadTexture: glGenTextures failed\n");
+                internal::runtime::logError(
+                    "Texture2D",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "uploadTexture: glGenTextures failed");
                 return 0;
             }
 
@@ -94,8 +103,11 @@ namespace nfx::graphics::gl
             GLenum err = gl.glGetError();
             if (err != GL_NO_ERROR)
             {
-                std::fprintf(
-                    stderr, "[Texture2D] uploadTexture: glTexImage2D failed (0x%04X)\n", static_cast<unsigned>(err));
+                char msg[128];
+                std::snprintf(
+                    msg, sizeof(msg), "uploadTexture: glTexImage2D failed (0x%04X)", static_cast<unsigned>(err));
+                internal::runtime::logError(
+                    "Texture2D", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                 gl.glBindTexture(TEXTURE_2D, 0);
                 gl.glDeleteTextures(1, &id);
                 return 0;
@@ -112,10 +124,14 @@ namespace nfx::graphics::gl
                 err = gl.glGetError();
                 if (err != GL_NO_ERROR)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[Texture2D] uploadTexture: glGenerateMipmap failed (0x%04X)\n",
+                    char msg[128];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "uploadTexture: glGenerateMipmap failed (0x%04X)",
                         static_cast<unsigned>(err));
+                    internal::runtime::logError(
+                        "Texture2D", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                     gl.glBindTexture(TEXTURE_2D, 0);
                     gl.glDeleteTextures(1, &id);
                     return 0;
@@ -205,16 +221,22 @@ namespace nfx::graphics::gl
     {
         if (!pixels || width <= 0 || height <= 0)
         {
-            std::fprintf(stderr, "[Texture2D] fromMemory: invalid pixel data\n");
+            internal::runtime::logError(
+                "Texture2D",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "fromMemory: invalid pixel data");
             return {};
         }
 
         if (!supportsMemoryUpload(params.internalFormat))
         {
-            std::fprintf(
-                stderr,
-                "[Texture2D] fromMemory: only InternalFormat::RGBA8 and InternalFormat::SRGB8_Alpha are supported "
-                "for 8-bit RGBA uploads\n");
+            internal::runtime::logError(
+                "Texture2D",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "fromMemory: only InternalFormat::RGBA8 and InternalFormat::SRGB8_Alpha are supported for 8-bit RGBA "
+                "uploads");
             return {};
         }
 
@@ -226,7 +248,11 @@ namespace nfx::graphics::gl
     {
         if (width <= 0 || height <= 0)
         {
-            std::fprintf(stderr, "[Texture2D] allocate: invalid dimensions\n");
+            internal::runtime::logError(
+                "Texture2D",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocate: invalid dimensions");
             return {};
         }
 

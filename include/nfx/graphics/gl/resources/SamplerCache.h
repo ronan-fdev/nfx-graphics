@@ -8,8 +8,6 @@
 #include "nfx/graphics/gl/core/textures/Sampler.h"
 #include "ResourceCache.h"
 
-#include <cstdio>
-
 namespace nfx::graphics::gl
 {
     /**
@@ -22,31 +20,13 @@ namespace nfx::graphics::gl
          * \brief Creates a sampler with default parameters and stores it in the cache.
          * \return A stable handle referencing the cached sampler, or an invalid handle on failure.
          */
-        [[nodiscard]] SamplerHandle create()
-        {
-            Sampler sampler = Sampler::create();
-            if (!sampler.isValid())
-            {
-                std::fprintf(stderr, "[SamplerCache] create: sampler creation failed\n");
-                return {};
-            }
-            return add(std::move(sampler));
-        }
+        [[nodiscard]] SamplerHandle create();
 
         /**
          * \brief Creates a sampler with explicit parameters and stores it in the cache.
          * \param params Sampling parameters passed to Sampler::create().
          * \return A stable handle referencing the cached sampler, or an invalid handle on failure.
          */
-        [[nodiscard]] SamplerHandle create(const Sampler::Params& params)
-        {
-            Sampler sampler = Sampler::create(params);
-            if (!sampler.isValid())
-            {
-                std::fprintf(stderr, "[SamplerCache] create: sampler creation failed\n");
-                return {};
-            }
-            return add(std::move(sampler));
-        }
+        [[nodiscard]] SamplerHandle create(const Sampler::Params& params);
     };
 } // namespace nfx::graphics::gl

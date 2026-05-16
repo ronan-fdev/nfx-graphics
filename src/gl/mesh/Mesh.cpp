@@ -1,5 +1,6 @@
 #include "nfx/graphics/gl/mesh/Mesh.h"
 #include "nfx/graphics/gl/mesh/MeshData.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -29,25 +30,41 @@ namespace nfx::graphics::gl
         const std::size_t vertexStride = desc.layout.stride();
         if (desc.vertices == nullptr || desc.vertexDataSize == 0)
         {
-            std::fprintf(stderr, "[Mesh] create: vertices are required and vertexDataSize must be > 0\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "create: vertices are required and vertexDataSize must be > 0");
             return {};
         }
 
         if (vertexStride == 0)
         {
-            std::fprintf(stderr, "[Mesh] create: vertex layout stride must be > 0\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "create: vertex layout stride must be > 0");
             return {};
         }
 
         if ((desc.vertexDataSize % vertexStride) != 0)
         {
-            std::fprintf(stderr, "[Mesh] create: vertexDataSize must be a multiple of layout stride\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "create: vertexDataSize must be a multiple of layout stride");
             return {};
         }
 
         if (desc.indexCount > 0 && desc.indices == nullptr)
         {
-            std::fprintf(stderr, "[Mesh] create: indices pointer is null but indexCount is > 0\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "create: indices pointer is null but indexCount is > 0");
             return {};
         }
 
@@ -85,26 +102,42 @@ namespace nfx::graphics::gl
     {
         if (!m_vao)
         {
-            std::fprintf(stderr, "[Mesh] setInstanceData: mesh is invalid\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "setInstanceData: mesh is invalid");
             return;
         }
 
         const std::size_t instanceStride = layout.stride();
         if (data == nullptr || size == 0)
         {
-            std::fprintf(stderr, "[Mesh] setInstanceData: data is required and size must be > 0\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "setInstanceData: data is required and size must be > 0");
             return;
         }
 
         if (instanceStride == 0)
         {
-            std::fprintf(stderr, "[Mesh] setInstanceData: instance layout stride must be > 0\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "setInstanceData: instance layout stride must be > 0");
             return;
         }
 
         if ((size % instanceStride) != 0)
         {
-            std::fprintf(stderr, "[Mesh] setInstanceData: size must be a multiple of layout stride\n");
+            internal::runtime::logError(
+                "Mesh",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "setInstanceData: size must be a multiple of layout stride");
             return;
         }
 

@@ -8,8 +8,6 @@
 #include "nfx/graphics/gl/text/Font.h"
 #include "ResourceCache.h"
 
-#include <cstdio>
-
 namespace nfx::graphics::gl
 {
     /**
@@ -23,14 +21,6 @@ namespace nfx::graphics::gl
          * \param font Runtime font resource.
          * \return A stable handle referencing the cached font, or invalid handle on failure.
          */
-        [[nodiscard]] FontHandle create(Font font)
-        {
-            if (!font.atlas.isValid())
-            {
-                std::fprintf(stderr, "[FontCache] create: invalid atlas handle\n");
-                return {};
-            }
-            return add(std::move(font));
-        }
+        [[nodiscard]] FontHandle create(Font font);
     };
 } // namespace nfx::graphics::gl

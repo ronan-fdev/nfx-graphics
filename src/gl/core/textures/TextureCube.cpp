@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/core/textures/TextureCube.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <algorithm>
 #include <cassert>
@@ -78,12 +79,20 @@ namespace nfx::graphics::gl
     {
         if (size <= 0)
         {
-            std::fprintf(stderr, "[TextureCube] allocate: invalid size\n");
+            internal::runtime::logError(
+                "TextureCube",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocate: invalid size");
             return {};
         }
         if (params.mipLevels <= 0)
         {
-            std::fprintf(stderr, "[TextureCube] allocate: mipLevels must be positive\n");
+            internal::runtime::logError(
+                "TextureCube",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "allocate: mipLevels must be positive");
             return {};
         }
 
@@ -107,12 +116,16 @@ namespace nfx::graphics::gl
 
         if (explicitMipLevels != params.mipLevels)
         {
-            std::fprintf(
-                stderr,
-                "[TextureCube] allocate: clamping mipLevels from %d to %d for size %d\n",
+            char msg[160];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "allocate: clamping mipLevels from %d to %d for size %d",
                 params.mipLevels,
                 explicitMipLevels,
                 size);
+            internal::runtime::logError(
+                "TextureCube", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
         }
 
         GLuint id = 0;
@@ -171,7 +184,11 @@ namespace nfx::graphics::gl
     {
         if (faces == nullptr)
         {
-            std::fprintf(stderr, "[TextureCube] fromMemory: null faces pointer\n");
+            internal::runtime::logError(
+                "TextureCube",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "fromMemory: null faces pointer");
             return {};
         }
 
@@ -179,22 +196,31 @@ namespace nfx::graphics::gl
         const int expectedHeight = faces[0].height;
         if (expectedWidth <= 0 || expectedHeight <= 0)
         {
-            std::fprintf(stderr, "[TextureCube] fromMemory: invalid face dimensions\n");
+            internal::runtime::logError(
+                "TextureCube",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "fromMemory: invalid face dimensions");
             return {};
         }
 
         if (expectedWidth != expectedHeight)
         {
-            std::fprintf(stderr, "[TextureCube] fromMemory: cube faces must be square\n");
+            internal::runtime::logError(
+                "TextureCube",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "fromMemory: cube faces must be square");
             return {};
         }
 
         if (!supportsFaceUpload(params.internalFormat))
         {
-            std::fprintf(
-                stderr,
-                "[TextureCube] fromMemory: supported upload formats are InternalFormat::RGBA8 and "
-                "InternalFormat::SRGB8_Alpha\n");
+            internal::runtime::logError(
+                "TextureCube",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "fromMemory: supported upload formats are InternalFormat::RGBA8 and InternalFormat::SRGB8_Alpha");
             return {};
         }
 
@@ -202,17 +228,27 @@ namespace nfx::graphics::gl
         {
             if (faces[face].width != expectedWidth || faces[face].height != expectedHeight)
             {
-                std::fprintf(stderr, "[TextureCube] fromMemory: all faces must share identical dimensions\n");
+                internal::runtime::logError(
+                    "TextureCube",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "fromMemory: all faces must share identical dimensions");
                 return {};
             }
             if (faces[face].width != faces[face].height)
             {
-                std::fprintf(stderr, "[TextureCube] fromMemory: face %d is not square\n", face);
+                char msg[96];
+                std::snprintf(msg, sizeof(msg), "fromMemory: face %d is not square", face);
+                internal::runtime::logError(
+                    "TextureCube", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 return {};
             }
             if (faces[face].pixels == nullptr)
             {
-                std::fprintf(stderr, "[TextureCube] fromMemory: face %d has null pixels\n", face);
+                char msg[96];
+                std::snprintf(msg, sizeof(msg), "fromMemory: face %d has null pixels", face);
+                internal::runtime::logError(
+                    "TextureCube", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 return {};
             }
         }

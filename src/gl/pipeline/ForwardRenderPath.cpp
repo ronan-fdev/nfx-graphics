@@ -13,9 +13,27 @@
 #include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "detail/ViewportValidation.h"
+#include "internal/runtime/Error.h"
+
+#include <cstdio>
 
 namespace nfx::graphics::gl
 {
+    void ForwardRenderPath::reportDuplicateOrReservedPassName(std::string_view api, std::string_view name) noexcept
+    {
+        char msg[224];
+        std::snprintf(
+            msg,
+            sizeof(msg),
+            "%.*s: duplicate or reserved pass name '%.*s'",
+            static_cast<int>(api.size()),
+            api.data(),
+            static_cast<int>(name.size()),
+            name.data());
+        internal::runtime::logError(
+            "ForwardRenderPath", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::Programming, msg);
+    }
+
     void ForwardRenderPath::setClearColor(float r, float g, float b, float a) noexcept
     {
         m_clearColor[0] = r;
@@ -28,13 +46,21 @@ namespace nfx::graphics::gl
     {
         if (m_initialized)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] setSkybox: cannot change after initialize()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "setSkybox: cannot change after initialize()");
             assert(false && "ForwardRenderPath::setSkybox: called after initialize");
             return;
         }
         if (m_hasEnvPass)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] setSkybox() overrides enableEnvironment()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "setSkybox() overrides enableEnvironment()");
             m_hasEnvPass = false;
         }
         m_skyboxCache = &cache;
@@ -46,13 +72,21 @@ namespace nfx::graphics::gl
     {
         if (m_initialized)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] enableEnvironment: cannot change after initialize()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "enableEnvironment: cannot change after initialize()");
             assert(false && "ForwardRenderPath::enableEnvironment: called after initialize");
             return;
         }
         if (m_hasSkybox)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] enableEnvironment() ignored: setSkybox() already set\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "enableEnvironment() ignored: setSkybox() already set");
             return;
         }
         m_envIntensity = intensity;
@@ -63,7 +97,11 @@ namespace nfx::graphics::gl
     {
         if (m_initialized)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] enableOutline: cannot change after initialize()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "enableOutline: cannot change after initialize()");
             assert(false && "ForwardRenderPath::enableOutline: called after initialize");
             return;
         }
@@ -79,7 +117,11 @@ namespace nfx::graphics::gl
     {
         if (m_initialized)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] initialize() called more than once\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "initialize() called more than once");
             assert(false && "ForwardRenderPath::initialize called more than once");
             return;
         }
@@ -88,7 +130,11 @@ namespace nfx::graphics::gl
 
         if (m_hasSkybox && (!m_skyboxCache || !m_skyboxHandle.isValid()))
         {
-            std::fprintf(stderr, "[ForwardRenderPath] invalid skybox configuration before initialize()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "invalid skybox configuration before initialize()");
             assert(false && "ForwardRenderPath::initialize invalid skybox configuration");
             return;
         }
@@ -146,7 +192,11 @@ namespace nfx::graphics::gl
     {
         if (!m_initialized || !m_resources || !m_geometryPass)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] render() called before successful initialize()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "render() called before successful initialize()");
             assert(false && "ForwardRenderPath::render called before initialize");
             return;
         }
@@ -173,7 +223,11 @@ namespace nfx::graphics::gl
     {
         if (!m_initialized || !m_resources || !m_geometryPass)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] render() called before successful initialize()\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "render() called before successful initialize()");
             assert(false && "ForwardRenderPath::render called before initialize");
             return;
         }
@@ -183,15 +237,22 @@ namespace nfx::graphics::gl
 
         if (!detail::isViewportInsideSurface(viewport, safeW, safeH))
         {
-            std::fprintf(
-                stderr,
-                "[ForwardRenderPath] render: viewport (%d,%d,%d,%d) outside surface (%d,%d), skipping\n",
+            char msg[192];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "render: viewport (%d,%d,%d,%d) outside surface (%d,%d), skipping",
                 viewport.x,
                 viewport.y,
                 viewport.width,
                 viewport.height,
                 safeW,
                 safeH);
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                msg);
             return;
         }
 
@@ -213,7 +274,11 @@ namespace nfx::graphics::gl
     {
         if (!m_geometryPass || !m_resources)
         {
-            std::fprintf(stderr, "[ForwardRenderPath] rewireTargets skipped: geometry/resources not ready\n");
+            internal::runtime::logError(
+                "ForwardRenderPath",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "rewireTargets skipped: geometry/resources not ready");
             return;
         }
 
@@ -249,10 +314,17 @@ namespace nfx::graphics::gl
 
             if (!wiredTransparent)
             {
-                std::fprintf(
-                    stderr,
-                    "[ForwardRenderPath] transparent pass '%s' has no known auto-wiring path\n",
+                char msg[192];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "transparent pass '%s' has no known auto-wiring path",
                     m_transparentPass->name().c_str());
+                internal::runtime::logError(
+                    "ForwardRenderPath",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
             }
         }
 
@@ -292,10 +364,14 @@ namespace nfx::graphics::gl
 
             if (!wiredOverlay)
             {
-                std::fprintf(
-                    stderr,
-                    "[ForwardRenderPath] overlay pass '%s' has no known auto-wiring path\n",
-                    overlay->name().c_str());
+                char msg[192];
+                std::snprintf(
+                    msg, sizeof(msg), "overlay pass '%s' has no known auto-wiring path", overlay->name().c_str());
+                internal::runtime::logError(
+                    "ForwardRenderPath",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
             }
         }
 

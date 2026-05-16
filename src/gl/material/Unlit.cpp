@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/material/Unlit.h"
 
 #include "nfx/graphics/gl/material/MaterialBlock.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -23,7 +24,11 @@ namespace nfx::graphics::gl
             const EmbeddedResource* frag = shaders::find("material/unlit.frag");
             if (!vert || !frag)
             {
-                std::fprintf(stderr, "[Unlit] Missing embedded shader resources\n");
+                internal::runtime::logError(
+                    "Unlit",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "Missing embedded shader resources");
                 return {};
             }
 
@@ -32,7 +37,11 @@ namespace nfx::graphics::gl
 
             if (!s_handle.isValid())
             {
-                std::fprintf(stderr, "[Unlit] Failed to compile unlit shader\n");
+                internal::runtime::logError(
+                    "Unlit",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "Failed to compile unlit shader");
                 return {};
             }
 
@@ -53,7 +62,11 @@ namespace nfx::graphics::gl
         Material* mat = matCache.get(handle);
         if (!mat)
         {
-            std::fprintf(stderr, "[Unlit] Failed to resolve created material handle\n");
+            internal::runtime::logError(
+                "Unlit",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Recoverable,
+                "Failed to resolve created material handle");
             return {};
         }
 

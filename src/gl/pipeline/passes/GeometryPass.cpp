@@ -9,6 +9,7 @@
 #include "nfx/graphics/math/geometry/Frustum.h"
 #include "nfx/graphics/math/Mat3.h"
 #include "detail/CullingUtils.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -208,10 +209,17 @@ namespace nfx::graphics::gl
             Mesh* mesh = resources.meshes.get(cmd.mesh);
             if (!mesh)
             {
-                std::fprintf(
-                    stderr,
-                    "[GeometryPass] mesh handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "mesh handle %llu not found, skipping",
                     static_cast<unsigned long long>(cmd.mesh.id));
+                internal::runtime::logError(
+                    "GeometryPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 ++m_cullingStats.commandsInvalid;
                 continue;
             }
@@ -225,10 +233,17 @@ namespace nfx::graphics::gl
                 }
                 else
                 {
-                    std::fprintf(
-                        stderr,
-                        "[GeometryPass] material handle %llu not found, skipping\n",
+                    char msg[128];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "material handle %llu not found, skipping",
                         static_cast<unsigned long long>(cmd.material.id));
+                    internal::runtime::logError(
+                        "GeometryPass",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        msg);
                     ++m_cullingStats.commandsInvalid;
                     continue;
                 }
@@ -237,11 +252,18 @@ namespace nfx::graphics::gl
             ShaderProgram* shader = resources.shaders.get(mat->shader());
             if (!shader)
             {
-                std::fprintf(
-                    stderr,
-                    "[GeometryPass] shader handle %llu not found for material %llu, skipping\n",
+                char msg[192];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "shader handle %llu not found for material %llu, skipping",
                     static_cast<unsigned long long>(mat->shader().id),
                     static_cast<unsigned long long>(cmd.material.id));
+                internal::runtime::logError(
+                    "GeometryPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 ++m_cullingStats.commandsInvalid;
                 continue;
             }

@@ -2,6 +2,7 @@
 
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -15,7 +16,11 @@ namespace nfx::graphics::gl
         const auto* fragRes = shaders::find("passes/skybox.frag");
         if (!vertRes || !fragRes)
         {
-            std::fprintf(stderr, "[SkyboxPass] Missing embedded shader resources\n");
+            internal::runtime::logError(
+                "SkyboxPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded shader resources");
             return false;
         }
 
@@ -24,7 +29,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[SkyboxPass] Failed to compile skybox shader\n");
+            internal::runtime::logError(
+                "SkyboxPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile skybox shader");
             return false;
         }
 
@@ -49,10 +58,14 @@ namespace nfx::graphics::gl
             const Texture2D* color = resources.textures2D.get(m_targetColor);
             if (!color)
             {
-                std::fprintf(
-                    stderr,
-                    "[SkyboxPass] target color handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "target color handle %llu not found, skipping",
                     static_cast<unsigned long long>(m_targetColor.id));
+                internal::runtime::logError(
+                    "SkyboxPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 return;
             }
 

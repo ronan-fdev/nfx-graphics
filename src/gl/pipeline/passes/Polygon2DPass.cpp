@@ -4,6 +4,7 @@
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/ViewportRect.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -88,13 +89,21 @@ namespace nfx::graphics::gl
     {
         if (!isValidPackedXy(xyPairs))
         {
-            std::fprintf(stderr, "[Polygon2DPass] addConvexPolygon: invalid packed XY list\n");
+            internal::runtime::logError(
+                "Polygon2DPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "addConvexPolygon: invalid packed XY list");
             return {};
         }
 
         if (!isConvexPolygon(xyPairs))
         {
-            std::fprintf(stderr, "[Polygon2DPass] addConvexPolygon: polygon is not strictly convex\n");
+            internal::runtime::logError(
+                "Polygon2DPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "addConvexPolygon: polygon is not strictly convex");
             return {};
         }
 
@@ -110,7 +119,11 @@ namespace nfx::graphics::gl
     {
         if (w <= 0.0f || h <= 0.0f)
         {
-            std::fprintf(stderr, "[Polygon2DPass] addRect: non-positive size\n");
+            internal::runtime::logError(
+                "Polygon2DPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "addRect: non-positive size");
             return {};
         }
 
@@ -135,8 +148,11 @@ namespace nfx::graphics::gl
 
         if (it == m_items.end())
         {
-            std::fprintf(
-                stderr, "[Polygon2DPass] remove: handle %llu not found\n", static_cast<unsigned long long>(handle.id));
+            char msg[128];
+            std::snprintf(
+                msg, sizeof(msg), "remove: handle %llu not found", static_cast<unsigned long long>(handle.id));
+            internal::runtime::logError(
+                "Polygon2DPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -154,7 +170,11 @@ namespace nfx::graphics::gl
         const auto* frag = shaders::find("flat_color.frag");
         if (!vert || !frag)
         {
-            std::fprintf(stderr, "[Polygon2DPass] Missing embedded shader resources\n");
+            internal::runtime::logError(
+                "Polygon2DPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded shader resources");
             return false;
         }
 
@@ -163,7 +183,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[Polygon2DPass] Failed to compile shader\n");
+            internal::runtime::logError(
+                "Polygon2DPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile shader");
             return false;
         }
 
@@ -198,10 +222,17 @@ namespace nfx::graphics::gl
             targetColor = resources.textures2D.get(m_targetColor);
             if (!targetColor)
             {
-                std::fprintf(
-                    stderr,
-                    "[Polygon2DPass] target color handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "target color handle %llu not found, skipping",
                     static_cast<unsigned long long>(m_targetColor.id));
+                internal::runtime::logError(
+                    "Polygon2DPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 return;
             }
 

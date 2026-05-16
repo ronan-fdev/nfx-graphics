@@ -5,6 +5,7 @@
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "nfx/graphics/gl/resources/ShaderCache.h"
 #include "nfx/graphics/gl/resources/Texture2DCache.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -160,12 +161,16 @@ namespace nfx::graphics::gl
         const GLuint userLast = static_cast<GLuint>(TextureBindings::UserMaterialLastUnit);
         if (unit >= userFirst && unit <= userLast)
         {
-            std::fprintf(
-                stderr,
-                "[Material] WARNING: fixed texture unit %u is in user dynamic range [%u..%u], binding ignored\n",
+            char msg[192];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "fixed texture unit %u is in user dynamic range [%u..%u], binding ignored",
                 static_cast<unsigned>(unit),
                 static_cast<unsigned>(userFirst),
                 static_cast<unsigned>(userLast));
+            internal::runtime::logError(
+                "Material", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -223,10 +228,14 @@ namespace nfx::graphics::gl
         ShaderProgram* shader = shaderCache.get(m_shader);
         if (!shader)
         {
-            std::fprintf(
-                stderr,
-                "[Material] WARNING: missing shader handle (%llu), bind skipped\n",
+            char msg[128];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "missing shader handle (%llu), bind skipped",
                 static_cast<unsigned long long>(m_shader.id));
+            internal::runtime::logError(
+                "Material", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -273,11 +282,15 @@ namespace nfx::graphics::gl
             }
             else
             {
-                std::fprintf(
-                    stderr,
-                    "[Material] WARNING: missing texture handle (%llu) for fixed unit %u\n",
+                char msg[160];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "missing texture handle (%llu) for fixed unit %u",
                     static_cast<unsigned long long>(handle.id),
                     static_cast<unsigned>(unit));
+                internal::runtime::logError(
+                    "Material", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             }
         }
 
@@ -288,12 +301,16 @@ namespace nfx::graphics::gl
         {
             if (unit > lastUnit)
             {
-                std::fprintf(
-                    stderr,
-                    "[Material] WARNING: sampler '%s' skipped, no free user texture unit in [%u..%u]\n",
+                char msg[224];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "sampler '%s' skipped, no free user texture unit in [%u..%u]",
                     name.c_str(),
                     static_cast<unsigned>(TextureBindings::UserMaterialFirstUnit),
                     static_cast<unsigned>(TextureBindings::UserMaterialLastUnit));
+                internal::runtime::logError(
+                    "Material", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 break;
             }
 
@@ -310,11 +327,15 @@ namespace nfx::graphics::gl
             }
             else
             {
-                std::fprintf(
-                    stderr,
-                    "[Material] WARNING: missing texture handle (%llu) for sampler '%s'\n",
+                char msg[192];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "missing texture handle (%llu) for sampler '%s'",
                     static_cast<unsigned long long>(handle.id),
                     name.c_str());
+                internal::runtime::logError(
+                    "Material", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             }
         }
     }

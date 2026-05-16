@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/core/shaders/ShaderProgram.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "internal/runtime/Error.h"
 
 #include <cassert>
 #include <cstdio>
@@ -106,14 +107,14 @@ namespace nfx::graphics::gl
                     infoStr = "(no compiler log available)";
                 }
 
-                std::fprintf(
-                    stderr,
-                    "\n[ShaderProgram] %s shader compilation failed\n"
-                    "----------------------------------------\n"
-                    "%s\n"
-                    "----------------------------------------\n",
-                    stageToString(stage),
-                    infoStr.c_str());
+                std::string msg;
+                msg.reserve(infoStr.size() + 128);
+                msg += stageToString(stage);
+                msg += " shader compilation failed\n----------------------------------------\n";
+                msg += infoStr;
+                msg += "\n----------------------------------------";
+                internal::runtime::logError(
+                    "ShaderProgram", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                 return false;
             }
             return true;
@@ -135,13 +136,13 @@ namespace nfx::graphics::gl
                     infoStr = "(no linker log available)";
                 }
 
-                std::fprintf(
-                    stderr,
-                    "\n[ShaderProgram] Program link failed\n"
-                    "----------------------------------------\n"
-                    "%s\n"
-                    "----------------------------------------\n",
-                    infoStr.c_str());
+                std::string msg;
+                msg.reserve(infoStr.size() + 96);
+                msg += "Program link failed\n----------------------------------------\n";
+                msg += infoStr;
+                msg += "\n----------------------------------------";
+                internal::runtime::logError(
+                    "ShaderProgram", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                 return false;
             }
             return true;
@@ -151,7 +152,11 @@ namespace nfx::graphics::gl
         {
             if (sources.empty())
             {
-                std::fprintf(stderr, "[ShaderProgram] Pipeline requires at least one stage\n");
+                internal::runtime::logError(
+                    "ShaderProgram",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "Pipeline requires at least one stage");
                 return false;
             }
 
@@ -163,7 +168,11 @@ namespace nfx::graphics::gl
             {
                 if (!seenStages.insert(src.stage).second)
                 {
-                    std::fprintf(stderr, "[ShaderProgram] Duplicate shader stage in pipeline\n");
+                    internal::runtime::logError(
+                        "ShaderProgram",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        "Duplicate shader stage in pipeline");
                     return false;
                 }
 
@@ -179,13 +188,21 @@ namespace nfx::graphics::gl
 
             if (hasCompute && hasGraphics)
             {
-                std::fprintf(stderr, "[ShaderProgram] Cannot mix compute and graphics stages\n");
+                internal::runtime::logError(
+                    "ShaderProgram",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "Cannot mix compute and graphics stages");
                 return false;
             }
 
             if (hasCompute && sources.size() > 1)
             {
-                std::fprintf(stderr, "[ShaderProgram] Compute shader must be alone\n");
+                internal::runtime::logError(
+                    "ShaderProgram",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    "Compute shader must be alone");
                 return false;
             }
 
@@ -206,8 +223,11 @@ namespace nfx::graphics::gl
 
                 if (!hasVertex || !hasFragment)
                 {
-                    std::fprintf(
-                        stderr, "[ShaderProgram] Graphics pipeline requires at least Vertex + Fragment shaders\n");
+                    internal::runtime::logError(
+                        "ShaderProgram",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        "Graphics pipeline requires at least Vertex + Fragment shaders");
                     return false;
                 }
             }
@@ -227,7 +247,10 @@ namespace nfx::graphics::gl
             const unsigned int shaderId = gl.glCreateShader(static_cast<GLenum>(src.stage));
             if (shaderId == 0)
             {
-                std::fprintf(stderr, "[ShaderProgram] glCreateShader failed for stage %s\n", stageToString(src.stage));
+                char msg[128];
+                std::snprintf(msg, sizeof(msg), "glCreateShader failed for stage %s", stageToString(src.stage));
+                internal::runtime::logError(
+                    "ShaderProgram", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                 for (unsigned int id : shaderIds)
                 {
                     gl.glDeleteShader(id);
@@ -250,7 +273,11 @@ namespace nfx::graphics::gl
         const unsigned int programId = gl.glCreateProgram();
         if (programId == 0)
         {
-            std::fprintf(stderr, "[ShaderProgram] glCreateProgram failed\n");
+            internal::runtime::logError(
+                "ShaderProgram",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "glCreateProgram failed");
             for (unsigned int shaderId : shaderIds)
             {
                 gl.glDeleteShader(shaderId);
@@ -346,7 +373,10 @@ namespace nfx::graphics::gl
             std::ifstream stream(file.path);
             if (!stream.is_open())
             {
-                std::fprintf(stderr, "[ShaderProgram] Failed to open file: %s\n", file.path.string().c_str());
+                std::string msg = "Failed to open file: ";
+                msg += file.path.string();
+                internal::runtime::logError(
+                    "ShaderProgram", internal::runtime::ErrorLevel::Error, internal::runtime::ErrorKind::External, msg);
                 return {};
             }
 

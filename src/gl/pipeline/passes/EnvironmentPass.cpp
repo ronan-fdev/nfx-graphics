@@ -3,6 +3,7 @@
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -17,7 +18,11 @@ namespace nfx::graphics::gl
         const EmbeddedResource* frag = shaders::find("passes/environment.frag");
         if (!vert || !frag)
         {
-            std::fprintf(stderr, "[EnvironmentPass] Missing embedded environment shaders\n");
+            internal::runtime::logError(
+                "EnvironmentPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded environment shaders");
             return false;
         }
 
@@ -26,7 +31,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[EnvironmentPass] Failed to compile environment shader\n");
+            internal::runtime::logError(
+                "EnvironmentPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile environment shader");
             return false;
         }
 
@@ -48,7 +57,11 @@ namespace nfx::graphics::gl
 
         if (!m_targetColor.isValid())
         {
-            std::fprintf(stderr, "[EnvironmentPass] target color is not set, skipping\n");
+            internal::runtime::logError(
+                "EnvironmentPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "target color is not set, skipping");
             return;
         }
 
@@ -57,10 +70,17 @@ namespace nfx::graphics::gl
             const Texture2D* color = resources.textures2D.get(m_targetColor);
             if (!color)
             {
-                std::fprintf(
-                    stderr,
-                    "[EnvironmentPass] target color handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "target color handle %llu not found, skipping",
                     static_cast<unsigned long long>(m_targetColor.id));
+                internal::runtime::logError(
+                    "EnvironmentPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 return;
             }
 

@@ -3,6 +3,7 @@
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/core/GlDefinitions.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -17,7 +18,11 @@ namespace nfx::graphics::gl
         const auto* frag = shaders::find("passes/image_plane.frag");
         if (!vert || !frag)
         {
-            std::fprintf(stderr, "[ImagePlanePass] missing embedded shaders: passes/image_plane.vert / .frag\n");
+            internal::runtime::logError(
+                "ImagePlanePass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "missing embedded shaders: passes/image_plane.vert / .frag");
             return false;
         }
 
@@ -28,7 +33,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[ImagePlanePass] failed to compile image plane shader\n");
+            internal::runtime::logError(
+                "ImagePlanePass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "failed to compile image plane shader");
             return false;
         }
 
@@ -51,20 +60,28 @@ namespace nfx::graphics::gl
         const Texture2D* imageTex = resources.textures2D.get(m_imageHandle);
         if (!imageTex)
         {
-            std::fprintf(
-                stderr,
-                "[ImagePlanePass] image texture handle %llu not found\n",
+            char msg[128];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "image texture handle %llu not found",
                 static_cast<unsigned long long>(m_imageHandle.id));
+            internal::runtime::logError(
+                "ImagePlanePass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
         const Texture2D* colorTex = resources.textures2D.get(m_targetColor);
         if (!colorTex)
         {
-            std::fprintf(
-                stderr,
-                "[ImagePlanePass] target color handle %llu not found\n",
+            char msg[128];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "target color handle %llu not found",
                 static_cast<unsigned long long>(m_targetColor.id));
+            internal::runtime::logError(
+                "ImagePlanePass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 
@@ -81,7 +98,10 @@ namespace nfx::graphics::gl
 
         if (!m_targetFbo.isComplete())
         {
-            std::fprintf(stderr, "[ImagePlanePass] target framebuffer incomplete: %s\n", m_targetFbo.statusString());
+            char msg[128];
+            std::snprintf(msg, sizeof(msg), "target framebuffer incomplete: %s", m_targetFbo.statusString());
+            internal::runtime::logError(
+                "ImagePlanePass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             m_targetFbo.unbind();
             return;
         }

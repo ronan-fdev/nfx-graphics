@@ -5,6 +5,7 @@
 #include "nfx/graphics/gl/material/Material.h"
 #include "nfx/graphics/gl/mesh/Mesh.h"
 #include "nfx/graphics/math/Mat3.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -147,7 +148,11 @@ namespace nfx::graphics::gl
         const Texture2D* reveal = m_texCache->get(m_revealHandle);
         if (!accum || !reveal)
         {
-            std::fprintf(stderr, "[WboitPass] Failed to resolve accumulation/reveal textures from cache\n");
+            internal::runtime::logError(
+                "WboitPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to resolve accumulation/reveal textures from cache");
             return;
         }
 
@@ -175,7 +180,11 @@ namespace nfx::graphics::gl
 
         if (!fsVertRes || !accumVertRes || !accumFragRes || !compFragRes)
         {
-            std::fprintf(stderr, "[WboitPass] Missing embedded WBOIT shader resources\n");
+            internal::runtime::logError(
+                "WboitPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded WBOIT shader resources");
             return false;
         }
 
@@ -184,7 +193,11 @@ namespace nfx::graphics::gl
 
         if (!m_accumShader.isValid())
         {
-            std::fprintf(stderr, "[WboitPass] Failed to compile accumulation shader\n");
+            internal::runtime::logError(
+                "WboitPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile accumulation shader");
             return false;
         }
 
@@ -193,7 +206,11 @@ namespace nfx::graphics::gl
 
         if (!m_compositeShader.isValid())
         {
-            std::fprintf(stderr, "[WboitPass] Failed to compile composite shader\n");
+            internal::runtime::logError(
+                "WboitPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile composite shader");
             return false;
         }
 
@@ -271,10 +288,14 @@ namespace nfx::graphics::gl
             Material* mat = materialCache.get(cmd.material);
             if (!mat)
             {
-                std::fprintf(
-                    stderr,
-                    "[WboitPass] material handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "material handle %llu not found, skipping",
                     static_cast<unsigned long long>(cmd.material.id));
+                internal::runtime::logError(
+                    "WboitPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
 
                 ++m_executionStats.commandsInvalid;
 
@@ -295,10 +316,14 @@ namespace nfx::graphics::gl
             Mesh* mesh = meshCache.get(cmd.mesh);
             if (!mesh)
             {
-                std::fprintf(
-                    stderr,
-                    "[WboitPass] mesh handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "mesh handle %llu not found, skipping",
                     static_cast<unsigned long long>(cmd.mesh.id));
+                internal::runtime::logError(
+                    "WboitPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
                 ++m_executionStats.commandsInvalid;
                 continue;
             }
@@ -328,10 +353,14 @@ namespace nfx::graphics::gl
         const Texture2D* targetColor = textureCache.get(m_targetColor);
         if (!targetColor)
         {
-            std::fprintf(
-                stderr,
-                "[WboitPass] target color handle %llu not found, skipping composite\n",
+            char msg[160];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "target color handle %llu not found, skipping composite",
                 static_cast<unsigned long long>(m_targetColor.id));
+            internal::runtime::logError(
+                "WboitPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             gl.glDepthMask(true);
             gl.glDisable(BLEND);
             gl.glEnable(DEPTH_TEST);
@@ -361,7 +390,11 @@ namespace nfx::graphics::gl
         const Texture2D* reveal = textureCache.get(m_revealHandle);
         if (!accum || !reveal)
         {
-            std::fprintf(stderr, "[WboitPass] accumulation/reveal textures missing, skipping composite\n");
+            internal::runtime::logError(
+                "WboitPass",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "accumulation/reveal textures missing, skipping composite");
             gl.glDepthMask(true);
             gl.glDisable(BLEND);
             gl.glEnable(DEPTH_TEST);

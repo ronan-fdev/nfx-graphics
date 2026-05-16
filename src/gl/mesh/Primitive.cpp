@@ -184,11 +184,10 @@ namespace nfx::graphics::gl
 
         const float t = (1.0f + std::sqrt(5.0f)) * 0.5f;
 
-        std::vector<std::array<float, 3>> positions = {
-            { -1.0f, t, 0.0f }, { 1.0f, t, 0.0f }, { -1.0f, -t, 0.0f }, { 1.0f, -t, 0.0f },
-            { 0.0f, -1.0f, t }, { 0.0f, 1.0f, t }, { 0.0f, -1.0f, -t }, { 0.0f, 1.0f, -t },
-            { t, 0.0f, -1.0f }, { t, 0.0f, 1.0f }, { -t, 0.0f, -1.0f }, { -t, 0.0f, 1.0f },
-        };
+        std::vector<std::array<float, 3>> positions = { { -1.0f, t, 0.0f },  { 1.0f, t, 0.0f },   { -1.0f, -t, 0.0f },
+                                                        { 1.0f, -t, 0.0f },  { 0.0f, -1.0f, t },  { 0.0f, 1.0f, t },
+                                                        { 0.0f, -1.0f, -t }, { 0.0f, 1.0f, -t },  { t, 0.0f, -1.0f },
+                                                        { t, 0.0f, 1.0f },   { -t, 0.0f, -1.0f }, { -t, 0.0f, 1.0f } };
 
         for (auto& p : positions)
         {
@@ -202,7 +201,7 @@ namespace nfx::graphics::gl
             { 0u, 11u, 5u }, { 0u, 5u, 1u },  { 0u, 1u, 7u },   { 0u, 7u, 10u }, { 0u, 10u, 11u },
             { 1u, 5u, 9u },  { 5u, 11u, 4u }, { 11u, 10u, 2u }, { 10u, 7u, 6u }, { 7u, 1u, 8u },
             { 3u, 9u, 4u },  { 3u, 4u, 2u },  { 3u, 2u, 6u },   { 3u, 6u, 8u },  { 3u, 8u, 9u },
-            { 4u, 9u, 5u },  { 2u, 4u, 11u }, { 6u, 2u, 10u },  { 8u, 6u, 7u },  { 9u, 8u, 1u },
+            { 4u, 9u, 5u },  { 2u, 4u, 11u }, { 6u, 2u, 10u },  { 8u, 6u, 7u },  { 9u, 8u, 1u }
         };
 
         auto edgeKey = [](unsigned int a, unsigned int b) {

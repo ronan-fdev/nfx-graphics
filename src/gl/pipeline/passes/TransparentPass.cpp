@@ -5,6 +5,7 @@
 #include "nfx/graphics/gl/material/Material.h"
 #include "nfx/graphics/gl/mesh/Mesh.h"
 #include "nfx/graphics/math/Mat3.h"
+#include "internal/runtime/Error.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -85,10 +86,17 @@ namespace nfx::graphics::gl
             const Texture2D* color = resources.textures2D.get(m_targetColor);
             if (!color)
             {
-                std::fprintf(
-                    stderr,
-                    "[TransparentPass] target color handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "target color handle %llu not found, skipping",
                     static_cast<unsigned long long>(m_targetColor.id));
+                internal::runtime::logError(
+                    "TransparentPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 return;
             }
 
@@ -107,10 +115,14 @@ namespace nfx::graphics::gl
 
             if (!m_targetFbo.isComplete())
             {
-                std::fprintf(
-                    stderr,
-                    "[TransparentPass] framebuffer incomplete after attachments: %s\n",
-                    m_targetFbo.statusString());
+                char msg[160];
+                std::snprintf(
+                    msg, sizeof(msg), "framebuffer incomplete after attachments: %s", m_targetFbo.statusString());
+                internal::runtime::logError(
+                    "TransparentPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 m_targetFbo.unbind();
                 return;
             }
@@ -161,10 +173,17 @@ namespace nfx::graphics::gl
             Mesh* mesh = resources.meshes.get(cmd.mesh);
             if (!mesh)
             {
-                std::fprintf(
-                    stderr,
-                    "[TransparentPass] mesh handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "mesh handle %llu not found, skipping",
                     static_cast<unsigned long long>(cmd.mesh.id));
+                internal::runtime::logError(
+                    "TransparentPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 ++m_executionStats.commandsInvalid;
                 continue;
             }
@@ -172,10 +191,17 @@ namespace nfx::graphics::gl
             Material* mat = resources.materials.get(cmd.material);
             if (!mat)
             {
-                std::fprintf(
-                    stderr,
-                    "[TransparentPass] material handle %llu not found, skipping\n",
+                char msg[128];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "material handle %llu not found, skipping",
                     static_cast<unsigned long long>(cmd.material.id));
+                internal::runtime::logError(
+                    "TransparentPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 ++m_executionStats.commandsInvalid;
                 continue;
             }
@@ -183,11 +209,18 @@ namespace nfx::graphics::gl
             ShaderProgram* shader = resources.shaders.get(mat->shader());
             if (!shader)
             {
-                std::fprintf(
-                    stderr,
-                    "[TransparentPass] shader handle %llu not found for material %llu, skipping\n",
+                char msg[192];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "shader handle %llu not found for material %llu, skipping",
                     static_cast<unsigned long long>(mat->shader().id),
                     static_cast<unsigned long long>(cmd.material.id));
+                internal::runtime::logError(
+                    "TransparentPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 ++m_executionStats.commandsInvalid;
                 continue;
             }

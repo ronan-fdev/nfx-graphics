@@ -7,6 +7,7 @@
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/resources/MeshCache.h"
 #include "nfx/graphics/math/Mat4.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -141,7 +142,11 @@ namespace nfx::graphics::gl
         const auto* frag = shaders::find("empty.frag");
         if (!vert || !frag)
         {
-            std::fprintf(stderr, "[SpotShadowPass] Missing embedded shadow depth shaders\n");
+            internal::runtime::logError(
+                "SpotShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded shadow depth shaders");
             return false;
         }
         m_depthShader = ShaderProgram::fromSources(
@@ -151,7 +156,11 @@ namespace nfx::graphics::gl
 
         if (!m_texCache)
         {
-            std::fprintf(stderr, "[SpotShadowPass] setResolution() must be called before initialize()\n");
+            internal::runtime::logError(
+                "SpotShadowPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::Programming,
+                "setResolution() must be called before initialize()");
             return false;
         }
 
@@ -164,7 +173,11 @@ namespace nfx::graphics::gl
             const Texture2D* tex = m_texCache->get(m_depthHandles[i]);
             if (!tex)
             {
-                std::fprintf(stderr, "[SpotShadowPass] Failed to resolve shadow depth texture from cache\n");
+                internal::runtime::logError(
+                    "SpotShadowPass",
+                    internal::runtime::ErrorLevel::Error,
+                    internal::runtime::ErrorKind::External,
+                    "Failed to resolve shadow depth texture from cache");
                 return false;
             }
             m_framebuffers[i].bind();
@@ -176,11 +189,18 @@ namespace nfx::graphics::gl
             m_framebuffers[i].unbind();
             if (!complete)
             {
-                std::fprintf(
-                    stderr,
-                    "[SpotShadowPass] shadow framebuffer[%d] incomplete after initialize: %s\n",
+                char msg[160];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "shadow framebuffer[%d] incomplete after initialize: %s",
                     i,
                     m_framebuffers[i].statusString());
+                internal::runtime::logError(
+                    "SpotShadowPass",
+                    internal::runtime::ErrorLevel::Warn,
+                    internal::runtime::ErrorKind::Recoverable,
+                    msg);
                 return false;
             }
         }
@@ -208,7 +228,11 @@ namespace nfx::graphics::gl
                 const Texture2D* tex = m_texCache->get(m_depthHandles[i]);
                 if (!tex)
                 {
-                    std::fprintf(stderr, "[SpotShadowPass] Failed to resolve resized shadow texture\n");
+                    internal::runtime::logError(
+                        "SpotShadowPass",
+                        internal::runtime::ErrorLevel::Error,
+                        internal::runtime::ErrorKind::External,
+                        "Failed to resolve resized shadow texture");
                     resizeOk = false;
                     break;
                 }
@@ -221,11 +245,18 @@ namespace nfx::graphics::gl
                 m_framebuffers[i].unbind();
                 if (!complete)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[SpotShadowPass] shadow framebuffer[%d] incomplete after resize: %s\n",
+                    char msg[160];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "shadow framebuffer[%d] incomplete after resize: %s",
                         i,
                         m_framebuffers[i].statusString());
+                    internal::runtime::logError(
+                        "SpotShadowPass",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        msg);
                     resizeOk = false;
                     break;
                 }
@@ -293,10 +324,17 @@ namespace nfx::graphics::gl
                 Mesh* mesh = resources.meshes.get(cmd.mesh);
                 if (!mesh)
                 {
-                    std::fprintf(
-                        stderr,
-                        "[SpotShadowPass] mesh handle %llu not found, skipping\n",
+                    char msg[128];
+                    std::snprintf(
+                        msg,
+                        sizeof(msg),
+                        "mesh handle %llu not found, skipping",
                         static_cast<unsigned long long>(cmd.mesh.id));
+                    internal::runtime::logError(
+                        "SpotShadowPass",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        msg);
                     ++m_executionStats.commandsInvalid;
                     continue;
                 }

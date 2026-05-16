@@ -8,8 +8,6 @@
 #include "nfx/graphics/gl/material/Material.h"
 #include "ResourceCache.h"
 
-#include <cstdio>
-
 namespace nfx::graphics::gl
 {
     /**
@@ -24,14 +22,6 @@ namespace nfx::graphics::gl
          * \param state Render state applied when binding the material.
          * \return A stable handle referencing the cached material, or an invalid handle when shader is invalid.
          */
-        [[nodiscard]] MaterialHandle create(ShaderHandle shader, RenderState state)
-        {
-            if (!shader.isValid())
-            {
-                std::fprintf(stderr, "[MaterialCache] create: shader handle is invalid\n");
-                return {};
-            }
-            return add(Material::create(shader, state));
-        }
+        [[nodiscard]] MaterialHandle create(ShaderHandle shader, RenderState state);
     };
 } // namespace nfx::graphics::gl

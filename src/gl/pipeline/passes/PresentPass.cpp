@@ -3,6 +3,7 @@
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/pipeline/ViewportRect.h"
+#include "internal/runtime/Error.h"
 
 #include <embedded_shaders.h>
 
@@ -17,7 +18,11 @@ namespace nfx::graphics::gl
         const auto* fragRes = shaders::find("passes/present.frag");
         if (!vertRes || !fragRes)
         {
-            std::fprintf(stderr, "[PresentPass] Missing embedded present shaders\n");
+            internal::runtime::logError(
+                "PresentPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Missing embedded present shaders");
             return false;
         }
 
@@ -26,7 +31,11 @@ namespace nfx::graphics::gl
 
         if (!m_shader.isValid())
         {
-            std::fprintf(stderr, "[PresentPass] Failed to compile present shader\n");
+            internal::runtime::logError(
+                "PresentPass",
+                internal::runtime::ErrorLevel::Error,
+                internal::runtime::ErrorKind::External,
+                "Failed to compile present shader");
             return false;
         }
 
@@ -48,10 +57,14 @@ namespace nfx::graphics::gl
         const Texture2D* inputTex = resources.textures2D.get(m_inputHandle);
         if (!inputTex)
         {
-            std::fprintf(
-                stderr,
-                "[PresentPass] input color handle %llu not found in Texture2DCache\n",
+            char msg[160];
+            std::snprintf(
+                msg,
+                sizeof(msg),
+                "input color handle %llu not found in Texture2DCache",
                 static_cast<unsigned long long>(m_inputHandle.id));
+            internal::runtime::logError(
+                "PresentPass", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
             return;
         }
 

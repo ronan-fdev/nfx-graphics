@@ -8,8 +8,8 @@
 #include "Renderer.h"
 
 #include <cassert>
-#include <cstdio>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace nfx::graphics::gl
@@ -101,8 +101,7 @@ namespace nfx::graphics::gl
             static_assert(std::is_base_of_v<RenderPass, TShadow>, "TShadow must inherit RenderPass");
             if (isReservedName(name) || m_renderer.pass(name) != nullptr)
             {
-                std::fprintf(
-                    stderr, "[ForwardRenderPath] addShadowPass: duplicate or reserved pass name '%s'\n", name.c_str());
+                reportDuplicateOrReservedPassName("addShadowPass", name);
                 assert(false && "ForwardRenderPath::addShadowPass: duplicate or reserved pass name");
 
                 return nullptr;
@@ -159,8 +158,7 @@ namespace nfx::graphics::gl
             static_assert(std::is_base_of_v<RenderPass, TOverlay>, "TOverlay must inherit RenderPass");
             if (isReservedName(name) || m_renderer.pass(name) != nullptr)
             {
-                std::fprintf(
-                    stderr, "[ForwardRenderPath] addOverlay: duplicate or reserved pass name '%s'\n", name.c_str());
+                reportDuplicateOrReservedPassName("addOverlay", name);
                 assert(false && "ForwardRenderPath::addOverlay: duplicate or reserved pass name");
 
                 return nullptr;
@@ -309,6 +307,8 @@ namespace nfx::graphics::gl
             }
             return false;
         }
+
+        static void reportDuplicateOrReservedPassName(std::string_view api, std::string_view name) noexcept;
 
         void rewireTargets();
 
