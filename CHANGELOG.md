@@ -166,6 +166,7 @@
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping
+- `gl/pipeline/tests_SortKey`: validates 64-bit sort-key packing semantics (opaque, front-to-back, back-to-front)
 - `gl/pipeline/tests_ViewportRect`: validates ViewportRect invariants, coordinate system, and multi-viewport composition contracts
 - `gl/pipeline/tests_ViewportValidation`: validates viewport-inside-surface bounds check including invalid dimensions and out-of-bounds rectangles
 

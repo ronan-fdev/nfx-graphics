@@ -52,7 +52,7 @@ nfx-graphics/
 │       │   ├── pipeline/                 # High-level rendering pipeline
 │       │   │   ├── frame/                # FrameData, RenderResources (camera/light payloads)
 │       │   │   ├── passes/               # RenderPass base class for render pipeline stages
-│       │   │   ├── queue/                # RenderCommand, RenderQueue (draw commands)
+│       │   │   ├── queue/                # RenderCommand, RenderQueue, SortKey (draw ordering)
 │       │   │   ├── shadows/              # Shadow map payloads
 │       │   │   ├── Bindings.h            # Binding-point conventions
 │       │   │   ├── ForwardRenderPath.h   # forward pipeline assembler
