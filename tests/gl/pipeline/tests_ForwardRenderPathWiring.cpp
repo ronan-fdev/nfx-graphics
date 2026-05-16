@@ -1,9 +1,12 @@
 #include <doctest/doctest.h>
 
 #include <nfx/Graphics.h>
+#include "../test_helpers/StderrCapture.h"
+
 #include <type_traits>
 
 namespace gl = nfx::graphics::gl;
+using nfx::tests::StderrCapture;
 
 TEST_SUITE("ForwardRenderPath - Overlay Wiring Contract")
 {
@@ -64,5 +67,33 @@ TEST_SUITE("ForwardRenderPath - Overlay Wiring Contract")
         CHECK((std::is_base_of_v<gl::RenderPass, gl::ImagePlanePass>));
         CHECK((std::is_base_of_v<gl::RenderPass, gl::TextPass>));
         CHECK((std::is_base_of_v<gl::RenderPass, gl::Polygon2DPass>));
+    }
+
+    TEST_CASE("setSkybox overrides previously enabled environment with recoverable warning")
+    {
+        gl::ForwardRenderPath path;
+        gl::TextureCubeCache cubemapCache;
+
+        path.enableEnvironment(2.0f);
+
+        StderrCapture capture;
+        path.setSkybox(cubemapCache, gl::TextureCubeHandle{ 7 });
+
+        CHECK(capture.str() == "[ForwardRenderPath] WARN(RECOVERABLE): setSkybox() overrides enableEnvironment()\n");
+    }
+
+    TEST_CASE("enableEnvironment is ignored after skybox with recoverable warning")
+    {
+        gl::ForwardRenderPath path;
+        gl::TextureCubeCache cubemapCache;
+
+        path.setSkybox(cubemapCache, gl::TextureCubeHandle{ 7 });
+
+        StderrCapture capture;
+        path.enableEnvironment(2.0f);
+
+        CHECK(
+            capture.str() ==
+            "[ForwardRenderPath] WARN(RECOVERABLE): enableEnvironment() ignored: setSkybox() already set\n");
     }
 }

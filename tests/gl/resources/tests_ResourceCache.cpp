@@ -260,3 +260,55 @@ TEST_SUITE("TextureCubeCache")
         CHECK(cache.empty());
     }
 }
+
+TEST_SUITE("MaterialCache")
+{
+    TEST_CASE("MaterialCache::create returns invalid handle and keeps cache empty when shader handle is invalid")
+    {
+        MaterialCache cache;
+
+        const MaterialHandle handle = cache.create(ShaderHandle{}, RenderState::opaque());
+        CHECK_FALSE(handle.isValid());
+        CHECK(cache.empty());
+    }
+}
+
+TEST_SUITE("FontCache")
+{
+    TEST_CASE("FontCache::create returns invalid handle and keeps cache empty when atlas handle is invalid")
+    {
+        FontCache cache;
+
+        Font font;
+        font.atlas = Texture2DHandle{};
+
+        const FontHandle handle = cache.create(std::move(font));
+        CHECK_FALSE(handle.isValid());
+        CHECK(cache.empty());
+    }
+}
+
+TEST_SUITE("MeshCache")
+{
+    TEST_CASE("MeshCache::create from MeshData returns invalid handle and keeps cache empty on contract failure")
+    {
+        MeshCache cache;
+
+        MeshData data;
+
+        const MeshHandle handle = cache.create(data);
+        CHECK_FALSE(handle.isValid());
+        CHECK(cache.empty());
+    }
+
+    TEST_CASE("MeshCache::create from Desc returns invalid handle and keeps cache empty on contract failure")
+    {
+        MeshCache cache;
+
+        Mesh::Desc desc{};
+
+        const MeshHandle handle = cache.create(desc);
+        CHECK_FALSE(handle.isValid());
+        CHECK(cache.empty());
+    }
+}

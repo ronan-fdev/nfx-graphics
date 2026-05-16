@@ -145,6 +145,7 @@
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency
 - `gl/core/tests_Renderbuffer`: validates renderbuffer allocation and format rejection guards
+- `gl/core/tests_RuntimeError`: validates runtime error logging format and level/kind mapping
 - `gl/core/tests_Sampler`: validates mipmap magnification filter rejection
 - `gl/core/tests_ShaderProgram`: validates pipeline validation rules and file-loading error paths
 - `gl/core/tests_Texture2D`: validates format rejection and allocate guard conditions

@@ -5,6 +5,7 @@
 add_executable(nfx-graphics-gl-tests
     core/tests_Functions.cpp
     core/tests_Renderbuffer.cpp
+    core/tests_RuntimeError.cpp
     core/tests_Sampler.cpp
     core/tests_ShaderProgram.cpp
     core/tests_Texture2D.cpp
