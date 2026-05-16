@@ -5,11 +5,13 @@
  * \brief Declares a Blinn-Phong material descriptor and helpers to build runtime Material instances.
  */
 
-#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
-#include "nfx/graphics/gl/pipeline/Bindings.h"
+#include "nfx/graphics/gl/core/shaders/Uniforms.h"
+#include "Material.h"
 
 namespace nfx::graphics::gl
 {
+    struct RenderResources;
+
     /**
      * \brief Describes the parameters of a lit Blinn-Phong material.
      */

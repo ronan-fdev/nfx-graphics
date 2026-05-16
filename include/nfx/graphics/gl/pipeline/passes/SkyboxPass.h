@@ -10,17 +10,18 @@
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/core/shaders/ShaderProgram.h"
 #include "nfx/graphics/gl/resources/Handle.h"
-#include "nfx/graphics/gl/resources/TextureCubeCache.h"
 
 namespace nfx::graphics::gl
 {
+    class TextureCubeCache;
+
     /**
      * \brief Render pass drawing a cubemap skybox as the scene background.
      *
      * The pass should be added after the geometry pass so the skybox only fills pixels not already
      * covered by opaque geometry.
      */
-    class SkyboxPass : public RenderPass
+    class SkyboxPass final : public RenderPass
     {
         friend class Renderer;
 

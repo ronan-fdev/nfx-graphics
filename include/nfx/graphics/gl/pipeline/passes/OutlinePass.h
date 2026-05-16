@@ -7,7 +7,6 @@
 
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/core/shaders/ShaderProgram.h"
-#include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/resources/Texture2DCache.h"
 #include "RenderPass.h"

@@ -5,7 +5,6 @@
  * \brief Declares the depth-only render pass generating 2D shadow maps for spot lights.
  */
 
-#include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/pipeline/shadows/ShadowMap.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"

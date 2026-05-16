@@ -5,12 +5,8 @@
  * \brief Declares the depth-only render pass used to generate a directional shadow map.
  */
 
-#include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/pipeline/shadows/ShadowMap.h"
-#include "nfx/graphics/gl/pipeline/Bindings.h"
-#include "nfx/graphics/gl/pipeline/RenderState.h"
-#include "nfx/graphics/math/Mat4.h"
 #include "RenderPass.h"
 
 #include <cstdint>

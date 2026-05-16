@@ -1,8 +1,12 @@
 #include "nfx/graphics/gl/pipeline/passes/DirectionalShadowPass.h"
 
+#include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/mesh/Mesh.h"
+#include "nfx/graphics/gl/pipeline/Bindings.h"
+#include "nfx/graphics/gl/pipeline/RenderState.h"
 #include "nfx/graphics/gl/resources/MeshCache.h"
+#include "nfx/graphics/math/Mat4.h"
 
 #include <embedded_shaders.h>
 

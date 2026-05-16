@@ -5,13 +5,11 @@
  * \brief Declares the transparent render pass performing back-to-front sorted alpha blending.
  */
 
-#include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "RenderPass.h"
 
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace nfx::graphics::gl
 {

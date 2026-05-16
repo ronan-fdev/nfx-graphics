@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/pipeline/Renderer.h"
 
 #include "nfx/graphics/gl/core/Context.h"
+#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/passes/AxesPass.h"
 #include "nfx/graphics/gl/pipeline/passes/DirectionalShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"

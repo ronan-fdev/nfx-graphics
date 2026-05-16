@@ -1,7 +1,18 @@
 #include "nfx/graphics/gl/pipeline/ForwardRenderPath.h"
-#include "detail/ViewportValidation.h"
 
-#include <cstdio>
+#include "nfx/graphics/gl/pipeline/passes/AxesPass.h"
+#include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
+#include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
+#include "nfx/graphics/gl/pipeline/passes/GridPass.h"
+#include "nfx/graphics/gl/pipeline/passes/ImagePlanePass.h"
+#include "nfx/graphics/gl/pipeline/passes/OutlinePass.h"
+#include "nfx/graphics/gl/pipeline/passes/Polygon2DPass.h"
+#include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
+#include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
+#include "nfx/graphics/gl/pipeline/passes/TextPass.h"
+#include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
+#include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
+#include "detail/ViewportValidation.h"
 
 namespace nfx::graphics::gl
 {

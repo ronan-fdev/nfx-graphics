@@ -1,6 +1,7 @@
 #include "nfx/graphics/gl/material/BlinnPhong.h"
 
-#include "nfx/graphics/gl/material/MaterialBlock.h"
+#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
+#include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "ShaderFeatures.h"
 
 #include <embedded_shaders.h>

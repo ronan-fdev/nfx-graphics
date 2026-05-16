@@ -5,7 +5,6 @@
  * \brief Declares the depth-only render pass generating cube-map shadows for point lights.
  */
 
-#include "nfx/graphics/gl/core/buffers/UniformBuffer.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
 #include "nfx/graphics/gl/pipeline/shadows/PointShadowMap.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
@@ -106,7 +105,7 @@ namespace nfx::graphics::gl
         RenderQueue m_queue;
         ShaderProgram m_depthShader;
         RenderState m_shadowState;
-        UniformBuffer<ShadowDepthUBO> m_depthUbo; ///< binding ShadowDepth=4
+        UniformBuffer<ShadowDepthUBO> m_depthUbo;
 
         std::array<Framebuffer, PipelineLimits::MaxPointShadows> m_framebuffers;
         std::array<TextureCubeHandle, PipelineLimits::MaxPointShadows> m_cubeHandles;

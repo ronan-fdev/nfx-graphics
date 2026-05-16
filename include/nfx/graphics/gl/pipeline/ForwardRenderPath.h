@@ -5,28 +5,7 @@
  * \brief Declares ForwardRenderPath: a forward rendering pipeline with a fluent configuration API.
  */
 
-#include "nfx/graphics/gl/pipeline/frame/FrameData.h"
-#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
-#include "nfx/graphics/gl/pipeline/passes/AxesPass.h"
-#include "nfx/graphics/gl/pipeline/passes/DirectionalShadowPass.h"
-#include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
-#include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
-#include "nfx/graphics/gl/pipeline/passes/GridPass.h"
-#include "nfx/graphics/gl/pipeline/passes/ImagePlanePass.h"
-#include "nfx/graphics/gl/pipeline/passes/OutlinePass.h"
-#include "nfx/graphics/gl/pipeline/passes/PointShadowPass.h"
-#include "nfx/graphics/gl/pipeline/passes/Polygon2DPass.h"
-#include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
-#include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
-#include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
-#include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"
-#include "nfx/graphics/gl/pipeline/passes/TextPass.h"
-#include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
-#include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
-#include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
-#include "nfx/graphics/gl/resources/TextureCubeCache.h"
 #include "Renderer.h"
-#include "ViewportRect.h"
 
 #include <cassert>
 #include <cstdio>
@@ -35,6 +14,13 @@
 
 namespace nfx::graphics::gl
 {
+    class EnvironmentPass;
+    class GeometryPass;
+    class OutlinePass;
+    class PresentPass;
+    class RenderPass;
+    class SkyboxPass;
+
     /**
      * \brief Carries the color and depth texture handles that connect render passes.
      *

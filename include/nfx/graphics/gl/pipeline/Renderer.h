@@ -10,7 +10,6 @@
 #include "nfx/graphics/gl/core/GlTypes.h"
 #include "nfx/graphics/gl/material/ibl/IblFrameBlock.h"
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
-#include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/shadows/ShadowMatricesBlock.h"
 #include "ViewportRect.h"
@@ -26,6 +25,8 @@
 
 namespace nfx::graphics::gl
 {
+    struct RenderResources;
+
     /**
      * \brief Executes an ordered sequence of render passes to produce one frame.
      *
