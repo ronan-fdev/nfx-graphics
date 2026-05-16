@@ -312,7 +312,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->planeHandle;
                 cmd.material = scene->groundMat;
-                cmd.sortKey = 1;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                 math::Mat4 sc, tr;
                 math::mat4Scale(sc, 12.0f, 1.0f, 12.0f);
                 math::mat4Translate(tr, 0.0f, -1.0f, 0.0f);
@@ -326,7 +326,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->sphereHandle;
                 cmd.material = scene->opaqueMat;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 math::mat4Translate(cmd.transform, 0.0f, 0.0f, 0.0f);
                 scene->path.geometryPass().submit(cmd);
                 scene->dirShadow->submit(cmd);
@@ -338,7 +338,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->cubeHandle;
                 cmd.material = scene->opaqueMat;
-                cmd.sortKey = 11;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 11u, 0);
                 math::Mat4 r, tr;
                 math::mat4RotateY(r, scene->time * 0.4f);
                 math::mat4Translate(tr, -3.0f, 0.0f, 0.0f);
@@ -353,7 +353,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->orbHandle;
                 cmd.material = scene->orbMat;
-                cmd.sortKey = 5;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 5u, 0);
                 math::Mat4 sc, tr;
                 math::mat4Scale(sc, 0.18f, 0.18f, 0.18f);
                 math::mat4Translate(tr, orbX, kOrbHeight, orbZ);
@@ -368,7 +368,7 @@ int main()
                     gl::RenderCommand cmd;
                     cmd.mesh = scene->sphereHandle;
                     cmd.material = scene->transpRed;
-                    cmd.sortKey = 1;
+                    cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                     math::mat4Translate(cmd.transform, 3.0f, 0.0f, -1.5f);
                     wboit->submit(cmd);
                 }
@@ -376,7 +376,7 @@ int main()
                     gl::RenderCommand cmd;
                     cmd.mesh = scene->sphereHandle;
                     cmd.material = scene->transpGreen;
-                    cmd.sortKey = 2;
+                    cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 2u, 0);
                     math::mat4Translate(cmd.transform, 3.0f, 0.0f, 0.0f);
                     wboit->submit(cmd);
                 }
@@ -384,7 +384,7 @@ int main()
                     gl::RenderCommand cmd;
                     cmd.mesh = scene->sphereHandle;
                     cmd.material = scene->transpBlue;
-                    cmd.sortKey = 3;
+                    cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 3u, 0);
                     math::mat4Translate(cmd.transform, 3.0f, 0.0f, 1.5f);
                     wboit->submit(cmd);
                 }

@@ -168,7 +168,8 @@ int main()
                     gl::RenderCommand cmd;
                     cmd.mesh = s.sphereMesh;
                     cmd.material = s.fallbackMaterials[col];
-                    cmd.sortKey = 100 + static_cast<std::uint32_t>(col);
+                    cmd.sortKey =
+                        gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 100u + static_cast<std::uint32_t>(col), 0);
                     math::mat4Translate(cmd.transform, x, kRowY, kTopZ);
                     s.path.geometryPass().submit(cmd);
                 }
@@ -178,7 +179,8 @@ int main()
                     gl::RenderCommand cmd;
                     cmd.mesh = s.sphereMesh;
                     cmd.material = s.splitSumMaterials[col];
-                    cmd.sortKey = 200 + static_cast<std::uint32_t>(col);
+                    cmd.sortKey =
+                        gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 200u + static_cast<std::uint32_t>(col), 0);
                     math::mat4Translate(cmd.transform, x, kRowY, kTopZ + kRowSpacing);
                     s.path.geometryPass().submit(cmd);
                 }

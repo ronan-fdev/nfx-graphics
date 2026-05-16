@@ -257,7 +257,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.groundHandle;
                 cmd.material = s.groundMat;
-                cmd.sortKey = 1;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                 math::Mat4 scale;
                 math::mat4Scale(scale, 14.0f, 1.0f, 14.0f);
                 cmd.transform = scale;
@@ -270,7 +270,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.sphereHandle;
                 cmd.material = s.sphereMat;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 math::Mat4 scale, translate;
                 const float bob = 0.82f + 0.10f * std::sin(s.time * 1.8f);
                 math::mat4Scale(scale, 0.96f, 0.96f, 0.96f);
@@ -285,7 +285,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.cubeHandle;
                 cmd.material = s.cubeMat;
-                cmd.sortKey = 20;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
                 math::Mat4 scale, rotate, translate, rs;
                 math::mat4Scale(scale, 0.9f, 0.9f, 0.9f);
                 math::mat4RotateY(rotate, s.time * 0.8f);
@@ -301,7 +301,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.torusHandle;
                 cmd.material = s.torusMat;
-                cmd.sortKey = 30;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 30u, 0);
                 math::Mat4 rx, ry, tr, rxy;
                 math::mat4RotateX(rx, 0.45f);
                 math::mat4RotateY(ry, -s.time * 0.55f);

@@ -157,7 +157,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.sphereMesh;
                 cmd.material = s.rusty04Mat;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 math::mat4Translate(cmd.transform, -1.6f, 0.0f, 0.0f);
                 s.path.geometryPass().submit(cmd);
             }
@@ -166,7 +166,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.sphereMesh;
                 cmd.material = s.rustyGridMat;
-                cmd.sortKey = 11;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 11u, 0);
                 math::mat4Translate(cmd.transform, 1.6f, 0.0f, 0.0f);
                 s.path.geometryPass().submit(cmd);
             }

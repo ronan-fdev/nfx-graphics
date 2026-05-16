@@ -280,7 +280,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.rockHandle;
                 cmd.material = s.rockMat;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 math::Mat4 sc, tr;
                 math::mat4Scale(sc, 0.7f, 0.7f, 0.7f);
                 math::mat4Translate(tr, -2.2f, 0.75f, 0.0f);
@@ -300,7 +300,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.torusHandle;
                 cmd.material = s.torusMat;
-                cmd.sortKey = 20;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
                 math::Mat4 r, t;
                 math::mat4RotateY(r, s.time * 0.8f);
                 math::mat4Translate(t, 0.0f, 1.0f, 0.0f);
@@ -320,7 +320,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.sphereHandle;
                 cmd.material = s.sphereMat;
-                cmd.sortKey = 30;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 30u, 0);
                 math::Mat4 sc, tr;
                 math::mat4Scale(sc, 0.8f, 0.8f, 0.8f);
                 math::mat4Translate(tr, 2.5f, 1.0f, 0.0f);

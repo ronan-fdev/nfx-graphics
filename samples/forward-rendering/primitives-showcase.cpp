@@ -27,7 +27,7 @@ struct PrimitiveItem
     float position[3] = { 0.0f, 0.0f, 0.0f };
     float scale[3] = { 1.0f, 1.0f, 1.0f };
     float spinSpeed = 0.0f;
-    std::uint64_t sortKey = 10;
+    gl::PackedSortKey sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
 };
 
 struct Scene
@@ -118,7 +118,8 @@ int main()
                 desc.shininess = 28.0f;
                 desc.hasShadow = true;
                 s.items[i].material = desc.build(*s.renderResources);
-                s.items[i].sortKey = static_cast<std::uint64_t>(10 + i);
+                s.items[i].sortKey =
+                    gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, static_cast<std::uint32_t>(10 + i), 0);
             }
 
             // Disk and tube are intentionally double-sided in this showcase
@@ -208,7 +209,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.planeHandle;
                 cmd.material = s.planeMat;
-                cmd.sortKey = 1;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                 math::Mat4 sc, tr;
                 math::mat4Scale(sc, 20.0f, 1.0f, 20.0f);
                 math::mat4Translate(tr, 0.0f, -1.0f, 0.0f);

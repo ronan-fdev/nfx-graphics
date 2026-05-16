@@ -7,6 +7,7 @@
 
 #include "nfx/graphics/gl/resources/Handle.h"
 #include "nfx/graphics/gl/pipeline/RenderMode.h"
+#include "nfx/graphics/gl/pipeline/queue/SortKey.h"
 #include "nfx/graphics/math/geometry/Bounds.h"
 #include "nfx/graphics/math/Mat4.h"
 
@@ -23,8 +24,8 @@ namespace nfx::graphics::gl
         MeshHandle mesh;                         ///< Mesh handle identifying the geometry to draw
         MaterialHandle material;                 ///< Material handle identifying the material to bind
         RenderMode mode = RenderMode::Triangles; ///< Primitive topology used for the draw call
-        std::uint64_t sortKey = 0; ///< Sort key. If 0, submit() assigns the material handle id as fallback.
-        int instanceCount = 1;     ///< Number of instances to draw. Must be >= 1.
+        PackedSortKey sortKey{};                 ///< Packed sort key. If zero(), submit() assigns material-id fallback.
+        int instanceCount = 1;                   ///< Number of instances to draw. Must be >= 1.
         math::Mat4 transform = math::Mat4::identity();    ///< Model transform matrix
         std::optional<math::Bounds::AABB> boundsAABB;     ///< Optional bounding box override used for CPU culling
         std::optional<math::Bounds::Sphere> boundsSphere; ///< Optional bounding sphere override used for CPU culling

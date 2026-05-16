@@ -35,14 +35,14 @@ TEST_SUITE("RenderQueue")
         RenderCommand cmd;
         cmd.mesh = MeshHandle{ 7 };
         cmd.material = MaterialHandle{ 42 };
-        cmd.sortKey = 0;
+        cmd.sortKey = PackedSortKey::zero();
 
         queue.submit(cmd);
 
         REQUIRE(queue.size() == 1);
         const RenderCommand& stored = queue.commands().front();
         CHECK(stored.instanceCount == 1);
-        CHECK(stored.sortKey == 42);
+        CHECK(stored.sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 42u, 0));
     }
 
     TEST_CASE("submit preserves explicit sortKey")
@@ -51,12 +51,12 @@ TEST_SUITE("RenderQueue")
         RenderCommand cmd;
         cmd.mesh = MeshHandle{ 1 };
         cmd.material = MaterialHandle{ 2 };
-        cmd.sortKey = 999;
+        cmd.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 999u, 0);
 
         queue.submit(cmd);
 
         REQUIRE(queue.size() == 1);
-        CHECK(queue.commands().front().sortKey == 999);
+        CHECK(queue.commands().front().sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 999u, 0));
     }
 
     TEST_CASE("commands preserve submission order")
@@ -105,17 +105,17 @@ TEST_SUITE("RenderQueue")
         RenderCommand a;
         a.mesh = MeshHandle{ 1 };
         a.material = MaterialHandle{ 1 };
-        a.sortKey = 300;
+        a.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 300u, 0);
 
         RenderCommand b;
         b.mesh = MeshHandle{ 2 };
         b.material = MaterialHandle{ 2 };
-        b.sortKey = 100;
+        b.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 100u, 0);
 
         RenderCommand c;
         c.mesh = MeshHandle{ 3 };
         c.material = MaterialHandle{ 3 };
-        c.sortKey = 200;
+        c.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 200u, 0);
 
         queue.submit(a);
         queue.submit(b);
@@ -124,9 +124,9 @@ TEST_SUITE("RenderQueue")
         queue.sort(RenderQueue::Order::BySortKey);
 
         REQUIRE(queue.size() == 3);
-        CHECK(queue.commands()[0].sortKey == 100);
-        CHECK(queue.commands()[1].sortKey == 200);
-        CHECK(queue.commands()[2].sortKey == 300);
+        CHECK(queue.commands()[0].sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 100u, 0));
+        CHECK(queue.commands()[1].sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 200u, 0));
+        CHECK(queue.commands()[2].sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 300u, 0));
     }
 
     TEST_CASE("sort BySubmission preserves submission order")
@@ -136,12 +136,12 @@ TEST_SUITE("RenderQueue")
         RenderCommand a;
         a.mesh = MeshHandle{ 1 };
         a.material = MaterialHandle{ 1 };
-        a.sortKey = 300;
+        a.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 300u, 0);
 
         RenderCommand b;
         b.mesh = MeshHandle{ 2 };
         b.material = MaterialHandle{ 2 };
-        b.sortKey = 100;
+        b.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 100u, 0);
 
         queue.submit(a);
         queue.submit(b);
@@ -149,8 +149,8 @@ TEST_SUITE("RenderQueue")
         queue.sort(RenderQueue::Order::BySubmission);
 
         REQUIRE(queue.size() == 2);
-        CHECK(queue.commands()[0].sortKey == 300);
-        CHECK(queue.commands()[1].sortKey == 100);
+        CHECK(queue.commands()[0].sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 300u, 0));
+        CHECK(queue.commands()[1].sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 0, 100u, 0));
     }
 
     TEST_CASE("sort BySortKey is stable for equal sortKeys")
@@ -160,12 +160,12 @@ TEST_SUITE("RenderQueue")
         RenderCommand a;
         a.mesh = MeshHandle{ 10 };
         a.material = MaterialHandle{ 1 };
-        a.sortKey = 42;
+        a.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 42u, 0);
 
         RenderCommand b;
         b.mesh = MeshHandle{ 20 };
         b.material = MaterialHandle{ 1 };
-        b.sortKey = 42;
+        b.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 42u, 0);
 
         queue.submit(a);
         queue.submit(b);

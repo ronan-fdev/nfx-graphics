@@ -130,7 +130,7 @@ int main()
             gl::RenderCommand sphere;
             sphere.mesh = scene->sphereHandle;
             sphere.material = scene->sphereMaterial;
-            sphere.sortKey = 10;
+            sphere.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
             {
                 math::Mat4 model;
                 math::mat4Scale(model, 1.0f, 1.0f, 1.0f);

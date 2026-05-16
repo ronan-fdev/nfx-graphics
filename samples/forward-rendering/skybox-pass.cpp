@@ -204,7 +204,7 @@ int main()
             {
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->cubeHandle;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 {
                     math::Mat4 r, t;
                     math::mat4RotateY(r, scene->time * 0.3f);
@@ -216,7 +216,7 @@ int main()
             {
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->sphereHandle;
-                cmd.sortKey = 20;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
                 {
                     math::Mat4 t;
                     math::mat4Translate(t, 1.5f, 0.5f, 0.0f);
@@ -227,7 +227,7 @@ int main()
             {
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->planeHandle;
-                cmd.sortKey = 1;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                 {
                     math::Mat4 scale, t;
                     math::mat4Scale(scale, 8.0f, 1.0f, 8.0f);
@@ -262,7 +262,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->cubeHandle;
                 cmd.material = scene->cubeMaterial;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 {
                     math::Mat4 r, t;
                     math::mat4RotateY(r, scene->time * 0.3f);
@@ -277,7 +277,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->sphereHandle;
                 cmd.material = scene->sphereMaterial;
-                cmd.sortKey = 20;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
                 {
                     math::Mat4 t;
                     math::mat4Translate(t, 1.5f, 0.5f, 0.0f);
@@ -291,7 +291,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->planeHandle;
                 cmd.material = scene->groundMaterial;
-                cmd.sortKey = 1;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                 {
                     math::Mat4 scale, t;
                     math::mat4Scale(scale, 8.0f, 1.0f, 8.0f);

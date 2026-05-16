@@ -165,7 +165,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.backpackHandle;
                 cmd.material = s.backpackMat;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 math::Mat4 r, sc, t;
                 math::mat4RotateY(r, -0.55f);
                 math::mat4Scale(sc, 0.92f, 0.92f, 0.92f);
@@ -179,7 +179,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.rockHandle;
                 cmd.material = s.rockMat;
-                cmd.sortKey = 15;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 15u, 0);
                 math::Mat4 sc, t;
                 math::mat4Scale(sc, 0.42f, 0.42f, 0.42f);
                 math::mat4Translate(t, -0.25f, 0.46f, 2.15f);
@@ -190,7 +190,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.rockHandle;
                 cmd.material = s.rockMat;
-                cmd.sortKey = 18;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 18u, 0);
                 math::Mat4 r, sc, t;
                 math::mat4RotateY(r, s.angle * 0.8f + 0.35f);
                 math::mat4Scale(sc, 0.58f, 0.58f, 0.58f);
@@ -204,7 +204,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = s.planeHandle;
                 cmd.material = s.planeMat;
-                cmd.sortKey = 1;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
                 math::Mat4 sc, t;
                 math::mat4Scale(sc, 14.0f, 1.0f, 14.0f);
                 math::mat4Translate(t, 0.00f, -0.001f, 0.0f);

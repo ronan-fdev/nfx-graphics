@@ -233,7 +233,7 @@ int main()
             gl::RenderCommand markerCmd;
             markerCmd.mesh = scene->markerSphereHandle;
             markerCmd.material = scene->markerMaterial;
-            markerCmd.sortKey = 10;
+            markerCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
             {
                 math::Mat4 s, t;
                 math::mat4Scale(s, kMarkerScale, kMarkerScale, kMarkerScale);
@@ -246,7 +246,7 @@ int main()
             gl::RenderCommand floorCmd;
             floorCmd.mesh = scene->rockHandle;
             floorCmd.material = scene->floorMaterial;
-            floorCmd.sortKey = 20;
+            floorCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
             {
                 math::Mat4 s, t;
                 math::mat4Scale(s, 9.0f, 1.0f, 9.0f);
@@ -259,7 +259,7 @@ int main()
             gl::RenderCommand rockCmd;
             rockCmd.mesh = scene->rockHandle;
             rockCmd.material = scene->rockMaterial;
-            rockCmd.sortKey = 40;
+            rockCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 40u, 0);
             {
                 math::Mat4 s, t;
                 math::mat4Scale(s, kRockScale, kRockScale, kRockScale);

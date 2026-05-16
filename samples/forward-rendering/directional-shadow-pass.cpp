@@ -252,7 +252,7 @@ int main()
             gl::RenderCommand floorCmd;
             floorCmd.mesh = scene->rockHandle;
             floorCmd.material = scene->floorMaterial;
-            floorCmd.sortKey = 5;
+            floorCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 5u, 0);
             {
                 math::Mat4 s;
                 math::Mat4 t;
@@ -273,7 +273,8 @@ int main()
                 gl::RenderCommand rockCmd;
                 rockCmd.mesh = scene->rockHandle;
                 rockCmd.material = scene->rockMaterial;
-                rockCmd.sortKey = 20 + static_cast<std::uint64_t>(i);
+                rockCmd.sortKey =
+                    gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, static_cast<std::uint32_t>(20 + i), 0);
 
                 math::Mat4 s;
                 math::Mat4 r;

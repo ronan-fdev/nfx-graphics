@@ -1077,10 +1077,11 @@ int main()
                 cmd.mesh = s.cubeMesh;
                 cmd.material = s.bodyMat;
                 cmd.transform = model;
-                cmd.sortKey = 1000 + static_cast<std::uint64_t>(i) * 10u;
+                cmd.sortKey =
+                    gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, static_cast<std::uint32_t>(1000 + i * 10u), 0);
                 s.path.geometryPass().submit(cmd);
 
-                auto submitSticker = [&](int nx, int ny, int nz, gl::MaterialHandle mat, std::uint64_t order) {
+                auto submitSticker = [&](int nx, int ny, int nz, gl::MaterialHandle mat, gl::PackedSortKey order) {
                     math::Mat4 stickerLocal;
                     math::Mat4 stickerModel;
                     buildStickerModel(stickerLocal, nx, ny, nz);
@@ -1094,30 +1095,33 @@ int main()
                     s.path.geometryPass().submit(stickerCmd);
                 };
 
-                const std::uint64_t baseOrder = 1001 + static_cast<std::uint64_t>(i) * 10u;
+                const auto makeStickerKey = [i](std::uint32_t face) {
+                    return gl::SortKey::packOpaque(
+                        gl::SortKey::OpaqueLayer, 0, static_cast<std::uint32_t>(1001 + i * 10u) + face, 0);
+                };
                 if (c.stickerPosX.isValid())
                 {
-                    submitSticker(1, 0, 0, c.stickerPosX, baseOrder + 1u);
+                    submitSticker(1, 0, 0, c.stickerPosX, makeStickerKey(1));
                 }
                 if (c.stickerNegX.isValid())
                 {
-                    submitSticker(-1, 0, 0, c.stickerNegX, baseOrder + 2u);
+                    submitSticker(-1, 0, 0, c.stickerNegX, makeStickerKey(2));
                 }
                 if (c.stickerPosY.isValid())
                 {
-                    submitSticker(0, 1, 0, c.stickerPosY, baseOrder + 3u);
+                    submitSticker(0, 1, 0, c.stickerPosY, makeStickerKey(3));
                 }
                 if (c.stickerNegY.isValid())
                 {
-                    submitSticker(0, -1, 0, c.stickerNegY, baseOrder + 4u);
+                    submitSticker(0, -1, 0, c.stickerNegY, makeStickerKey(4));
                 }
                 if (c.stickerPosZ.isValid())
                 {
-                    submitSticker(0, 0, 1, c.stickerPosZ, baseOrder + 5u);
+                    submitSticker(0, 0, 1, c.stickerPosZ, makeStickerKey(5));
                 }
                 if (c.stickerNegZ.isValid())
                 {
-                    submitSticker(0, 0, -1, c.stickerNegZ, baseOrder + 6u);
+                    submitSticker(0, 0, -1, c.stickerNegZ, makeStickerKey(6));
                 }
             }
 

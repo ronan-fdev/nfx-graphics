@@ -88,7 +88,7 @@ namespace
             gl::RenderCommand cmd;
             cmd.mesh = groundHandle;
             cmd.material = groundMat;
-            cmd.sortKey = 1;
+            cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 1u, 0);
             math::Mat4 scale;
             math::mat4Scale(scale, 18.0f, 1.0f, 12.0f);
             cmd.transform = scale;
@@ -99,7 +99,7 @@ namespace
             gl::RenderCommand cmd;
             cmd.mesh = hullHandle;
             cmd.material = hullMat;
-            cmd.sortKey = 10;
+            cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
             math::Mat4 scale, rotate, translate, rs;
             math::mat4Scale(scale, 1.45f, 1.0f, 1.0f);
             math::mat4RotateZ(rotate, -0.5f * std::numbers::pi_v<float>);
@@ -113,7 +113,7 @@ namespace
             gl::RenderCommand cmd;
             cmd.mesh = cabinHandle;
             cmd.material = cabinMat;
-            cmd.sortKey = 20;
+            cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
             math::Mat4 scale, translate;
             math::mat4Scale(scale, 0.90f, 0.65f, 0.75f);
             math::mat4Translate(translate, 0.95f, 1.75f, 0.0f);

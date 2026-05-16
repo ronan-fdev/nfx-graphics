@@ -162,7 +162,7 @@ int main()
             gl::RenderCommand planeCmd;
             planeCmd.mesh = scene->planeHandle;
             planeCmd.material = scene->planeMaterial;
-            planeCmd.sortKey = 10;
+            planeCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
             {
                 math::Mat4 s;
                 math::Mat4 t;
@@ -175,7 +175,7 @@ int main()
             gl::RenderCommand cubeCmd;
             cubeCmd.mesh = scene->cubeHandle;
             cubeCmd.material = scene->cubeMaterial;
-            cubeCmd.sortKey = 20;
+            cubeCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 20u, 0);
             {
                 math::Mat4 r;
                 math::Mat4 t;
@@ -188,7 +188,7 @@ int main()
             gl::RenderCommand sphereCmd;
             sphereCmd.mesh = scene->sphereHandle;
             sphereCmd.material = scene->sphereMaterial;
-            sphereCmd.sortKey = 30;
+            sphereCmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 30u, 0);
             {
                 math::Mat4 t;
                 math::mat4Translate(t, 1.6f, 0.05f, 0.0f);

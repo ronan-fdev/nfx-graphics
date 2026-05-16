@@ -44,9 +44,9 @@ namespace nfx::graphics::gl
                 assert(cmd.instanceCount >= 1 && "RenderQueue::submit: instanceCount must be >= 1");
                 cmd.instanceCount = 1;
             }
-            if (cmd.sortKey == 0)
+            if (cmd.sortKey.isZero())
             {
-                cmd.sortKey = cmd.material.id;
+                cmd.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, cmd.material.id, 0);
             }
             m_commands.push_back(cmd);
         }

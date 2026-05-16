@@ -209,7 +209,7 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->rockHandle;
                 cmd.material = scene->opaqueMat;
-                cmd.sortKey = 10;
+                cmd.sortKey = gl::SortKey::packOpaque(gl::SortKey::OpaqueLayer, 0, 10u, 0);
                 math::Mat4 s, t;
                 math::mat4Scale(s, 0.72f, 0.72f, 0.72f);
                 math::mat4Translate(t, 0.0f, 1.5f, 0.5f);
@@ -230,7 +230,8 @@ int main()
                 gl::RenderCommand cmd;
                 cmd.mesh = scene->sphereHandle;
                 cmd.material = mats[i];
-                cmd.sortKey = 20 + static_cast<std::uint64_t>(i);
+                cmd.sortKey =
+                    gl::SortKey::packOpaque(gl::SortKey::TransparentLayer, 0, static_cast<std::uint32_t>(20 + i), 0);
 
                 math::Mat4 s, tr;
                 math::mat4Scale(s, 1.8f, 1.8f, 1.8f);
