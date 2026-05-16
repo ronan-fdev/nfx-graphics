@@ -199,8 +199,8 @@ namespace nfx::graphics::gl
         m_frameStats = {};
         m_frameStats.frameIndex = ++m_nextFrameIndex;
 
-        bindFrameScope();
         validatePermutations();
+        bindFrameScope();
 
         const auto& ctx = Context::current();
         const auto& gl = ctx.functions();
