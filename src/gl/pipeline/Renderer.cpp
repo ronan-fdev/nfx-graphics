@@ -29,41 +29,71 @@ namespace nfx::graphics::gl
 {
     namespace
     {
-        int builtinPassRank(const RenderPass& pass)
+        enum class PassStage : int
         {
-            if (dynamic_cast<const DirectionalShadowPass*>(&pass) || dynamic_cast<const SpotShadowPass*>(&pass) ||
-                dynamic_cast<const PointShadowPass*>(&pass))
+            Shadows = 0,
+            Opaque,
+            Environment,
+            Transparent,
+            Overlays,
+            FinalComposite,
+            Present
+        };
+
+        class PassOrderingPolicy final
+        {
+        public:
+            static void sort(std::vector<std::unique_ptr<RenderPass>>& passes)
             {
-                return 0;
+                std::stable_sort(passes.begin(), passes.end(), Less{});
             }
-            if (dynamic_cast<const GeometryPass*>(&pass))
+
+        private:
+            static PassStage stageOf(const RenderPass& pass)
             {
-                return 1;
+                if (dynamic_cast<const DirectionalShadowPass*>(&pass) || dynamic_cast<const SpotShadowPass*>(&pass) ||
+                    dynamic_cast<const PointShadowPass*>(&pass))
+                {
+                    return PassStage::Shadows;
+                }
+                if (dynamic_cast<const GeometryPass*>(&pass))
+                {
+                    return PassStage::Opaque;
+                }
+                if (dynamic_cast<const SkyboxPass*>(&pass) || dynamic_cast<const EnvironmentPass*>(&pass))
+                {
+                    return PassStage::Environment;
+                }
+                if (dynamic_cast<const WboitPass*>(&pass) || dynamic_cast<const TransparentPass*>(&pass))
+                {
+                    return PassStage::Transparent;
+                }
+                if (dynamic_cast<const GridPass*>(&pass) || dynamic_cast<const AxesPass*>(&pass) ||
+                    dynamic_cast<const ImagePlanePass*>(&pass) || dynamic_cast<const TextPass*>(&pass) ||
+                    dynamic_cast<const Polygon2DPass*>(&pass))
+                {
+                    return PassStage::Overlays;
+                }
+                if (dynamic_cast<const OutlinePass*>(&pass))
+                {
+                    return PassStage::FinalComposite;
+                }
+                if (dynamic_cast<const PresentPass*>(&pass))
+                {
+                    return PassStage::Present;
+                }
+                return PassStage::FinalComposite;
             }
-            if (dynamic_cast<const SkyboxPass*>(&pass) || dynamic_cast<const EnvironmentPass*>(&pass))
+
+            struct Less
             {
-                return 2;
-            }
-            if (dynamic_cast<const WboitPass*>(&pass) || dynamic_cast<const TransparentPass*>(&pass))
-            {
-                return 3;
-            }
-            if (dynamic_cast<const GridPass*>(&pass) || dynamic_cast<const AxesPass*>(&pass) ||
-                dynamic_cast<const ImagePlanePass*>(&pass) || dynamic_cast<const TextPass*>(&pass) ||
-                dynamic_cast<const Polygon2DPass*>(&pass))
-            {
-                return 4;
-            }
-            if (dynamic_cast<const OutlinePass*>(&pass))
-            {
-                return 5;
-            }
-            if (dynamic_cast<const PresentPass*>(&pass))
-            {
-                return 6;
-            }
-            return 5;
-        }
+                bool operator()(const std::unique_ptr<RenderPass>& lhs, const std::unique_ptr<RenderPass>& rhs) const
+                {
+                    return static_cast<int>(PassOrderingPolicy::stageOf(*lhs)) <
+                           static_cast<int>(PassOrderingPolicy::stageOf(*rhs));
+                }
+            };
+        };
     } // namespace
 
     Renderer::~Renderer()
@@ -138,9 +168,7 @@ namespace nfx::graphics::gl
     {
         m_resources = &resources;
 
-        std::stable_sort(m_passes.begin(), m_passes.end(), [](const auto& a, const auto& b) {
-            return builtinPassRank(*a) < builtinPassRank(*b);
-        });
+        PassOrderingPolicy::sort(m_passes);
 
         for (auto& passPtr : m_passes)
         {

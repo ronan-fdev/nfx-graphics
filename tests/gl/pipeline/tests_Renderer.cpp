@@ -3,6 +3,7 @@
 #include <nfx/Graphics.h>
 
 #include <memory>
+#include <vector>
 
 using namespace nfx::graphics::gl;
 
@@ -48,6 +49,34 @@ namespace
 
         RenderResources resources{ meshes, materials, shaders, textures2D, texturesCube, samplers };
     };
+
+    struct OrderedInitPass final : RenderPass
+    {
+        OrderedInitPass(std::string name, std::vector<std::string>* orderSink)
+            : RenderPass(std::move(name)),
+              m_orderSink(orderSink)
+        {}
+
+        int initializeCalls = 0;
+
+    protected:
+        bool initialize() override
+        {
+            ++initializeCalls;
+            if (m_orderSink)
+            {
+                m_orderSink->push_back(name());
+            }
+            return true;
+        }
+
+        void begin() override {}
+        void execute(RenderResources&) override {}
+        void end() override {}
+
+    private:
+        std::vector<std::string>* m_orderSink = nullptr;
+    };
 } // namespace
 
 TEST_SUITE("Renderer")
@@ -87,5 +116,30 @@ TEST_SUITE("Renderer")
         renderer.initialize(fixture.resources);
 
         CHECK(created->initializeCalls == 1);
+    }
+
+    TEST_CASE("initialize keeps insertion order for fallback custom passes")
+    {
+        Renderer renderer;
+        std::vector<std::string> initOrder;
+
+        auto* p1 = renderer.createPass<OrderedInitPass>("custom-a", &initOrder);
+        auto* p2 = renderer.createPass<OrderedInitPass>("custom-b", &initOrder);
+        auto* p3 = renderer.createPass<OrderedInitPass>("custom-c", &initOrder);
+
+        REQUIRE(p1 != nullptr);
+        REQUIRE(p2 != nullptr);
+        REQUIRE(p3 != nullptr);
+
+        ResourceFixture fixture;
+        renderer.initialize(fixture.resources);
+
+        REQUIRE(initOrder.size() == 3);
+        CHECK(initOrder[0] == "custom-a");
+        CHECK(initOrder[1] == "custom-b");
+        CHECK(initOrder[2] == "custom-c");
+        CHECK(p1->initializeCalls == 1);
+        CHECK(p2->initializeCalls == 1);
+        CHECK(p3->initializeCalls == 1);
     }
 }
