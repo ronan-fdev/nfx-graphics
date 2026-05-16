@@ -49,6 +49,7 @@ target_link_libraries(nfx-graphics-gl-tests
     PRIVATE
         doctest::doctest_with_main
         nfx::graphics
+        nfx::graphics::internal
         nfx-graphics-warnings
 )
 

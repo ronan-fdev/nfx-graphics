@@ -126,6 +126,10 @@
 - `Ray`: ray type with AABB/sphere/triangle intersection helpers and screen-to-world unprojection
 - `Frustum`: view frustum extracted from a view-projection matrix with point/sphere/AABB intersection tests
 
+##### Internal runtime
+
+- `nfx::graphics::internal`: dedicated internal module for runtime error logging (`ErrorLevel`, `ErrorKind`, `logError`)
+
 #### Embedded resources & build tooling
 
 - `nfx-graphics-resourcegen`: CLI tool that converts binary files into C++ `uint8_t[]` arrays with name and size metadata
