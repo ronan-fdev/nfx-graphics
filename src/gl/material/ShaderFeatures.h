@@ -36,6 +36,7 @@ namespace nfx::graphics::gl
      */
     inline ShaderFeature operator|(ShaderFeature a, ShaderFeature b)
     {
+        // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
         return static_cast<ShaderFeature>(static_cast<std::uint32_t>(a) | static_cast<std::uint32_t>(b));
     }
 

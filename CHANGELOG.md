@@ -132,6 +132,11 @@
 - `nfx::graphics::EmbeddedResource`: lightweight runtime view (`name`, `data`, `size`) with `str()`, `bytes()`, `empty()`, and templated `find()`
 - `nfx_graphics_embed_resources()`: CMake helper that embeds resource directories and auto-generates typed `.h`/`.cpp` registries
 
+#### CI
+
+- `build-and-test` GitHub Actions workflow: Linux/Windows matrix, GCC/Clang/MinGW/MSVC, tests and sample build coverage
+- `clang-analysis` GitHub Actions workflow: `clang-tidy` and `scan-build` analysis jobs on Linux
+
 #### Tests
 
 - `gl/core/tests_Functions`: verifies GL binding mappings and wrapper-to-pointer consistency

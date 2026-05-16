@@ -248,6 +248,7 @@ namespace nfx::graphics::gl
 
         for (const auto& [name, uniform] : m_uniforms)
         {
+            // NOLINTNEXTLINE(clang-analyzer-core.CallAndMessage)
             std::visit([&](const auto& v) { shader->setUniform(name, v); }, uniform);
         }
 
