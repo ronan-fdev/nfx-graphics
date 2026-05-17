@@ -77,6 +77,7 @@ jobs:
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DNFX_GRAPHICS_BUILD_TESTS=ON \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF \
             -DNFX_GRAPHICS_BUILD_SAMPLES=OFF \
             -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
@@ -98,6 +99,7 @@ jobs:
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DNFX_GRAPHICS_BUILD_TESTS=ON \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF \
             -DNFX_GRAPHICS_BUILD_SAMPLES=OFF \
             -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
@@ -121,6 +123,7 @@ jobs:
           cmake -S . -B build
           -G "Visual Studio 17 2022" -A x64
           -DNFX_GRAPHICS_BUILD_TESTS=ON
+          -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF
           -DNFX_GRAPHICS_BUILD_SAMPLES=OFF
           -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
@@ -196,6 +199,7 @@ jobs:
           cmake -S . -B build-samples -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF \
             -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
             -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
@@ -213,6 +217,7 @@ jobs:
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF \
             -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
             -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
@@ -230,6 +235,7 @@ jobs:
           cmake -S . -B build-samples
           -G "Visual Studio 17 2022" -A x64
           -DNFX_GRAPHICS_BUILD_TESTS=OFF
+          -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF
           -DNFX_GRAPHICS_BUILD_SAMPLES=ON
           -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 

@@ -24,4 +24,7 @@ include(doctest)
 #----------------------------------------------
 
 add_subdirectory(gl)
+if(NFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS)
+    add_subdirectory(gl-runtime)
+endif()
 add_subdirectory(math)

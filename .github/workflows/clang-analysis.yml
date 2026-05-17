@@ -38,6 +38,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_CXX_CLANG_TIDY=clang-tidy \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF \
             -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
             -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
@@ -67,6 +68,7 @@ jobs:
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=OFF \
             -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
             -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 

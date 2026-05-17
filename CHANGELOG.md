@@ -138,8 +138,9 @@
 
 #### CI
 
-- `build-and-test` GitHub Actions workflow: Linux/Windows matrix, GCC/Clang/MinGW/MSVC, tests and sample build coverage
-- `clang-analysis` GitHub Actions workflow: `clang-tidy` and `scan-build` analysis jobs on Linux
+- `build-and-test`: GitHub Actions workflow: Linux/Windows matrix, GCC/Clang/MinGW/MSVC, tests and sample build coverage
+- `clang-analysis`: GitHub Actions workflow: `clang-tidy` and `scan-build` analysis jobs on Linux
+- `codeql`: GitHub Actions workflow: CodeQL static analysis on C++ codebase
 
 #### Tests
 
@@ -175,7 +176,9 @@
 - `gl/scene/tests_lights`: ambient/directional defaults, raw/typed packing parity, and std140 GPU payload layout checks
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry
 
-- `gl/material/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
+- `gl/shaders/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
+
+- `gl-runtime/core/tests_GLContextFixture`: cross-platform OpenGL context initialization and version validation
 
 - `math/geometry/tests_Frustum`: plane normalization, point/sphere/AABB containment and intersection checks against a perspective frustum
 - `math/geometry/tests_Intersections`: ray/AABB, ray/sphere and ray/triangle intersection checks

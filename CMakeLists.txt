@@ -32,9 +32,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Build options
 #----------------------------------------------
 
-option(NFX_GRAPHICS_BUILD_TESTS        "Build nfx-graphics tests"               OFF)
-option(NFX_GRAPHICS_BUILD_SAMPLES      "Build nfx::graphics sample executables" OFF)
-option(NFX_GRAPHICS_WARNINGS_AS_ERRORS "Treat warnings as errors"               OFF)
+option(NFX_GRAPHICS_BUILD_TESTS            "Build nfx-graphics tests"                   OFF)
+option(NFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS "Build tests that require a real GL context" OFF)
+option(NFX_GRAPHICS_BUILD_SAMPLES          "Build nfx::graphics sample executables"     OFF)
+option(NFX_GRAPHICS_WARNINGS_AS_ERRORS     "Treat warnings as errors"                   OFF)
 
 #----------------------------------------------
 # Build type
