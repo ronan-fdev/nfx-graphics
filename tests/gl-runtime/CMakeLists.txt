@@ -3,7 +3,9 @@
 #==============================================================================
 
 add_executable(nfx-graphics-gl-runtime-tests
+    core/tests_CoreRuntimeSmoke.cpp
     core/tests_GLContextFixture.cpp
+    pipeline/tests_PipelineRuntimeSmoke.cpp
 )
 
 set_target_properties(nfx-graphics-gl-runtime-tests PROPERTIES DEBUG_POSTFIX "-d")

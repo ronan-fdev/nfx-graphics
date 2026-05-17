@@ -179,7 +179,9 @@
 
 - `gl/shaders/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
 
+- `gl-runtime/core/tests_CoreRuntimeSmoke`: runtime smoke coverage for core GL resources (textures, renderbuffer, sampler, shader program)
 - `gl-runtime/core/tests_GLContextFixture`: cross-platform OpenGL context initialization and version validation
+- `gl-runtime/pipeline/tests_PipelineRuntimeSmoke`: runtime smoke coverage for renderer pass execution semantics (enabled/disabled/lazy-init)
 
 - `math/geometry/tests_Frustum`: plane normalization, point/sphere/AABB containment and intersection checks against a perspective frustum
 - `math/geometry/tests_Intersections`: ray/AABB, ray/sphere and ray/triangle intersection checks
