@@ -1,0 +1,143 @@
+name: gl-runtime-mesa
+
+on:
+  push:
+    branches: [ "main", "ci/**", "feat/**", "test/**", "fix/**" ]
+  pull_request:
+    branches: [ "main", "ci/**", "feat/**", "test/**", "fix/**" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gl-runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            toolchain: gcc
+          - os: ubuntu-24.04
+            toolchain: clang
+          - os: windows-2022
+            toolchain: mingw
+          - os: windows-2022
+            toolchain: msvc
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build xvfb mesa-utils libgl1-mesa-dri \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+            libgl1-mesa-dev
+
+      - name: Install GCC (Linux)
+        if: runner.os == 'Linux' && matrix.toolchain == 'gcc'
+        run: sudo apt-get install -y g++
+
+      - name: Install Clang (Linux)
+        if: runner.os == 'Linux' && matrix.toolchain == 'clang'
+        run: sudo apt-get install -y clang
+
+      - name: Setup Mesa3D (Windows)
+        if: runner.os == 'Windows'
+        uses: ssciwr/setup-mesa-dist-win@v3
+
+      - name: Setup MSYS2 (Windows MinGW)
+        if: runner.os == 'Windows' && matrix.toolchain == 'mingw'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        env:
+          CC: ${{ matrix.toolchain }}
+          CXX: ${{ matrix.toolchain == 'gcc' && 'g++' || 'clang++' }}
+        run: |
+          cmake -S . -B build-gl-runtime -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DNFX_GRAPHICS_BUILD_TESTS=ON \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=ON \
+            -DNFX_GRAPHICS_BUILD_SAMPLES=OFF \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: cmake --build build-gl-runtime --parallel --target nfx-graphics-gl-runtime-tests
+
+      - name: Run GL runtime tests (Linux Mesa)
+        if: runner.os == 'Linux'
+        env:
+          LIBGL_ALWAYS_SOFTWARE: 1
+          MESA_GL_VERSION_OVERRIDE: 4.5
+        run: |
+          xvfb-run -a ctest --test-dir build-gl-runtime -R "^gl-runtime::" --output-on-failure
+
+      - name: Configure (Windows MinGW)
+        if: runner.os == 'Windows' && matrix.toolchain == 'mingw'
+        shell: msys2 {0}
+        run: |
+          cmake -S . -B build-gl-runtime -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DNFX_GRAPHICS_BUILD_TESTS=ON \
+            -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=ON \
+            -DNFX_GRAPHICS_BUILD_SAMPLES=OFF \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build (Windows MinGW)
+        if: runner.os == 'Windows' && matrix.toolchain == 'mingw'
+        shell: msys2 {0}
+        run: cmake --build build-gl-runtime --parallel --target nfx-graphics-gl-runtime-tests
+
+      - name: Run GL runtime tests (Windows MinGW)
+        if: runner.os == 'Windows' && matrix.toolchain == 'mingw'
+        shell: msys2 {0}
+        env:
+          MESA_GL_VERSION_OVERRIDE: 4.5
+          MESA_GLSL_VERSION_OVERRIDE: 450
+          GALLIUM_DRIVER: llvmpipe
+        run: ctest --test-dir build-gl-runtime -R "^gl-runtime::" --output-on-failure
+
+      - name: Configure (Windows MSVC)
+        if: runner.os == 'Windows' && matrix.toolchain == 'msvc'
+        shell: pwsh
+        run: >
+          cmake -S . -B build-gl-runtime
+          -G "Visual Studio 17 2022" -A x64
+          -DNFX_GRAPHICS_BUILD_TESTS=ON
+          -DNFX_GRAPHICS_BUILD_GL_RUNTIME_TESTS=ON
+          -DNFX_GRAPHICS_BUILD_SAMPLES=OFF
+          -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build (Windows MSVC)
+        if: runner.os == 'Windows' && matrix.toolchain == 'msvc'
+        run: cmake --build build-gl-runtime --config Debug --parallel --target nfx-graphics-gl-runtime-tests
+
+      - name: Run GL runtime tests (Windows MSVC)
+        if: runner.os == 'Windows' && matrix.toolchain == 'msvc'
+        env:
+          MESA_GL_VERSION_OVERRIDE: 4.5
+          MESA_GLSL_VERSION_OVERRIDE: 450
+          GALLIUM_DRIVER: llvmpipe
+        run: ctest --test-dir build-gl-runtime --build-config Debug -R "^gl-runtime::" --output-on-failure

@@ -141,6 +141,7 @@
 - `build-and-test`: GitHub Actions workflow: Linux/Windows matrix, GCC/Clang/MinGW/MSVC, tests and sample build coverage
 - `clang-analysis`: GitHub Actions workflow: `clang-tidy` and `scan-build` analysis jobs on Linux
 - `codeql`: GitHub Actions workflow: CodeQL static analysis on C++ codebase
+- `gl-runtime-mesa`: GitHub Actions workflow: dedicated Mesa-based GL runtime tests on Linux and Windows
 
 #### Tests
 
