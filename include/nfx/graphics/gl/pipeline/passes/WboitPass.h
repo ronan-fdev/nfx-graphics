@@ -54,7 +54,8 @@ namespace nfx::graphics::gl
             }
             if (cmd.sortKey.isZero())
             {
-                cmd.sortKey = SortKey::packOpaque(SortKey::TransparentLayer, 0, cmd.material.id, 0);
+                cmd.sortKey =
+                    SortKey::packOpaque(SortKey::TransparentLayer, 0, static_cast<std::uint32_t>(cmd.material.id), 0);
             }
             m_commands.push_back(cmd);
         }

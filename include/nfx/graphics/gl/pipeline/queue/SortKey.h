@@ -87,7 +87,7 @@ namespace nfx::graphics::gl
             std::uint32_t layer, std::uint32_t depthBucket) noexcept
         {
             return PackedSortKey{ ((static_cast<std::uint64_t>(layer) & LayerMask) << 60) |
-                                  (static_cast<std::uint64_t>(~depthBucket) & DepthMask) };
+                                  (~static_cast<std::uint64_t>(depthBucket) & DepthMask) };
         }
 
         /**
