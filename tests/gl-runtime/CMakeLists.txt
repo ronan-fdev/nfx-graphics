@@ -7,6 +7,7 @@ add_executable(nfx-graphics-gl-runtime-tests
     core/tests_GLContextFixture.cpp
     pipeline/tests_ForwardRenderPathRuntime.cpp
     pipeline/tests_PipelineRuntimeSmoke.cpp
+    pipeline/tests_RenderTargetRuntime.cpp
 )
 
 set_target_properties(nfx-graphics-gl-runtime-tests PROPERTIES DEBUG_POSTFIX "-d")

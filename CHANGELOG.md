@@ -183,6 +183,7 @@
 - `gl-runtime/core/tests_GLContextFixture`: cross-platform OpenGL context initialization and version validation
 - `gl-runtime/pipeline/tests_ForwardRenderPathRuntime`: runtime coverage for `ForwardRenderPath::render` viewport policy (reject out-of-surface) and resize behavior
 - `gl-runtime/pipeline/tests_PipelineRuntimeSmoke`: runtime smoke coverage for renderer pass execution semantics (enabled/disabled/lazy-init)
+- `gl-runtime/pipeline/tests_RenderTargetRuntime`: runtime coverage for `RenderTarget` allocation, resize, depth-only and depth-stencil attachments
 
 - `math/geometry/tests_Frustum`: plane normalization, point/sphere/AABB containment and intersection checks against a perspective frustum
 - `math/geometry/tests_Intersections`: ray/AABB, ray/sphere and ray/triangle intersection checks
