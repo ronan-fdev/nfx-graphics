@@ -58,7 +58,8 @@ jobs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DNFX_GRAPHICS_BUILD_TESTS=OFF \
-          -DNFX_GRAPHICS_BUILD_SAMPLES=OFF
+          -DNFX_GRAPHICS_BUILD_SAMPLES=OFF\
+          -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
         cmake --build build-codeql --parallel
 
     - name: Perform CodeQL Analysis

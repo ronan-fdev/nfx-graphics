@@ -52,7 +52,7 @@ target_link_libraries(nfx-graphics-gl-tests
         doctest::doctest_with_main
         nfx::graphics
         nfx::graphics::internal
-        nfx-graphics-warnings
+        nfx::graphics::warnings
 )
 
 target_include_directories(nfx-graphics-gl-tests

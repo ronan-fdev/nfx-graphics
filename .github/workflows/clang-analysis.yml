@@ -38,7 +38,8 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_CXX_CLANG_TIDY=clang-tidy \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
-            -DNFX_GRAPHICS_BUILD_SAMPLES=ON
+            -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build (runs clang-tidy)
         run: cmake --build build-clang-tidy --parallel
@@ -66,7 +67,8 @@ jobs:
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
-            -DNFX_GRAPHICS_BUILD_SAMPLES=ON
+            -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Run scan-build (lazy)
         run: scan-build --status-bugs cmake --build build-clang-lazy --parallel

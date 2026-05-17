@@ -23,7 +23,7 @@ target_link_libraries(nfx-math-tests
     PRIVATE
         doctest::doctest_with_main
         nfx::graphics
-        nfx-graphics-warnings
+        nfx::graphics::warnings
 )
 
 doctest_discover_tests(nfx-math-tests)

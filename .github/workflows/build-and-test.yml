@@ -77,7 +77,8 @@ jobs:
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DNFX_GRAPHICS_BUILD_TESTS=ON \
-            -DNFX_GRAPHICS_BUILD_SAMPLES=OFF
+            -DNFX_GRAPHICS_BUILD_SAMPLES=OFF \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build (Linux)
         if: runner.os == 'Linux'
@@ -97,7 +98,8 @@ jobs:
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DNFX_GRAPHICS_BUILD_TESTS=ON \
-            -DNFX_GRAPHICS_BUILD_SAMPLES=OFF
+            -DNFX_GRAPHICS_BUILD_SAMPLES=OFF \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build (Windows MinGW)
         if: runner.os == 'Windows' && matrix.toolchain == 'mingw'
@@ -120,6 +122,7 @@ jobs:
           -G "Visual Studio 17 2022" -A x64
           -DNFX_GRAPHICS_BUILD_TESTS=ON
           -DNFX_GRAPHICS_BUILD_SAMPLES=OFF
+          -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build (Windows MSVC)
         if: runner.os == 'Windows' && matrix.toolchain == 'msvc'
@@ -193,7 +196,8 @@ jobs:
           cmake -S . -B build-samples -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
-            -DNFX_GRAPHICS_BUILD_SAMPLES=ON
+            -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build samples (Linux)
         if: runner.os == 'Linux'
@@ -209,7 +213,8 @@ jobs:
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DNFX_GRAPHICS_BUILD_TESTS=OFF \
-            -DNFX_GRAPHICS_BUILD_SAMPLES=ON
+            -DNFX_GRAPHICS_BUILD_SAMPLES=ON \
+            -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build samples (Windows MinGW)
         if: runner.os == 'Windows' && matrix.toolchain == 'mingw'
@@ -226,6 +231,7 @@ jobs:
           -G "Visual Studio 17 2022" -A x64
           -DNFX_GRAPHICS_BUILD_TESTS=OFF
           -DNFX_GRAPHICS_BUILD_SAMPLES=ON
+          -DNFX_GRAPHICS_WARNINGS_AS_ERRORS=ON
 
       - name: Build samples (Windows MSVC)
         if: runner.os == 'Windows' && matrix.toolchain == 'msvc'

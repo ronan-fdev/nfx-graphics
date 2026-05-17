@@ -43,7 +43,7 @@ target_link_libraries(nfx-graphics-gl
         OpenGL::GL
     PRIVATE
         nfx::graphics::internal
-        nfx-graphics-warnings
+        nfx::graphics::warnings
 )
 
 #----------------------------------------------

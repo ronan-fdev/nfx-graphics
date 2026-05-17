@@ -7,12 +7,21 @@
 #----------------------------------------------
 
 add_library(nfx-graphics-warnings INTERFACE)
+add_library(nfx::graphics::warnings ALIAS nfx-graphics-warnings)
 
 target_compile_options(nfx-graphics-warnings
     INTERFACE
         $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
+
+if(NFX_GRAPHICS_WARNINGS_AS_ERRORS)
+    target_compile_options(nfx-graphics-warnings
+        INTERFACE
+            $<$<CXX_COMPILER_ID:GNU,Clang>:-Werror>
+            $<$<CXX_COMPILER_ID:MSVC>:/WX>
+    )
+endif()
 
 #----------------------------------------------
 # Library target
@@ -64,7 +73,7 @@ target_link_libraries(nfx-graphics
         nfx::graphics::math
     PRIVATE
         nfx::graphics::internal
-        nfx-graphics-warnings
+        nfx::graphics::warnings
 )
 
 #----------------------------------------------

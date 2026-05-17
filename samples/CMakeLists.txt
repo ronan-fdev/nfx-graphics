@@ -34,7 +34,7 @@ target_include_directories(nfx-sample-common
 target_link_libraries(nfx-sample-common
     PUBLIC
         nfx::graphics
-        nfx-graphics-warnings
+        nfx::graphics::warnings
     PRIVATE
         $<$<PLATFORM_ID:Linux>:X11>
         $<$<PLATFORM_ID:Windows>:user32;gdi32>
