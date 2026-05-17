@@ -2,6 +2,11 @@
 
 #include <nfx/graphics/gl/pipeline/queue/SortKey.h>
 
+#include <algorithm>
+#include <array>
+#include <type_traits>
+#include <vector>
+
 using namespace nfx::graphics::gl;
 
 TEST_SUITE("SortKey")
@@ -128,5 +133,77 @@ TEST_SUITE("SortKey")
         const PackedSortKey key{};
         CHECK(key.isZero());
         CHECK(key == PackedSortKey::zero());
+    }
+
+    TEST_CASE("PackedSortKey construction is restricted to official builders")
+    {
+        CHECK_FALSE(std::is_constructible_v<PackedSortKey, std::uint64_t>);
+        CHECK_FALSE(std::is_assignable_v<PackedSortKey&, std::uint64_t>);
+    }
+
+    TEST_CASE("policy mapping by pass bucket keeps expected layer semantics")
+    {
+        const PackedSortKey opaqueKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 42u, 0u);
+        const PackedSortKey transparentKey = SortKey::packOpaque(SortKey::TransparentLayer, 0, 42u, 0u);
+        const PackedSortKey shadowKey = SortKey::packFrontToBack(SortKey::ShadowLayer, 123u);
+        const PackedSortKey overlayKey = SortKey::packFrontToBack(SortKey::OverlayLayer, 0u);
+
+        CHECK(SortKey::layer(opaqueKey) == SortKey::OpaqueLayer);
+        CHECK(SortKey::layer(transparentKey) == SortKey::TransparentLayer);
+        CHECK(SortKey::layer(shadowKey) == SortKey::ShadowLayer);
+        CHECK(SortKey::layer(overlayKey) == SortKey::OverlayLayer);
+
+        CHECK(opaqueKey < transparentKey);
+        CHECK(transparentKey < shadowKey);
+        CHECK(shadowKey < overlayKey);
+    }
+
+    TEST_CASE("mixed key families keep comparator consistency")
+    {
+        const std::array<PackedSortKey, 8> keys = {
+            SortKey::packOpaque(0, 0, 0, 0), SortKey::packOpaque(0, 0, 0, 1), SortKey::packOpaque(0, 0, 1, 0),
+            SortKey::packOpaque(0, 1, 0, 0), SortKey::packOpaque(1, 0, 0, 0), SortKey::packBackToFront(1, 0xFFFFFFFFu),
+            SortKey::packBackToFront(1, 0),  SortKey::packFrontToBack(2, 0)
+        };
+
+        for (std::size_t i = 0; i < keys.size(); ++i)
+        {
+            CHECK_FALSE(keys[i] < keys[i]);
+            for (std::size_t j = 0; j < keys.size(); ++j)
+            {
+                if (keys[i] < keys[j])
+                {
+                    CHECK_FALSE(keys[j] < keys[i]);
+                }
+            }
+        }
+
+        CHECK(SortKey::packOpaque(1, 0, 0, 0) == SortKey::packBackToFront(1, 0xFFFFFFFFu));
+
+        CHECK(SortKey::packBackToFront(1, 0xFFFFFFFFu) < SortKey::packBackToFront(1, 0xFFFFFFFEu));
+        CHECK(SortKey::packOpaque(1, 0, 0, 0) < SortKey::packBackToFront(1, 0));
+    }
+
+    TEST_CASE("stable_sort preserves insertion order for equal keys")
+    {
+        struct Entry
+        {
+            int id;
+            PackedSortKey key;
+        };
+
+        std::vector<Entry> entries = { { 10, SortKey::packOpaque(1, 2, 3, 4) },
+                                       { 20, SortKey::packOpaque(1, 2, 3, 4) },
+                                       { 30, SortKey::packOpaque(1, 2, 3, 4) },
+                                       { 40, SortKey::packOpaque(1, 2, 3, 5) },
+                                       { 50, SortKey::packOpaque(1, 2, 3, 4) } };
+
+        std::stable_sort(entries.begin(), entries.end(), [](const Entry& a, const Entry& b) { return a.key < b.key; });
+
+        CHECK(entries[0].id == 10);
+        CHECK(entries[1].id == 20);
+        CHECK(entries[2].id == 30);
+        CHECK(entries[3].id == 50);
+        CHECK(entries[4].id == 40);
     }
 }

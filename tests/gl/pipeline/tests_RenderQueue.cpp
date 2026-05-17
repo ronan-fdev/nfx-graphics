@@ -176,4 +176,61 @@ TEST_SUITE("RenderQueue")
         CHECK(queue.commands()[0].mesh == MeshHandle{ 10 });
         CHECK(queue.commands()[1].mesh == MeshHandle{ 20 });
     }
+
+    TEST_CASE("submit captures command by value")
+    {
+        RenderQueue queue;
+
+        RenderCommand cmd;
+        cmd.mesh = MeshHandle{ 11 };
+        cmd.material = MaterialHandle{ 12 };
+        cmd.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 1, 2, 3);
+
+        queue.submit(cmd);
+
+        cmd.mesh = MeshHandle{ 21 };
+        cmd.material = MaterialHandle{ 22 };
+        cmd.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 9, 9, 9);
+
+        REQUIRE(queue.size() == 1);
+        CHECK(queue.commands()[0].mesh == MeshHandle{ 11 });
+        CHECK(queue.commands()[0].material == MaterialHandle{ 12 });
+        CHECK(queue.commands()[0].sortKey == SortKey::packOpaque(SortKey::OpaqueLayer, 1, 2, 3));
+    }
+
+    TEST_CASE("sort BySortKey is idempotent")
+    {
+        RenderQueue queue;
+
+        RenderCommand a;
+        a.mesh = MeshHandle{ 1 };
+        a.material = MaterialHandle{ 1 };
+        a.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 300u, 0);
+
+        RenderCommand b;
+        b.mesh = MeshHandle{ 2 };
+        b.material = MaterialHandle{ 2 };
+        b.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 100u, 0);
+
+        RenderCommand c;
+        c.mesh = MeshHandle{ 3 };
+        c.material = MaterialHandle{ 3 };
+        c.sortKey = SortKey::packOpaque(SortKey::OpaqueLayer, 0, 200u, 0);
+
+        queue.submit(a);
+        queue.submit(b);
+        queue.submit(c);
+
+        queue.sort(RenderQueue::Order::BySortKey);
+        const auto first = queue.commands();
+        queue.sort(RenderQueue::Order::BySortKey);
+
+        REQUIRE(queue.size() == first.size());
+        CHECK(queue.commands()[0].mesh == first[0].mesh);
+        CHECK(queue.commands()[1].mesh == first[1].mesh);
+        CHECK(queue.commands()[2].mesh == first[2].mesh);
+        CHECK(queue.commands()[0].sortKey == first[0].sortKey);
+        CHECK(queue.commands()[1].sortKey == first[1].sortKey);
+        CHECK(queue.commands()[2].sortKey == first[2].sortKey);
+    }
 }
