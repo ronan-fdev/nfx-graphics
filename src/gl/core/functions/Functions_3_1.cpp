@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_3_0{}
     {}
 
-    Functions_3_1::~Functions_3_1() {}
+    Functions_3_1::~Functions_3_1()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_3_1::glCopyBufferSubData(
         GLenum readTarget,
@@ -162,5 +165,30 @@ namespace nfx::graphics::gl
             reinterpret_cast<GLvoid (*)(GLuint, GLuint, GLuint)>(loader.loadFunctionPtr("glUniformBlockBinding"));
 
         return s_loaded = true;
+    }
+
+    void Functions_3_1::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_3_0::teardown();
+    }
+
+    void Functions_3_1::nullifyPointers()
+    {
+        _nfx_glCopyBufferSubData = nullptr;
+        _nfx_glDrawArraysInstanced = nullptr;
+        _nfx_glDrawElementsInstanced = nullptr;
+        _nfx_glGetActiveUniformBlockiv = nullptr;
+        _nfx_glGetActiveUniformBlockName = nullptr;
+        _nfx_glGetActiveUniformName = nullptr;
+        _nfx_glGetActiveUniformsiv = nullptr;
+        _nfx_glGetUniformBlockIndex = nullptr;
+        _nfx_glGetUniformIndices = nullptr;
+        _nfx_glPrimitiveRestartIndex = nullptr;
+        _nfx_glTexBuffer = nullptr;
+        _nfx_glUniformBlockBinding = nullptr;
     }
 } // namespace nfx::graphics::gl

@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_4_4{}
     {}
 
-    Functions_4_5::~Functions_4_5() {}
+    Functions_4_5::~Functions_4_5()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_5::glBindTextureUnit(GLuint unit, GLuint texture, [[maybe_unused]] const char* caller) const
     {
@@ -1224,5 +1227,128 @@ namespace nfx::graphics::gl
                 loader.loadFunctionPtr("glVertexArrayVertexBuffers"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_5::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_4_4::teardown();
+    }
+
+    void Functions_4_5::nullifyPointers()
+    {
+        _nfx_glBindTextureUnit = nullptr;
+        _nfx_glBlitNamedFramebuffer = nullptr;
+        _nfx_glCheckNamedFramebufferStatus = nullptr;
+        _nfx_glClearNamedBufferData = nullptr;
+        _nfx_glClearNamedBufferSubData = nullptr;
+        _nfx_glClearNamedFramebufferfi = nullptr;
+        _nfx_glClearNamedFramebufferfv = nullptr;
+        _nfx_glClearNamedFramebufferiv = nullptr;
+        _nfx_glClearNamedFramebufferuiv = nullptr;
+        _nfx_glClipControl = nullptr;
+        _nfx_glCompressedTextureSubImage1D = nullptr;
+        _nfx_glCompressedTextureSubImage2D = nullptr;
+        _nfx_glCompressedTextureSubImage3D = nullptr;
+        _nfx_glCopyNamedBufferSubData = nullptr;
+        _nfx_glCopyTextureSubImage1D = nullptr;
+        _nfx_glCopyTextureSubImage2D = nullptr;
+        _nfx_glCopyTextureSubImage3D = nullptr;
+        _nfx_glCreateBuffers = nullptr;
+        _nfx_glCreateFramebuffers = nullptr;
+        _nfx_glCreateProgramPipelines = nullptr;
+        _nfx_glCreateQueries = nullptr;
+        _nfx_glCreateRenderbuffers = nullptr;
+        _nfx_glCreateSamplers = nullptr;
+        _nfx_glCreateTextures = nullptr;
+        _nfx_glCreateTransformFeedbacks = nullptr;
+        _nfx_glCreateVertexArrays = nullptr;
+        _nfx_glDisableVertexArrayAttrib = nullptr;
+        _nfx_glEnableVertexArrayAttrib = nullptr;
+        _nfx_glFlushMappedNamedBufferRange = nullptr;
+        _nfx_glGenerateTextureMipmap = nullptr;
+        _nfx_glGetCompressedTextureImage = nullptr;
+        _nfx_glGetCompressedTextureSubImage = nullptr;
+        _nfx_glGetGraphicsResetStatus = nullptr;
+        _nfx_glGetNamedBufferParameteri64v = nullptr;
+        _nfx_glGetNamedBufferParameteriv = nullptr;
+        _nfx_glGetNamedBufferPointerv = nullptr;
+        _nfx_glGetNamedBufferSubData = nullptr;
+        _nfx_glGetNamedFramebufferAttachmentParameteriv = nullptr;
+        _nfx_glGetNamedFramebufferParameteriv = nullptr;
+        _nfx_glGetNamedRenderbufferParameteriv = nullptr;
+        _nfx_glGetnCompressedTexImage = nullptr;
+        _nfx_glGetnTexImage = nullptr;
+        _nfx_glGetnUniformdv = nullptr;
+        _nfx_glGetnUniformfv = nullptr;
+        _nfx_glGetnUniformiv = nullptr;
+        _nfx_glGetnUniformuiv = nullptr;
+        _nfx_glGetQueryBufferObjecti64v = nullptr;
+        _nfx_glGetQueryBufferObjectiv = nullptr;
+        _nfx_glGetQueryBufferObjectui64v = nullptr;
+        _nfx_glGetQueryBufferObjectuiv = nullptr;
+        _nfx_glGetTextureImage = nullptr;
+        _nfx_glGetTextureLevelParameterfv = nullptr;
+        _nfx_glGetTextureLevelParameteriv = nullptr;
+        _nfx_glGetTextureParameterfv = nullptr;
+        _nfx_glGetTextureParameterIiv = nullptr;
+        _nfx_glGetTextureParameterIuiv = nullptr;
+        _nfx_glGetTextureParameteriv = nullptr;
+        _nfx_glGetTextureSubImage = nullptr;
+        _nfx_glGetTransformFeedbacki64_v = nullptr;
+        _nfx_glGetTransformFeedbackiv = nullptr;
+        _nfx_glGetTransformFeedbacki_v = nullptr;
+        _nfx_glGetVertexArrayIndexed64iv = nullptr;
+        _nfx_glGetVertexArrayIndexediv = nullptr;
+        _nfx_glGetVertexArrayiv = nullptr;
+        _nfx_glInvalidateNamedFramebufferData = nullptr;
+        _nfx_glInvalidateNamedFramebufferSubData = nullptr;
+        _nfx_glMapNamedBuffer = nullptr;
+        _nfx_glMapNamedBufferRange = nullptr;
+        _nfx_glMemoryBarrierByRegion = nullptr;
+        _nfx_glNamedBufferData = nullptr;
+        _nfx_glNamedBufferStorage = nullptr;
+        _nfx_glNamedBufferSubData = nullptr;
+        _nfx_glNamedFramebufferDrawBuffer = nullptr;
+        _nfx_glNamedFramebufferDrawBuffers = nullptr;
+        _nfx_glNamedFramebufferParameteri = nullptr;
+        _nfx_glNamedFramebufferReadBuffer = nullptr;
+        _nfx_glNamedFramebufferRenderbuffer = nullptr;
+        _nfx_glNamedFramebufferTexture = nullptr;
+        _nfx_glNamedFramebufferTextureLayer = nullptr;
+        _nfx_glNamedRenderbufferStorage = nullptr;
+        _nfx_glNamedRenderbufferStorageMultisample = nullptr;
+        _nfx_glReadnPixels = nullptr;
+        _nfx_glTextureBarrier = nullptr;
+        _nfx_glTextureBuffer = nullptr;
+        _nfx_glTextureBufferRange = nullptr;
+        _nfx_glTextureParameterf = nullptr;
+        _nfx_glTextureParameterfv = nullptr;
+        _nfx_glTextureParameteri = nullptr;
+        _nfx_glTextureParameteriv = nullptr;
+        _nfx_glTextureParameterIiv = nullptr;
+        _nfx_glTextureParameterIuiv = nullptr;
+        _nfx_glTextureStorage1D = nullptr;
+        _nfx_glTextureStorage2D = nullptr;
+        _nfx_glTextureStorage3D = nullptr;
+        _nfx_glTextureStorage2DMultisample = nullptr;
+        _nfx_glTextureStorage3DMultisample = nullptr;
+        _nfx_glTextureSubImage1D = nullptr;
+        _nfx_glTextureSubImage2D = nullptr;
+        _nfx_glTextureSubImage3D = nullptr;
+        _nfx_glTransformFeedbackBufferBase = nullptr;
+        _nfx_glTransformFeedbackBufferRange = nullptr;
+        _nfx_glUnmapNamedBuffer = nullptr;
+        _nfx_glVertexArrayAttribBinding = nullptr;
+        _nfx_glVertexArrayAttribFormat = nullptr;
+        _nfx_glVertexArrayAttribIFormat = nullptr;
+        _nfx_glVertexArrayAttribLFormat = nullptr;
+        _nfx_glVertexArrayBindingDivisor = nullptr;
+        _nfx_glVertexArrayElementBuffer = nullptr;
+        _nfx_glVertexArrayVertexBuffer = nullptr;
+        _nfx_glVertexArrayVertexBuffers = nullptr;
     }
 } // namespace nfx::graphics::gl

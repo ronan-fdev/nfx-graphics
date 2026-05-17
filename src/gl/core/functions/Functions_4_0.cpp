@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_3_3{}
     {}
 
-    Functions_4_0::~Functions_4_0() {}
+    Functions_4_0::~Functions_4_0()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_0::glBeginQueryIndexed(
         GLenum target, GLuint index, GLuint id, [[maybe_unused]] const char* caller) const
@@ -449,5 +452,64 @@ namespace nfx::graphics::gl
             loader.loadFunctionPtr("glUniformSubroutinesuiv"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_0::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_3_3::teardown();
+    }
+
+    void Functions_4_0::nullifyPointers()
+    {
+        _nfx_glBeginQueryIndexed = nullptr;
+        _nfx_glBindTransformFeedback = nullptr;
+        _nfx_glBlendEquationi = nullptr;
+        _nfx_glBlendEquationSeparatei = nullptr;
+        _nfx_glBlendFunci = nullptr;
+        _nfx_glBlendFuncSeparatei = nullptr;
+        _nfx_glDeleteTransformFeedbacks = nullptr;
+        _nfx_glDrawArraysIndirect = nullptr;
+        _nfx_glDrawElementsIndirect = nullptr;
+        _nfx_glDrawTransformFeedback = nullptr;
+        _nfx_glDrawTransformFeedbackStream = nullptr;
+        _nfx_glEndQueryIndexed = nullptr;
+        _nfx_glGenTransformFeedbacks = nullptr;
+        _nfx_glGetActiveSubroutineName = nullptr;
+        _nfx_glGetActiveSubroutineUniformiv = nullptr;
+        _nfx_glGetActiveSubroutineUniformName = nullptr;
+        _nfx_glGetProgramStageiv = nullptr;
+        _nfx_glGetQueryIndexediv = nullptr;
+        _nfx_glGetSubroutineIndex = nullptr;
+        _nfx_glGetSubroutineUniformLocation = nullptr;
+        _nfx_glGetUniformdv = nullptr;
+        _nfx_glGetUniformSubroutineuiv = nullptr;
+        _nfx_glIsTransformFeedback = nullptr;
+        _nfx_glMinSampleShading = nullptr;
+        _nfx_glPatchParameterfv = nullptr;
+        _nfx_glPatchParameteri = nullptr;
+        _nfx_glPauseTransformFeedback = nullptr;
+        _nfx_glResumeTransformFeedback = nullptr;
+        _nfx_glUniform1d = nullptr;
+        _nfx_glUniform1dv = nullptr;
+        _nfx_glUniform2d = nullptr;
+        _nfx_glUniform2dv = nullptr;
+        _nfx_glUniform3d = nullptr;
+        _nfx_glUniform3dv = nullptr;
+        _nfx_glUniform4d = nullptr;
+        _nfx_glUniform4dv = nullptr;
+        _nfx_glUniformMatrix2dv = nullptr;
+        _nfx_glUniformMatrix2x3dv = nullptr;
+        _nfx_glUniformMatrix2x4dv = nullptr;
+        _nfx_glUniformMatrix3dv = nullptr;
+        _nfx_glUniformMatrix3x2dv = nullptr;
+        _nfx_glUniformMatrix3x4dv = nullptr;
+        _nfx_glUniformMatrix4dv = nullptr;
+        _nfx_glUniformMatrix4x2dv = nullptr;
+        _nfx_glUniformMatrix4x3dv = nullptr;
+        _nfx_glUniformSubroutinesuiv = nullptr;
     }
 } // namespace nfx::graphics::gl

@@ -134,6 +134,73 @@ namespace
 
         return declared;
     }
+
+    std::string extractFunctionBody(const std::string& text, const std::regex& fnPattern)
+    {
+        std::smatch fnMatch;
+        if (!std::regex_search(text, fnMatch, fnPattern))
+        {
+            return {};
+        }
+
+        const std::size_t fnPos = static_cast<std::size_t>(fnMatch.position());
+        const std::size_t bodyStart = text.find('{', fnPos);
+        if (bodyStart == std::string::npos)
+        {
+            return {};
+        }
+
+        int depth = 0;
+        std::size_t bodyEnd = bodyStart;
+        for (; bodyEnd < text.size(); ++bodyEnd)
+        {
+            if (text[bodyEnd] == '{')
+            {
+                ++depth;
+            }
+            else if (text[bodyEnd] == '}')
+            {
+                --depth;
+                if (depth == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        if (bodyEnd <= bodyStart)
+        {
+            return {};
+        }
+
+        return text.substr(bodyStart, bodyEnd - bodyStart + 1);
+    }
+
+    fs::path functionCppPath(std::string_view version)
+    {
+        return repoRoot() / "src" / "gl" / "core" / "functions" / ("Functions_" + std::string(version) + ".cpp");
+    }
+
+    std::string previousDeclaredVersion(
+        const std::map<std::string, std::vector<std::string>>& declared, const std::string& version)
+    {
+        auto it = declared.find(version);
+        if (it == declared.end() || it == declared.begin())
+        {
+            return {};
+        }
+
+        do
+        {
+            --it;
+            if (it->first != "1_0" && it->first != "1_1")
+            {
+                return it->first;
+            }
+        } while (it != declared.begin());
+
+        return {};
+    }
 } // namespace
 
 TEST_SUITE("FunctionLoader - Binding Verification")
@@ -216,14 +283,15 @@ TEST_SUITE("FunctionLoader - Binding Verification")
         const auto loaded = loadedFunctionNames();
         std::vector<std::string> missing;
 
-        for (const auto& [version, names] : declared)
+        for (const auto& entry : declared)
         {
+            const std::string& version = entry.first;
             if (version == "1_0" || version == "1_1")
             {
                 continue;
             }
 
-            for (const auto& name : names)
+            for (const auto& name : entry.second)
             {
                 if (!loaded.contains(name))
                 {
@@ -343,5 +411,136 @@ TEST_SUITE("FunctionLoader - Binding Verification")
         {
             INFO("Example skipped wrapper: " << skippedWrappers.front());
         }
+    }
+
+    TEST_CASE("All declared 1.2+ pointers are nullified in nullifyPointers")
+    {
+        if (!hasBindingSourceFiles())
+        {
+            INFO("Skipping: source files are not available in standalone binary mode.");
+            return;
+        }
+
+        const auto declared = declaredPointersByVersion();
+        std::vector<std::string> missing;
+
+        for (const auto& [version, names] : declared)
+        {
+            if (version == "1_0" || version == "1_1")
+            {
+                continue;
+            }
+
+            const fs::path cpp = functionCppPath(version);
+            const std::string text = readText(cpp);
+            const std::regex nullifyFnPattern("void\\s+Functions_" + version + R"(::nullifyPointers\s*\(\s*\)\s*)");
+            const std::string body = extractFunctionBody(text, nullifyFnPattern);
+
+            if (body.empty())
+            {
+                missing.push_back(version + ": nullifyPointers() body not found");
+                continue;
+            }
+
+            for (const auto& name : names)
+            {
+                const std::regex nullifyPattern("_nfx_" + name + R"(\s*=\s*nullptr\s*;)");
+                if (!std::regex_search(body, nullifyPattern))
+                {
+                    missing.push_back(version + ": missing nullify for _nfx_" + name);
+                }
+            }
+        }
+
+        if (!missing.empty())
+        {
+            std::ostringstream os;
+            os << "Nullify coverage gaps found:\n";
+            for (const auto& item : missing)
+            {
+                os << " - " << item << "\n";
+            }
+            FAIL_CHECK(os.str());
+        }
+
+        CHECK(missing.empty());
+    }
+
+    TEST_CASE("Functions teardown resets load flag and chains to parent")
+    {
+        if (!hasBindingSourceFiles())
+        {
+            INFO("Skipping: source files are not available in standalone binary mode.");
+            return;
+        }
+
+        const auto declared = declaredPointersByVersion();
+        std::vector<std::string> problems;
+
+        for (const auto& [version, names] : declared)
+        {
+            if (version == "1_0" || version == "1_1")
+            {
+                continue;
+            }
+
+            const fs::path cpp = functionCppPath(version);
+            const std::string text = readText(cpp);
+            const std::regex teardownFnPattern("void\\s+Functions_" + version + R"(::teardown\s*\(\s*\)\s*)");
+            const std::string body = extractFunctionBody(text, teardownFnPattern);
+
+            if (body.empty())
+            {
+                problems.push_back(version + ": teardown() body not found");
+                continue;
+            }
+
+            if (body.find("s_loaded = false") == std::string::npos)
+            {
+                problems.push_back(version + ": teardown() does not reset s_loaded");
+            }
+
+            const std::string parent = previousDeclaredVersion(declared, version);
+            if (!parent.empty())
+            {
+                const std::string parentCall = "Functions_" + parent + "::teardown()";
+                if (body.find(parentCall) == std::string::npos)
+                {
+                    problems.push_back(version + ": teardown() does not chain to " + parentCall);
+                }
+            }
+        }
+
+        if (!problems.empty())
+        {
+            std::ostringstream os;
+            os << "Teardown chaining/load-flag issues found:\n";
+            for (const auto& item : problems)
+            {
+                os << " - " << item << "\n";
+            }
+            FAIL_CHECK(os.str());
+        }
+
+        CHECK(problems.empty());
+    }
+
+    TEST_CASE("Context teardown delegates to Functions teardown and resets metadata")
+    {
+        if (!hasBindingSourceFiles())
+        {
+            INFO("Skipping: source files are not available in standalone binary mode.");
+            return;
+        }
+
+        const std::string header = readText(repoRoot() / "include" / "nfx" / "graphics" / "gl" / "core" / "Context.h");
+        const std::string source = readText(repoRoot() / "src" / "gl" / "core" / "Context.cpp");
+
+        CHECK(header.find("static void teardown() noexcept") != std::string::npos);
+        CHECK(source.find("void Context::teardown() noexcept") != std::string::npos);
+        CHECK(source.find("m_functions.teardown()") != std::string::npos);
+        CHECK(source.find("m_initialized = false") != std::string::npos);
+        CHECK(source.find("m_major = 0") != std::string::npos);
+        CHECK(source.find("m_minor = 0") != std::string::npos);
     }
 }

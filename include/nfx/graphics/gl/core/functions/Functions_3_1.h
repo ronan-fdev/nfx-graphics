@@ -27,6 +27,10 @@ namespace nfx::graphics::gl
 
     protected:
         bool initialize();
+        void teardown();
+
+    private:
+        void nullifyPointers();
 
     public:
         /**

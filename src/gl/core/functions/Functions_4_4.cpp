@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_4_3{}
     {}
 
-    Functions_4_4::~Functions_4_4() {}
+    Functions_4_4::~Functions_4_4()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_4::glBindBuffersBase(
         GLenum target, GLuint first, GLsizei count, const GLuint* buffers, [[maybe_unused]] const char* caller) const
@@ -130,5 +133,27 @@ namespace nfx::graphics::gl
             loader.loadFunctionPtr("glClearTexSubImage"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_4::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_4_3::teardown();
+    }
+
+    void Functions_4_4::nullifyPointers()
+    {
+        _nfx_glBindBuffersBase = nullptr;
+        _nfx_glBindBuffersRange = nullptr;
+        _nfx_glBindImageTextures = nullptr;
+        _nfx_glBindSamplers = nullptr;
+        _nfx_glBindTextures = nullptr;
+        _nfx_glBindVertexBuffers = nullptr;
+        _nfx_glBufferStorage = nullptr;
+        _nfx_glClearTexImage = nullptr;
+        _nfx_glClearTexSubImage = nullptr;
     }
 } // namespace nfx::graphics::gl

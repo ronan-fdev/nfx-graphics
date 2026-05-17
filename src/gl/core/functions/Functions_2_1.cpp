@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_2_0{}
     {}
 
-    Functions_2_1::~Functions_2_1() {}
+    Functions_2_1::~Functions_2_1()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_2_1::glUniformMatrix2x3fv(
         GLint location,
@@ -97,5 +100,24 @@ namespace nfx::graphics::gl
             loader.loadFunctionPtr("glUniformMatrix4x3fv"));
 
         return s_loaded = true;
+    }
+
+    void Functions_2_1::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_2_0::teardown();
+    }
+
+    void Functions_2_1::nullifyPointers()
+    {
+        _nfx_glUniformMatrix2x3fv = nullptr;
+        _nfx_glUniformMatrix2x4fv = nullptr;
+        _nfx_glUniformMatrix3x2fv = nullptr;
+        _nfx_glUniformMatrix3x4fv = nullptr;
+        _nfx_glUniformMatrix4x2fv = nullptr;
+        _nfx_glUniformMatrix4x3fv = nullptr;
     }
 } // namespace nfx::graphics::gl

@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_4_1{}
     {}
 
-    Functions_4_2::~Functions_4_2() {}
+    Functions_4_2::~Functions_4_2()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_2::glBindImageTexture(
         GLuint unit,
@@ -169,5 +172,30 @@ namespace nfx::graphics::gl
             loader.loadFunctionPtr("glTexStorage3D"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_2::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_4_1::teardown();
+    }
+
+    void Functions_4_2::nullifyPointers()
+    {
+        _nfx_glBindImageTexture = nullptr;
+        _nfx_glDrawArraysInstancedBaseInstance = nullptr;
+        _nfx_glDrawElementsInstancedBaseInstance = nullptr;
+        _nfx_glDrawElementsInstancedBaseVertexBaseInstance = nullptr;
+        _nfx_glDrawTransformFeedbackInstanced = nullptr;
+        _nfx_glDrawTransformFeedbackStreamInstanced = nullptr;
+        _nfx_glGetActiveAtomicCounterBufferiv = nullptr;
+        _nfx_glGetInternalformativ = nullptr;
+        _nfx_glMemoryBarrier = nullptr;
+        _nfx_glTexStorage1D = nullptr;
+        _nfx_glTexStorage2D = nullptr;
+        _nfx_glTexStorage3D = nullptr;
     }
 } // namespace nfx::graphics::gl

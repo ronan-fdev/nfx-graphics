@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_3_1{}
     {}
 
-    Functions_3_2::~Functions_3_2() {}
+    Functions_3_2::~Functions_3_2()
+    {
+        s_loaded = false;
+    }
 
     GLenum Functions_3_2::glClientWaitSync(
         GLsync sync, GLbitfield flags, GLuint64 timeout, [[maybe_unused]] const char* caller) const
@@ -240,5 +243,38 @@ namespace nfx::graphics::gl
             reinterpret_cast<GLvoid (*)(GLsync, GLbitfield, GLuint64)>(loader.loadFunctionPtr("glWaitSync"));
 
         return s_loaded = true;
+    }
+
+    void Functions_3_2::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_3_1::teardown();
+    }
+
+    void Functions_3_2::nullifyPointers()
+    {
+        _nfx_glClientWaitSync = nullptr;
+        _nfx_glDeleteSync = nullptr;
+        _nfx_glDrawElementsBaseVertex = nullptr;
+        _nfx_glDrawElementsInstancedBaseVertex = nullptr;
+        _nfx_glDrawRangeElementsBaseVertex = nullptr;
+        _nfx_glFenceSync = nullptr;
+        _nfx_glFramebufferTexture = nullptr;
+        _nfx_glGetBufferParameteri64v = nullptr;
+        _nfx_glGetFragDataIndex = nullptr;
+        _nfx_glGetInteger64i_v = nullptr;
+        _nfx_glGetInteger64v = nullptr;
+        _nfx_glGetMultisamplefv = nullptr;
+        _nfx_glGetSynciv = nullptr;
+        _nfx_glIsSync = nullptr;
+        _nfx_glMultiDrawElementsBaseVertex = nullptr;
+        _nfx_glProvokingVertex = nullptr;
+        _nfx_glSampleMaski = nullptr;
+        _nfx_glTexImage2DMultisample = nullptr;
+        _nfx_glTexImage3DMultisample = nullptr;
+        _nfx_glWaitSync = nullptr;
     }
 } // namespace nfx::graphics::gl

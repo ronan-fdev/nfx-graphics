@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_3_2{}
     {}
 
-    Functions_3_3::~Functions_3_3() {}
+    Functions_3_3::~Functions_3_3()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_3_3::glBindFragDataLocationIndexed(
         GLuint program, GLuint colorNumber, GLuint index, const GLchar* name, [[maybe_unused]] const char* caller) const
@@ -443,5 +446,75 @@ namespace nfx::graphics::gl
             reinterpret_cast<GLvoid (*)(GLenum, const GLuint*)>(loader.loadFunctionPtr("glVertexP4uiv"));
 
         return s_loaded = true;
+    }
+
+    void Functions_3_3::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_3_2::teardown();
+    }
+
+    void Functions_3_3::nullifyPointers()
+    {
+        _nfx_glBindFragDataLocationIndexed = nullptr;
+        _nfx_glBindSampler = nullptr;
+        _nfx_glColorP3ui = nullptr;
+        _nfx_glColorP3uiv = nullptr;
+        _nfx_glColorP4ui = nullptr;
+        _nfx_glColorP4uiv = nullptr;
+        _nfx_glDeleteSamplers = nullptr;
+        _nfx_glGenSamplers = nullptr;
+        _nfx_glGetQueryObjecti64v = nullptr;
+        _nfx_glGetQueryObjectui64v = nullptr;
+        _nfx_glGetSamplerParameterfv = nullptr;
+        _nfx_glGetSamplerParameterIiv = nullptr;
+        _nfx_glGetSamplerParameterIuiv = nullptr;
+        _nfx_glGetSamplerParameteriv = nullptr;
+        _nfx_glIsSampler = nullptr;
+        _nfx_glMultiTexCoordP1ui = nullptr;
+        _nfx_glMultiTexCoordP1uiv = nullptr;
+        _nfx_glMultiTexCoordP2ui = nullptr;
+        _nfx_glMultiTexCoordP2uiv = nullptr;
+        _nfx_glMultiTexCoordP3ui = nullptr;
+        _nfx_glMultiTexCoordP3uiv = nullptr;
+        _nfx_glMultiTexCoordP4ui = nullptr;
+        _nfx_glMultiTexCoordP4uiv = nullptr;
+        _nfx_glNormalP3ui = nullptr;
+        _nfx_glNormalP3uiv = nullptr;
+        _nfx_glQueryCounter = nullptr;
+        _nfx_glSamplerParameterf = nullptr;
+        _nfx_glSamplerParameterfv = nullptr;
+        _nfx_glSamplerParameteri = nullptr;
+        _nfx_glSamplerParameterIiv = nullptr;
+        _nfx_glSamplerParameterIuiv = nullptr;
+        _nfx_glSamplerParameteriv = nullptr;
+        _nfx_glSecondaryColorP3ui = nullptr;
+        _nfx_glSecondaryColorP3uiv = nullptr;
+        _nfx_glTexCoordP1ui = nullptr;
+        _nfx_glTexCoordP1uiv = nullptr;
+        _nfx_glTexCoordP2ui = nullptr;
+        _nfx_glTexCoordP2uiv = nullptr;
+        _nfx_glTexCoordP3ui = nullptr;
+        _nfx_glTexCoordP3uiv = nullptr;
+        _nfx_glTexCoordP4ui = nullptr;
+        _nfx_glTexCoordP4uiv = nullptr;
+        _nfx_glVertexAttribDivisor = nullptr;
+        _nfx_glVertexAttribP1ui = nullptr;
+        _nfx_glVertexAttribP1uiv = nullptr;
+        _nfx_glVertexAttribP2ui = nullptr;
+        _nfx_glVertexAttribP2uiv = nullptr;
+        _nfx_glVertexAttribP3ui = nullptr;
+        _nfx_glVertexAttribP3uiv = nullptr;
+        _nfx_glVertexAttribP4ui = nullptr;
+        _nfx_glVertexAttribP4uiv = nullptr;
+        _nfx_glVertexP2ui = nullptr;
+        _nfx_glVertexP2uiv = nullptr;
+        _nfx_glVertexP3ui = nullptr;
+        _nfx_glVertexP3uiv = nullptr;
+        _nfx_glVertexP4ui = nullptr;
+        _nfx_glVertexP4uiv = nullptr;
     }
 } // namespace nfx::graphics::gl

@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_4_0{}
     {}
 
-    Functions_4_1::~Functions_4_1() {}
+    Functions_4_1::~Functions_4_1()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_1::glActiveShaderProgram(
         GLuint pipeline, GLuint program, [[maybe_unused]] const char* caller) const
@@ -881,5 +884,106 @@ namespace nfx::graphics::gl
             reinterpret_cast<GLvoid (*)(GLuint index, const GLfloat*)>(loader.loadFunctionPtr("glViewportIndexedfv"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_1::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_4_0::teardown();
+    }
+
+    void Functions_4_1::nullifyPointers()
+    {
+        _nfx_glActiveShaderProgram = nullptr;
+        _nfx_glBindProgramPipeline = nullptr;
+        _nfx_glClearDepthf = nullptr;
+        _nfx_glCreateShaderProgramv = nullptr;
+        _nfx_glDeleteProgramPipelines = nullptr;
+        _nfx_glDepthRangeArrayv = nullptr;
+        _nfx_glDepthRangef = nullptr;
+        _nfx_glDepthRangeIndexed = nullptr;
+        _nfx_glGenProgramPipelines = nullptr;
+        _nfx_glGetDoublei_v = nullptr;
+        _nfx_glGetFloati_v = nullptr;
+        _nfx_glGetProgramBinary = nullptr;
+        _nfx_glGetProgramPipelineInfoLog = nullptr;
+        _nfx_glGetProgramPipelineiv = nullptr;
+        _nfx_glGetShaderPrecisionFormat = nullptr;
+        _nfx_glGetVertexAttribLdv = nullptr;
+        _nfx_glIsProgramPipeline = nullptr;
+        _nfx_glProgramBinary = nullptr;
+        _nfx_glProgramParameteri = nullptr;
+        _nfx_glProgramUniform1d = nullptr;
+        _nfx_glProgramUniform1dv = nullptr;
+        _nfx_glProgramUniform1f = nullptr;
+        _nfx_glProgramUniform1fv = nullptr;
+        _nfx_glProgramUniform1i = nullptr;
+        _nfx_glProgramUniform1iv = nullptr;
+        _nfx_glProgramUniform1ui = nullptr;
+        _nfx_glProgramUniform1uiv = nullptr;
+        _nfx_glProgramUniform2d = nullptr;
+        _nfx_glProgramUniform2dv = nullptr;
+        _nfx_glProgramUniform2f = nullptr;
+        _nfx_glProgramUniform2fv = nullptr;
+        _nfx_glProgramUniform2i = nullptr;
+        _nfx_glProgramUniform2iv = nullptr;
+        _nfx_glProgramUniform2ui = nullptr;
+        _nfx_glProgramUniform2uiv = nullptr;
+        _nfx_glProgramUniform3d = nullptr;
+        _nfx_glProgramUniform3dv = nullptr;
+        _nfx_glProgramUniform3f = nullptr;
+        _nfx_glProgramUniform3fv = nullptr;
+        _nfx_glProgramUniform3i = nullptr;
+        _nfx_glProgramUniform3iv = nullptr;
+        _nfx_glProgramUniform3ui = nullptr;
+        _nfx_glProgramUniform3uiv = nullptr;
+        _nfx_glProgramUniform4d = nullptr;
+        _nfx_glProgramUniform4dv = nullptr;
+        _nfx_glProgramUniform4f = nullptr;
+        _nfx_glProgramUniform4fv = nullptr;
+        _nfx_glProgramUniform4i = nullptr;
+        _nfx_glProgramUniform4iv = nullptr;
+        _nfx_glProgramUniform4ui = nullptr;
+        _nfx_glProgramUniform4uiv = nullptr;
+        _nfx_glProgramUniformMatrix2dv = nullptr;
+        _nfx_glProgramUniformMatrix2fv = nullptr;
+        _nfx_glProgramUniformMatrix2x3dv = nullptr;
+        _nfx_glProgramUniformMatrix2x3fv = nullptr;
+        _nfx_glProgramUniformMatrix2x4dv = nullptr;
+        _nfx_glProgramUniformMatrix2x4fv = nullptr;
+        _nfx_glProgramUniformMatrix3dv = nullptr;
+        _nfx_glProgramUniformMatrix3fv = nullptr;
+        _nfx_glProgramUniformMatrix3x2dv = nullptr;
+        _nfx_glProgramUniformMatrix3x2fv = nullptr;
+        _nfx_glProgramUniformMatrix3x4dv = nullptr;
+        _nfx_glProgramUniformMatrix3x4fv = nullptr;
+        _nfx_glProgramUniformMatrix4dv = nullptr;
+        _nfx_glProgramUniformMatrix4fv = nullptr;
+        _nfx_glProgramUniformMatrix4x2dv = nullptr;
+        _nfx_glProgramUniformMatrix4x2fv = nullptr;
+        _nfx_glProgramUniformMatrix4x3dv = nullptr;
+        _nfx_glProgramUniformMatrix4x3fv = nullptr;
+        _nfx_glReleaseShaderCompiler = nullptr;
+        _nfx_glScissorArrayv = nullptr;
+        _nfx_glScissorIndexed = nullptr;
+        _nfx_glScissorIndexedv = nullptr;
+        _nfx_glShaderBinary = nullptr;
+        _nfx_glUseProgramStages = nullptr;
+        _nfx_glValidateProgramPipeline = nullptr;
+        _nfx_glVertexAttribL1d = nullptr;
+        _nfx_glVertexAttribL1dv = nullptr;
+        _nfx_glVertexAttribL2d = nullptr;
+        _nfx_glVertexAttribL2dv = nullptr;
+        _nfx_glVertexAttribL3d = nullptr;
+        _nfx_glVertexAttribL3dv = nullptr;
+        _nfx_glVertexAttribL4d = nullptr;
+        _nfx_glVertexAttribL4dv = nullptr;
+        _nfx_glVertexAttribLPointer = nullptr;
+        _nfx_glViewportArrayv = nullptr;
+        _nfx_glViewportIndexedf = nullptr;
+        _nfx_glViewportIndexedfv = nullptr;
     }
 } // namespace nfx::graphics::gl

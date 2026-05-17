@@ -24,6 +24,11 @@ namespace nfx::graphics::gl
     {
         friend class Context;
 
+        /**
+         * \brief Resets all loaded OpenGL function pointers to null and clears load flags.
+         */
+        void teardown() { Functions_4_6::teardown(); }
+
     private:
         Functions() = default;
         virtual ~Functions() = default;

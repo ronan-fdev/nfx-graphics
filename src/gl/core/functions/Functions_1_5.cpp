@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_1_4{}
     {}
 
-    Functions_1_5::~Functions_1_5() {}
+    Functions_1_5::~Functions_1_5()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_1_5::glBeginQuery(GLenum target, GLuint id, [[maybe_unused]] const char* caller) const
     {
@@ -173,5 +176,37 @@ namespace nfx::graphics::gl
         _nfx_glUnmapBuffer = reinterpret_cast<GLboolean (*)(GLenum)>(loader.loadFunctionPtr("glUnmapBuffer"));
 
         return s_loaded = true;
+    }
+
+    void Functions_1_5::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_1_4::teardown();
+    }
+
+    void Functions_1_5::nullifyPointers()
+    {
+        _nfx_glBeginQuery = nullptr;
+        _nfx_glBindBuffer = nullptr;
+        _nfx_glBufferData = nullptr;
+        _nfx_glBufferSubData = nullptr;
+        _nfx_glDeleteBuffers = nullptr;
+        _nfx_glDeleteQueries = nullptr;
+        _nfx_glEndQuery = nullptr;
+        _nfx_glGenBuffers = nullptr;
+        _nfx_glGenQueries = nullptr;
+        _nfx_glGetBufferParameteriv = nullptr;
+        _nfx_glGetBufferPointerv = nullptr;
+        _nfx_glGetBufferSubData = nullptr;
+        _nfx_glGetQueryiv = nullptr;
+        _nfx_glGetQueryObjectiv = nullptr;
+        _nfx_glGetQueryObjectuiv = nullptr;
+        _nfx_glIsBuffer = nullptr;
+        _nfx_glIsQuery = nullptr;
+        _nfx_glMapBuffer = nullptr;
+        _nfx_glUnmapBuffer = nullptr;
     }
 } // namespace nfx::graphics::gl

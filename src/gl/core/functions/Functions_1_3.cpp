@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_1_2{}
     {}
 
-    Functions_1_3::~Functions_1_3() {}
+    Functions_1_3::~Functions_1_3()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_1_3::glActiveTexture(GLenum texture, [[maybe_unused]] const char* caller) const
     {
@@ -435,5 +438,64 @@ namespace nfx::graphics::gl
             reinterpret_cast<GLvoid (*)(GLfloat, GLboolean)>(loader.loadFunctionPtr("glSampleCoverage"));
 
         return s_loaded = true;
+    }
+
+    void Functions_1_3::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_1_2::teardown();
+    }
+
+    void Functions_1_3::nullifyPointers()
+    {
+        _nfx_glActiveTexture = nullptr;
+        _nfx_glClientActiveTexture = nullptr;
+        _nfx_glCompressedTexImage1D = nullptr;
+        _nfx_glCompressedTexImage2D = nullptr;
+        _nfx_glCompressedTexImage3D = nullptr;
+        _nfx_glCompressedTexSubImage1D = nullptr;
+        _nfx_glCompressedTexSubImage2D = nullptr;
+        _nfx_glCompressedTexSubImage3D = nullptr;
+        _nfx_glGetCompressedTexImage = nullptr;
+        _nfx_glLoadTransposeMatrixd = nullptr;
+        _nfx_glLoadTransposeMatrixf = nullptr;
+        _nfx_glMultiTexCoord1d = nullptr;
+        _nfx_glMultiTexCoord1dv = nullptr;
+        _nfx_glMultiTexCoord1f = nullptr;
+        _nfx_glMultiTexCoord1fv = nullptr;
+        _nfx_glMultiTexCoord1i = nullptr;
+        _nfx_glMultiTexCoord1iv = nullptr;
+        _nfx_glMultiTexCoord1s = nullptr;
+        _nfx_glMultiTexCoord1sv = nullptr;
+        _nfx_glMultiTexCoord2d = nullptr;
+        _nfx_glMultiTexCoord2dv = nullptr;
+        _nfx_glMultiTexCoord2f = nullptr;
+        _nfx_glMultiTexCoord2fv = nullptr;
+        _nfx_glMultiTexCoord2i = nullptr;
+        _nfx_glMultiTexCoord2iv = nullptr;
+        _nfx_glMultiTexCoord2s = nullptr;
+        _nfx_glMultiTexCoord2sv = nullptr;
+        _nfx_glMultiTexCoord3d = nullptr;
+        _nfx_glMultiTexCoord3dv = nullptr;
+        _nfx_glMultiTexCoord3f = nullptr;
+        _nfx_glMultiTexCoord3fv = nullptr;
+        _nfx_glMultiTexCoord3i = nullptr;
+        _nfx_glMultiTexCoord3iv = nullptr;
+        _nfx_glMultiTexCoord3s = nullptr;
+        _nfx_glMultiTexCoord3sv = nullptr;
+        _nfx_glMultiTexCoord4d = nullptr;
+        _nfx_glMultiTexCoord4dv = nullptr;
+        _nfx_glMultiTexCoord4f = nullptr;
+        _nfx_glMultiTexCoord4fv = nullptr;
+        _nfx_glMultiTexCoord4i = nullptr;
+        _nfx_glMultiTexCoord4iv = nullptr;
+        _nfx_glMultiTexCoord4s = nullptr;
+        _nfx_glMultiTexCoord4sv = nullptr;
+        _nfx_glMultTransposeMatrixd = nullptr;
+        _nfx_glMultTransposeMatrixf = nullptr;
+        _nfx_glSampleCoverage = nullptr;
     }
 } // namespace nfx::graphics::gl

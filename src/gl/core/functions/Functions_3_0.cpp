@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_2_1{}
     {}
 
-    Functions_3_0::~Functions_3_0() {}
+    Functions_3_0::~Functions_3_0()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_3_0::glBeginConditionalRender(GLuint id, GLenum mode, [[maybe_unused]] const char* caller) const
     {
@@ -748,5 +751,102 @@ namespace nfx::graphics::gl
             loader.loadFunctionPtr("glVertexAttribIPointer"));
 
         return s_loaded = true;
+    }
+
+    void Functions_3_0::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_2_1::teardown();
+    }
+
+    void Functions_3_0::nullifyPointers()
+    {
+        _nfx_glBeginConditionalRender = nullptr;
+        _nfx_glBeginTransformFeedback = nullptr;
+        _nfx_glBindBufferBase = nullptr;
+        _nfx_glBindBufferRange = nullptr;
+        _nfx_glBindFragDataLocation = nullptr;
+        _nfx_glBindFramebuffer = nullptr;
+        _nfx_glBindRenderbuffer = nullptr;
+        _nfx_glBindVertexArray = nullptr;
+        _nfx_glBlitFramebuffer = nullptr;
+        _nfx_glCheckFramebufferStatus = nullptr;
+        _nfx_glClampColor = nullptr;
+        _nfx_glClearBufferfi = nullptr;
+        _nfx_glClearBufferfv = nullptr;
+        _nfx_glClearBufferiv = nullptr;
+        _nfx_glClearBufferuiv = nullptr;
+        _nfx_glColorMaski = nullptr;
+        _nfx_glDeleteFramebuffers = nullptr;
+        _nfx_glDeleteRenderbuffers = nullptr;
+        _nfx_glDeleteVertexArrays = nullptr;
+        _nfx_glDisablei = nullptr;
+        _nfx_glEnablei = nullptr;
+        _nfx_glEndConditionalRender = nullptr;
+        _nfx_glEndTransformFeedback = nullptr;
+        _nfx_glFlushMappedBufferRange = nullptr;
+        _nfx_glFramebufferRenderbuffer = nullptr;
+        _nfx_glFramebufferTexture1D = nullptr;
+        _nfx_glFramebufferTexture2D = nullptr;
+        _nfx_glFramebufferTexture3D = nullptr;
+        _nfx_glFramebufferTextureLayer = nullptr;
+        _nfx_glGenerateMipmap = nullptr;
+        _nfx_glGenFramebuffers = nullptr;
+        _nfx_glGenRenderbuffers = nullptr;
+        _nfx_glGenVertexArrays = nullptr;
+        _nfx_glGetBooleani_v = nullptr;
+        _nfx_glGetFragDataLocation = nullptr;
+        _nfx_glGetFramebufferAttachmentParameteriv = nullptr;
+        _nfx_glGetIntegeri_v = nullptr;
+        _nfx_glGetRenderbufferParameteriv = nullptr;
+        _nfx_glGetStringi = nullptr;
+        _nfx_glGetTexParameterIiv = nullptr;
+        _nfx_glGetTexParameterIuiv = nullptr;
+        _nfx_glGetTransformFeedbackVarying = nullptr;
+        _nfx_glGetUniformuiv = nullptr;
+        _nfx_glGetVertexAttribIiv = nullptr;
+        _nfx_glGetVertexAttribIuiv = nullptr;
+        _nfx_glIsEnabledi = nullptr;
+        _nfx_glIsFramebuffer = nullptr;
+        _nfx_glIsRenderbuffer = nullptr;
+        _nfx_glIsVertexArray = nullptr;
+        _nfx_glMapBufferRange = nullptr;
+        _nfx_glRenderbufferStorage = nullptr;
+        _nfx_glRenderbufferStorageMultisample = nullptr;
+        _nfx_glTexParameterIiv = nullptr;
+        _nfx_glTexParameterIuiv = nullptr;
+        _nfx_glTransformFeedbackVaryings = nullptr;
+        _nfx_glUniform1ui = nullptr;
+        _nfx_glUniform1uiv = nullptr;
+        _nfx_glUniform2ui = nullptr;
+        _nfx_glUniform2uiv = nullptr;
+        _nfx_glUniform3ui = nullptr;
+        _nfx_glUniform3uiv = nullptr;
+        _nfx_glUniform4ui = nullptr;
+        _nfx_glUniform4uiv = nullptr;
+        _nfx_glVertexAttribI1i = nullptr;
+        _nfx_glVertexAttribI1iv = nullptr;
+        _nfx_glVertexAttribI1ui = nullptr;
+        _nfx_glVertexAttribI1uiv = nullptr;
+        _nfx_glVertexAttribI2i = nullptr;
+        _nfx_glVertexAttribI2iv = nullptr;
+        _nfx_glVertexAttribI2ui = nullptr;
+        _nfx_glVertexAttribI2uiv = nullptr;
+        _nfx_glVertexAttribI3i = nullptr;
+        _nfx_glVertexAttribI3iv = nullptr;
+        _nfx_glVertexAttribI3ui = nullptr;
+        _nfx_glVertexAttribI3uiv = nullptr;
+        _nfx_glVertexAttribI4bv = nullptr;
+        _nfx_glVertexAttribI4i = nullptr;
+        _nfx_glVertexAttribI4iv = nullptr;
+        _nfx_glVertexAttribI4sv = nullptr;
+        _nfx_glVertexAttribI4ubv = nullptr;
+        _nfx_glVertexAttribI4ui = nullptr;
+        _nfx_glVertexAttribI4uiv = nullptr;
+        _nfx_glVertexAttribI4usv = nullptr;
+        _nfx_glVertexAttribIPointer = nullptr;
     }
 } // namespace nfx::graphics::gl

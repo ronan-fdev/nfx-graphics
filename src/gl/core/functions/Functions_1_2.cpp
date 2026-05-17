@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_1_1{}
     {}
 
-    Functions_1_2::~Functions_1_2() {}
+    Functions_1_2::~Functions_1_2()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_1_2::glBlendColor(
         GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha, [[maybe_unused]] const char* caller) const
@@ -420,5 +423,54 @@ namespace nfx::graphics::gl
             loader.loadFunctionPtr("glTexSubImage3D"));
 
         return s_loaded = true;
+    }
+
+    void Functions_1_2::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+    }
+
+    void Functions_1_2::nullifyPointers()
+    {
+        _nfx_glBlendColor = nullptr;
+        _nfx_glBlendEquation = nullptr;
+        _nfx_glColorSubTable = nullptr;
+        _nfx_glColorTable = nullptr;
+        _nfx_glColorTableParameterfv = nullptr;
+        _nfx_glColorTableParameteriv = nullptr;
+        _nfx_glConvolutionFilter1D = nullptr;
+        _nfx_glConvolutionFilter2D = nullptr;
+        _nfx_glConvolutionParameterf = nullptr;
+        _nfx_glConvolutionParameterfv = nullptr;
+        _nfx_glConvolutionParameteri = nullptr;
+        _nfx_glConvolutionParameteriv = nullptr;
+        _nfx_glCopyColorSubTable = nullptr;
+        _nfx_glCopyColorTable = nullptr;
+        _nfx_glCopyConvolutionFilter1D = nullptr;
+        _nfx_glCopyConvolutionFilter2D = nullptr;
+        _nfx_glCopyTexSubImage3D = nullptr;
+        _nfx_glDrawRangeElements = nullptr;
+        _nfx_glGetColorTable = nullptr;
+        _nfx_glGetColorTableParameterfv = nullptr;
+        _nfx_glGetColorTableParameteriv = nullptr;
+        _nfx_glGetConvolutionFilter = nullptr;
+        _nfx_glGetConvolutionParameterfv = nullptr;
+        _nfx_glGetConvolutionParameteriv = nullptr;
+        _nfx_glGetHistogram = nullptr;
+        _nfx_glGetHistogramParameterfv = nullptr;
+        _nfx_glGetHistogramParameteriv = nullptr;
+        _nfx_glGetMinmax = nullptr;
+        _nfx_glGetMinmaxParameterfv = nullptr;
+        _nfx_glGetMinmaxParameteriv = nullptr;
+        _nfx_glGetSeparableFilter = nullptr;
+        _nfx_glHistogram = nullptr;
+        _nfx_glMinmax = nullptr;
+        _nfx_glResetHistogram = nullptr;
+        _nfx_glResetMinmax = nullptr;
+        _nfx_glSeparableFilter2D = nullptr;
+        _nfx_glTexImage3D = nullptr;
+        _nfx_glTexSubImage3D = nullptr;
     }
 } // namespace nfx::graphics::gl

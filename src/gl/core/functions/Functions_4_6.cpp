@@ -12,7 +12,10 @@ namespace nfx::graphics::gl
         : Functions_4_5{}
     {}
 
-    Functions_4_6::~Functions_4_6() {}
+    Functions_4_6::~Functions_4_6()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_6::glMultiDrawArraysIndirectCount(
         GLenum mode,
@@ -82,5 +85,22 @@ namespace nfx::graphics::gl
                 loader.loadFunctionPtr("glSpecializeShader"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_6::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_4_5::teardown();
+    }
+
+    void Functions_4_6::nullifyPointers()
+    {
+        _nfx_glMultiDrawArraysIndirectCount = nullptr;
+        _nfx_glMultiDrawElementsIndirectCount = nullptr;
+        _nfx_glPolygonOffsetClamp = nullptr;
+        _nfx_glSpecializeShader = nullptr;
     }
 } // namespace nfx::graphics::gl

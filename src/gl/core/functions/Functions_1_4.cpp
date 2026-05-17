@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_1_3{}
     {}
 
-    Functions_1_4::~Functions_1_4() {}
+    Functions_1_4::~Functions_1_4()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_1_4::glBlendFuncSeparate(
         GLenum sfactorRGB,
@@ -353,5 +356,63 @@ namespace nfx::graphics::gl
         _nfx_glWindowPos3sv = reinterpret_cast<GLvoid (*)(const GLshort*)>(loader.loadFunctionPtr("glWindowPos3sv"));
 
         return s_loaded = true;
+    }
+
+    void Functions_1_4::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_1_3::teardown();
+    }
+
+    void Functions_1_4::nullifyPointers()
+    {
+        _nfx_glBlendFuncSeparate = nullptr;
+        _nfx_glFogCoordd = nullptr;
+        _nfx_glFogCoorddv = nullptr;
+        _nfx_glFogCoordf = nullptr;
+        _nfx_glFogCoordfv = nullptr;
+        _nfx_glFogCoordPointer = nullptr;
+        _nfx_glMultiDrawArrays = nullptr;
+        _nfx_glMultiDrawElements = nullptr;
+        _nfx_glPointParameterf = nullptr;
+        _nfx_glPointParameterfv = nullptr;
+        _nfx_glPointParameteri = nullptr;
+        _nfx_glPointParameteriv = nullptr;
+        _nfx_glSecondaryColor3b = nullptr;
+        _nfx_glSecondaryColor3bv = nullptr;
+        _nfx_glSecondaryColor3d = nullptr;
+        _nfx_glSecondaryColor3dv = nullptr;
+        _nfx_glSecondaryColor3f = nullptr;
+        _nfx_glSecondaryColor3fv = nullptr;
+        _nfx_glSecondaryColor3i = nullptr;
+        _nfx_glSecondaryColor3iv = nullptr;
+        _nfx_glSecondaryColor3s = nullptr;
+        _nfx_glSecondaryColor3sv = nullptr;
+        _nfx_glSecondaryColor3ub = nullptr;
+        _nfx_glSecondaryColor3ubv = nullptr;
+        _nfx_glSecondaryColor3ui = nullptr;
+        _nfx_glSecondaryColor3uiv = nullptr;
+        _nfx_glSecondaryColor3us = nullptr;
+        _nfx_glSecondaryColor3usv = nullptr;
+        _nfx_glSecondaryColorPointer = nullptr;
+        _nfx_glWindowPos2d = nullptr;
+        _nfx_glWindowPos2dv = nullptr;
+        _nfx_glWindowPos2f = nullptr;
+        _nfx_glWindowPos2fv = nullptr;
+        _nfx_glWindowPos2i = nullptr;
+        _nfx_glWindowPos2iv = nullptr;
+        _nfx_glWindowPos2s = nullptr;
+        _nfx_glWindowPos2sv = nullptr;
+        _nfx_glWindowPos3d = nullptr;
+        _nfx_glWindowPos3dv = nullptr;
+        _nfx_glWindowPos3f = nullptr;
+        _nfx_glWindowPos3fv = nullptr;
+        _nfx_glWindowPos3i = nullptr;
+        _nfx_glWindowPos3iv = nullptr;
+        _nfx_glWindowPos3s = nullptr;
+        _nfx_glWindowPos3sv = nullptr;
     }
 } // namespace nfx::graphics::gl

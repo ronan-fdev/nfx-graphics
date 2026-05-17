@@ -10,7 +10,10 @@ namespace nfx::graphics::gl
         : Functions_4_2{}
     {}
 
-    Functions_4_3::~Functions_4_3() {}
+    Functions_4_3::~Functions_4_3()
+    {
+        s_loaded = false;
+    }
 
     GLvoid Functions_4_3::glBindVertexBuffer(
         GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride, [[maybe_unused]] const char* caller) const
@@ -565,5 +568,61 @@ namespace nfx::graphics::gl
             reinterpret_cast<GLvoid (*)(GLuint, GLuint)>(loader.loadFunctionPtr("glVertexBindingDivisor"));
 
         return s_loaded = true;
+    }
+
+    void Functions_4_3::teardown()
+    {
+        nullifyPointers();
+
+        s_loaded = false;
+
+        Functions_4_2::teardown();
+    }
+
+    void Functions_4_3::nullifyPointers()
+    {
+        _nfx_glBindVertexBuffer = nullptr;
+        _nfx_glClearBufferData = nullptr;
+        _nfx_glClearBufferSubData = nullptr;
+        _nfx_glCopyImageSubData = nullptr;
+        _nfx_glDebugMessageCallback = nullptr;
+        _nfx_glDebugMessageControl = nullptr;
+        _nfx_glDebugMessageInsert = nullptr;
+        _nfx_glDispatchCompute = nullptr;
+        _nfx_glDispatchComputeIndirect = nullptr;
+        _nfx_glFramebufferParameteri = nullptr;
+        _nfx_glGetDebugMessageLog = nullptr;
+        _nfx_glGetFramebufferParameteriv = nullptr;
+        _nfx_glGetInternalformati64v = nullptr;
+        _nfx_glGetObjectLabel = nullptr;
+        _nfx_glGetObjectPtrLabel = nullptr;
+        _nfx_glGetProgramInterfaceiv = nullptr;
+        _nfx_glGetProgramResourceIndex = nullptr;
+        _nfx_glGetProgramResourceiv = nullptr;
+        _nfx_glGetProgramResourceLocation = nullptr;
+        _nfx_glGetProgramResourceLocationIndex = nullptr;
+        _nfx_glGetProgramResourceName = nullptr;
+        _nfx_glInvalidateBufferData = nullptr;
+        _nfx_glInvalidateBufferSubData = nullptr;
+        _nfx_glInvalidateFramebuffer = nullptr;
+        _nfx_glInvalidateSubFramebuffer = nullptr;
+        _nfx_glInvalidateTexImage = nullptr;
+        _nfx_glInvalidateTexSubImage = nullptr;
+        _nfx_glMultiDrawArraysIndirect = nullptr;
+        _nfx_glMultiDrawElementsIndirect = nullptr;
+        _nfx_glObjectLabel = nullptr;
+        _nfx_glObjectPtrLabel = nullptr;
+        _nfx_glPopDebugGroup = nullptr;
+        _nfx_glPushDebugGroup = nullptr;
+        _nfx_glShaderStorageBlockBinding = nullptr;
+        _nfx_glTexBufferRange = nullptr;
+        _nfx_glTexStorage2DMultisample = nullptr;
+        _nfx_glTexStorage3DMultisample = nullptr;
+        _nfx_glTextureView = nullptr;
+        _nfx_glVertexAttribBinding = nullptr;
+        _nfx_glVertexAttribFormat = nullptr;
+        _nfx_glVertexAttribIFormat = nullptr;
+        _nfx_glVertexAttribLFormat = nullptr;
+        _nfx_glVertexBindingDivisor = nullptr;
     }
 } // namespace nfx::graphics::gl

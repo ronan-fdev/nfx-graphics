@@ -38,6 +38,18 @@ namespace nfx::graphics::gl
         return s_instance.m_initialized;
     }
 
+    void Context::teardown() noexcept
+    {
+        s_instance.m_functions.teardown();
+        s_instance.m_initialized = false;
+        s_instance.m_major = 0;
+        s_instance.m_minor = 0;
+        s_instance.m_maxColorAttachments = 8;
+        s_instance.m_maxPatchVertices = 1;
+        s_instance.m_maxTextureImageUnits = 16;
+        s_instance.m_maxVertexAttribs = 16;
+    }
+
     Context& Context::current()
     {
         assert(

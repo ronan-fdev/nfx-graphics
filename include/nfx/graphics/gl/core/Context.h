@@ -37,6 +37,11 @@ namespace nfx::graphics::gl
         [[nodiscard]] static bool isInitialized() noexcept;
 
         /**
+         * \brief Tears down the OpenGL function table and cached context limits on the calling thread.
+         */
+        static void teardown() noexcept;
+
+        /**
          * \brief Returns the Context for the calling thread.
          *
          * \pre initialize() must have been called on this thread.
