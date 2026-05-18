@@ -108,7 +108,9 @@ namespace nfx::graphics::gl
     private:
         explicit Polygon2DPass(std::string name = "Polygon2DPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         bool initialize() override;
         void begin() override;

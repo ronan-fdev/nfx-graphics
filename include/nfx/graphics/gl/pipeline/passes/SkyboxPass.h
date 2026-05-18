@@ -51,7 +51,9 @@ namespace nfx::graphics::gl
     private:
         explicit SkyboxPass(std::string name = "SkyboxPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual bool initialize() override;
         virtual void begin() override;

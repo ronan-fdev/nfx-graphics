@@ -131,7 +131,9 @@ namespace nfx::graphics::gl
     private:
         explicit DirectionalShadowPass(std::string name = "DirectionalShadowPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::FullTarget, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual bool initialize() override;
         virtual void begin() override;

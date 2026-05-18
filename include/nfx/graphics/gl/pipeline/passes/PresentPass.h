@@ -53,7 +53,9 @@ namespace nfx::graphics::gl
     private:
         explicit PresentPass(std::string name = "PresentPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::FullTarget, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual bool initialize() override;
         virtual void begin() override;

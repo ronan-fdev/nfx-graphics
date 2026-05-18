@@ -7,6 +7,7 @@
 
 #include "nfx/graphics/gl/core/framebuffers/Framebuffer.h"
 #include "nfx/graphics/gl/pipeline/frame/RenderResources.h"
+#include "nfx/graphics/gl/pipeline/raster/RasterRegion.h"
 #include "nfx/graphics/gl/resources/Handle.h"
 
 #include <cstdint>
@@ -132,6 +133,16 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] const ViewportRect* currentViewport() const noexcept { return m_viewport; }
 
+        /**
+         * \brief Returns the logical raster-region policy owned by the pass.
+         */
+        [[nodiscard]] const RasterRegionState& rasterRegionState() const noexcept { return m_rasterRegionState; }
+
+        /**
+         * \brief Sets the logical raster-region policy owned by the pass.
+         */
+        void setRasterRegionState(const RasterRegionState& state) noexcept { m_rasterRegionState = state; }
+
         void resetRuntimeStats() noexcept { m_runtimeStats = {}; }
 
         PassRuntimeStats m_runtimeStats;
@@ -142,5 +153,6 @@ namespace nfx::graphics::gl
         bool m_initialized = false;
         const FrameData* m_frameData = nullptr;
         const ViewportRect* m_viewport = nullptr;
+        RasterRegionState m_rasterRegionState;
     };
 } // namespace nfx::graphics::gl

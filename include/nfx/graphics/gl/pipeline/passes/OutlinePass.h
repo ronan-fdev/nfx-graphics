@@ -98,7 +98,9 @@ namespace nfx::graphics::gl
     private:
         explicit OutlinePass(std::string name = "OutlinePass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         bool initialize() override;
         void begin() override;

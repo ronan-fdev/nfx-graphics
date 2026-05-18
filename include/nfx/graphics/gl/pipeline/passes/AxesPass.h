@@ -50,7 +50,9 @@ namespace nfx::graphics::gl
     private:
         explicit AxesPass(std::string name = "AxesPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         void rebuildGeometry();
 

@@ -80,7 +80,9 @@ namespace nfx::graphics::gl
     private:
         explicit ImagePlanePass(std::string name = "ImagePlane")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         bool initialize() override;
         void begin() override;

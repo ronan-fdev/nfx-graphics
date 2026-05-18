@@ -105,7 +105,9 @@ namespace nfx::graphics::gl
     private:
         explicit TransparentPass(std::string name = "TransparentPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual void begin() override;
         virtual void execute(RenderResources& resources) override;

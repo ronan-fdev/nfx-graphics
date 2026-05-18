@@ -54,7 +54,9 @@ namespace nfx::graphics::gl
     private:
         explicit GridPass(std::string name = "GridPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual bool initialize() override;
 

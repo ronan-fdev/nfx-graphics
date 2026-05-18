@@ -100,7 +100,9 @@ namespace nfx::graphics::gl
     private:
         explicit WboitPass(std::string name = "WboitPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual bool initialize() override;
         virtual void begin() override;

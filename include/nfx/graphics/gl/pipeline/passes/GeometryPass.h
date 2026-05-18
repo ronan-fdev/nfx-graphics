@@ -177,7 +177,9 @@ namespace nfx::graphics::gl
     private:
         explicit GeometryPass(std::string name = "GeometryPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::InheritView, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual void begin() override;
         virtual void execute(RenderResources& resources) override;

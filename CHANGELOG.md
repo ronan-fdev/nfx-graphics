@@ -57,7 +57,7 @@
 - `AxesPass`: world-axes overlay pass with embedded shader, configurable axis length/fade distance, and optional target framebuffer
 - `GridPass`: infinite anti-aliased ground grid overlay pass with configurable cell size, fade distance, and color
 
-- `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state, output accessors, and generic runtime stats access
+- `RenderPass`: abstract base class for render passes with begin/execute/end lifecycle, enabled state, output accessors, generic runtime stats access, and explicit raster-region defaults in pass constructors (`InheritView + Disabled` or `FullTarget + Disabled` where applicable)
 - `GeometryPass`: opaque geometry pass with queue submission, material/mesh/shader resolution, fallback material, render target, sort order, patch vertex count, per-frame clear control, and per-frame culling/execution stats
 - `PresentPass`: final fullscreen pass for presentation (input color, optional tonemap, optional gamma)
 - `TransparentPass`: transparent geometry pass with back-to-front sorting, alpha blending, target framebuffer compositing, and per-frame execution stats

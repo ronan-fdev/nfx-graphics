@@ -307,6 +307,8 @@ namespace nfx::graphics::gl
                 m_viewport ? *m_viewport
                            : ViewportRect{ 0, 0, rasterInput.targetExtent.width, rasterInput.targetExtent.height };
 
+            rasterInput.policy = passPtr->rasterRegionState();
+
             if (m_viewport && m_viewport->x >= 0 && m_viewport->y >= 0)
             {
                 rasterInput.targetExtent.width = std::max(rasterInput.targetExtent.width, m_viewport->right());

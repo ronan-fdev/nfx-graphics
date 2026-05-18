@@ -86,7 +86,9 @@ namespace nfx::graphics::gl
     private:
         explicit PointShadowPass(std::string name = "PointShadowPass")
             : RenderPass{ std::move(name) }
-        {}
+        {
+            setRasterRegionState({ ViewportPolicy::FullTarget, {}, ScissorPolicy::Disabled, {} });
+        }
 
         virtual bool initialize() override;
         virtual void begin() override;
