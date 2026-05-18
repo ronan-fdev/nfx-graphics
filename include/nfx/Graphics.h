@@ -47,12 +47,15 @@
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderCommand.h"
 #include "nfx/graphics/gl/pipeline/queue/RenderQueue.h"
+#include "nfx/graphics/gl/pipeline/raster/RasterRegion.h"
+#include "nfx/graphics/gl/pipeline/raster/ScissorRect.h"
+#include "nfx/graphics/gl/pipeline/raster/SurfaceExtent.h"
+#include "nfx/graphics/gl/pipeline/raster/ViewportRect.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "nfx/graphics/gl/pipeline/ForwardRenderPath.h"
 #include "nfx/graphics/gl/pipeline/Renderer.h"
 #include "nfx/graphics/gl/pipeline/RenderMode.h"
 #include "nfx/graphics/gl/pipeline/RenderTarget.h"
-#include "nfx/graphics/gl/pipeline/ViewportRect.h"
 
 // Resources
 #include "nfx/graphics/gl/resources/Handle.h"

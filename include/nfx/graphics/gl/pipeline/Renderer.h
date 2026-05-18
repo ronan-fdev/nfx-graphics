@@ -10,9 +10,9 @@
 #include "nfx/graphics/gl/core/GlTypes.h"
 #include "nfx/graphics/gl/material/ibl/IblFrameBlock.h"
 #include "nfx/graphics/gl/pipeline/frame/FrameData.h"
-#include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
-#include "nfx/graphics/gl/pipeline/shadows/ShadowMatricesBlock.h"
-#include "ViewportRect.h"
+#include "passes/RenderPass.h"
+#include "raster/ViewportRect.h"
+#include "shadows/ShadowMatricesBlock.h"
 
 #include <array>
 #include <cstdint>

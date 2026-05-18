@@ -20,10 +20,14 @@ add_executable(nfx-graphics-gl-tests
     pipeline/tests_GeometryPassStats.cpp
     pipeline/tests_PipelinePassContracts.cpp
     pipeline/tests_PassStatsSemantics.cpp
+    pipeline/tests_RasterRegion.cpp
+    pipeline/tests_RasterRegionResolution.cpp
     pipeline/tests_Renderer.cpp
     pipeline/tests_RenderQueue.cpp
     pipeline/tests_RenderState.cpp
+    pipeline/tests_ScissorRect.cpp
     pipeline/tests_SortKey.cpp
+    pipeline/tests_SurfaceExtent.cpp
     pipeline/tests_ViewportRect.cpp
     pipeline/tests_ViewportValidation.cpp
 

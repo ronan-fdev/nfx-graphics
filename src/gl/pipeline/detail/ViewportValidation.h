@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nfx/graphics/gl/pipeline/ViewportRect.h"
+#include "nfx/graphics/gl/pipeline/raster/ViewportRect.h"
 
 namespace nfx::graphics::gl::detail
 {

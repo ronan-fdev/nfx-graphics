@@ -89,6 +89,9 @@
 - `RenderState`: pipeline state descriptor with `apply()` helper and `opaque()` / `transparent()` / `shadowCaster()` presets
 - `RenderTarget`: high-level framebuffer wrapper with single output texture and depth/depth-stencil support
 - `ViewportRect`: pixel-space rectangle (x, y, width, height) for multi-viewport rendering contracts
+- `RasterRegion`: viewport/scissor policy contracts (`ViewportPolicy`, `ScissorPolicy`, `RasterRegionState`, `ResolvedRasterState`, `RasterResolutionInput`)
+- `ScissorRect`: pixel-space scissor rectangle (x, y, width, height) with validity helpers
+- `SurfaceExtent`: render-destination extent (width, height) with strict positive-dimension validation
 
 - `ForwardRenderPath`: forward rendering pipeline assembler - fluent pass configuration (`addShadowPass<T>`, `setSkybox`, `enableTransparency<T>`, `addOverlay<T>`), automatic color/depth target wiring, viewport resize handling, typed pass access via `get<T>(name)`, and forwarded renderer stats access
 
@@ -170,6 +173,10 @@
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping
 - `gl/pipeline/tests_SortKey`: validates 64-bit sort-key packing semantics (opaque, front-to-back, back-to-front)
+- `gl/pipeline/tests_RasterRegion`: validates default raster policy/state contracts and resolution-result status semantics
+- `gl/pipeline/tests_RasterRegionResolution`: validates resolver behavior across viewport/scissor policies, invalid inputs, edge alignment, and strict-mode disposition
+- `gl/pipeline/tests_ScissorRect`: validates scissor rectangle defaults, validity rules, and exclusive-edge helpers
+- `gl/pipeline/tests_SurfaceExtent`: validates surface extent positivity contract
 - `gl/pipeline/tests_ViewportRect`: validates ViewportRect invariants, coordinate system, and multi-viewport composition contracts
 - `gl/pipeline/tests_ViewportValidation`: validates viewport-inside-surface bounds check including invalid dimensions and out-of-bounds rectangles
 
