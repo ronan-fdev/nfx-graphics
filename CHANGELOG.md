@@ -165,6 +165,7 @@
 - `gl/pipeline/tests_ForwardRenderPathWiring`: validates automatic target texture wiring between passes (geometry output routed to overlays/transparent/outline)
 - `gl/pipeline/tests_GeometryPassStats`: validates per-frame stats semantics (commandsTested, commandsCulled for frustum-only, commandsInvalid for resource errors, and executionStats for binds and submission details)
 - `gl/pipeline/tests_PassStatsSemantics`: validates per-pass stats contracts (`TransparentPass`, `WboitPass`, `DirectionalShadowPass`, `SpotShadowPass`, `PointShadowPass`) and `Renderer::FrameStats` aggregated draw-call accounting
+- `gl/pipeline/tests_PipelinePassContracts`: dedicated contracts for PostProcessPass, PresentPass, SkyboxPass, GridPass, AxesPass, ImagePlanePass, Polygon2DPass, and TextPass
 - `gl/pipeline/tests_Renderer`: validates renderer pass registration/removal, null-pass handling, and one-time pass initialization behavior
 - `gl/pipeline/tests_RenderQueue`: validates submission contract, default sort-key assignment, order preservation, and clear behavior
 - `gl/pipeline/tests_RenderState`: validates RenderState defaults and enum-to-OpenGL constant mapping
