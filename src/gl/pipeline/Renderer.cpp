@@ -19,6 +19,7 @@
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
 #include "nfx/graphics/gl/pipeline/Bindings.h"
 #include "gl/material/ShaderFeatures.h"
+#include "detail/RasterRegionResolution.h"
 #include "internal/runtime/Error.h"
 
 #include <algorithm>
@@ -97,6 +98,56 @@ namespace nfx::graphics::gl
                 }
             };
         };
+
+        [[nodiscard]] RasterValidationMode toRasterValidationMode(Renderer::ValidationMode mode) noexcept
+        {
+            switch (mode)
+            {
+                case Renderer::ValidationMode::Strict:
+                    return RasterValidationMode::Strict;
+                case Renderer::ValidationMode::Warn:
+                    return RasterValidationMode::Warn;
+                case Renderer::ValidationMode::Off:
+                    return RasterValidationMode::Off;
+            }
+            return RasterValidationMode::Warn;
+        }
+
+        [[nodiscard]] const char* rasterStatusString(RasterResolutionStatus status) noexcept
+        {
+            switch (status)
+            {
+                case RasterResolutionStatus::Ok:
+                    return "Ok";
+                case RasterResolutionStatus::InvalidSurfaceExtent:
+                    return "InvalidSurfaceExtent";
+                case RasterResolutionStatus::InvalidViewViewport:
+                    return "InvalidViewViewport";
+                case RasterResolutionStatus::MissingExplicitViewport:
+                    return "MissingExplicitViewport";
+                case RasterResolutionStatus::InvalidExplicitViewport:
+                    return "InvalidExplicitViewport";
+                case RasterResolutionStatus::MissingExplicitScissor:
+                    return "MissingExplicitScissor";
+                case RasterResolutionStatus::InvalidExplicitScissor:
+                    return "InvalidExplicitScissor";
+            }
+            return "UnknownRasterStatus";
+        }
+
+        void applyResolvedRasterState(const ResolvedRasterState& state, const Functions& gl)
+        {
+            gl.glViewport(state.viewport.x, state.viewport.y, state.viewport.width, state.viewport.height);
+            if (state.scissorEnabled)
+            {
+                gl.glEnable(SCISSOR_TEST);
+                gl.glScissor(state.scissor.x, state.scissor.y, state.scissor.width, state.scissor.height);
+            }
+            else
+            {
+                gl.glDisable(SCISSOR_TEST);
+            }
+        }
     } // namespace
 
     Renderer::~Renderer()
@@ -223,6 +274,8 @@ namespace nfx::graphics::gl
             m_frameStats.gpuFrameMs = 0.0f;
         }
 
+        bool abortFrame = false;
+
         for (auto& passPtr : m_passes)
         {
             if (!passPtr)
@@ -244,6 +297,47 @@ namespace nfx::graphics::gl
             {
                 continue; // initialization failed, skip
             }
+
+            GLint activeViewport[4] = { 0, 0, 1, 1 };
+            gl.glGetIntegerv(VIEWPORT, activeViewport);
+
+            RasterResolutionInput rasterInput;
+            rasterInput.targetExtent = { std::max(activeViewport[2], 1), std::max(activeViewport[3], 1) };
+            rasterInput.viewViewport =
+                m_viewport ? *m_viewport
+                           : ViewportRect{ 0, 0, rasterInput.targetExtent.width, rasterInput.targetExtent.height };
+
+            if (m_viewport && m_viewport->x >= 0 && m_viewport->y >= 0)
+            {
+                rasterInput.targetExtent.width = std::max(rasterInput.targetExtent.width, m_viewport->right());
+                rasterInput.targetExtent.height = std::max(rasterInput.targetExtent.height, m_viewport->top());
+            }
+
+            const RasterResolutionResult raster =
+                detail::resolveRasterState(rasterInput, toRasterValidationMode(m_validationMode));
+
+            if (!raster.ok())
+            {
+                char msg[192];
+                std::snprintf(
+                    msg,
+                    sizeof(msg),
+                    "render: pass '%s' raster resolution failed (%s)",
+                    passPtr->name().c_str(),
+                    rasterStatusString(raster.status));
+                internal::runtime::logError(
+                    "Renderer", internal::runtime::ErrorLevel::Warn, internal::runtime::ErrorKind::Recoverable, msg);
+
+                if (raster.disposition == RasterResolutionDisposition::AbortFrame)
+                {
+                    abortFrame = true;
+                    break;
+                }
+
+                continue;
+            }
+
+            applyResolvedRasterState(raster.state, gl);
 
             if (debugGroups)
             {
@@ -382,6 +476,15 @@ namespace nfx::graphics::gl
             {
                 gl.glPopDebugGroup();
             }
+        }
+
+        if (abortFrame)
+        {
+            internal::runtime::logError(
+                "Renderer",
+                internal::runtime::ErrorLevel::Warn,
+                internal::runtime::ErrorKind::Recoverable,
+                "render: frame aborted due to raster validation failure");
         }
 
         if (m_gpuTimingSupported)
