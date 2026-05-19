@@ -118,9 +118,9 @@ namespace nfx::graphics::gl
         [[nodiscard]] std::size_t roundSegments(float theta) noexcept
         {
             const float absTheta = std::fabs(theta);
-            const float maxStep = 0.35f;
+            const float maxStep = 0.18f;
             const std::size_t count = static_cast<std::size_t>(std::ceil(absTheta / maxStep));
-            return std::max<std::size_t>(4, count);
+            return std::max<std::size_t>(6, count);
         }
     } // namespace
 
@@ -241,8 +241,8 @@ namespace nfx::graphics::gl
 
             mesh.indices.push_back(seg.l0);
             mesh.indices.push_back(seg.r0);
-            mesh.indices.push_back(seg.l1);
-            mesh.indices.push_back(seg.r0);
+            mesh.indices.push_back(seg.r1);
+            mesh.indices.push_back(seg.l0);
             mesh.indices.push_back(seg.r1);
             mesh.indices.push_back(seg.l1);
 
@@ -276,8 +276,10 @@ namespace nfx::graphics::gl
             }
 
             const bool isLeftTurn = turnCross > 0.0f;
-            const Point2& pOuter0 = isLeftTurn ? outerPrevLeft : outerPrevRight;
-            const Point2& pOuter1 = isLeftTurn ? outerNextLeft : outerNextRight;
+            const Point2& pOuter0 = isLeftTurn ? outerPrevRight : outerPrevLeft;
+            const Point2& pOuter1 = isLeftTurn ? outerNextRight : outerNextLeft;
+            const std::uint16_t outerPrev = isLeftTurn ? prev.r1 : prev.l1;
+            const std::uint16_t outerNext = isLeftTurn ? next.r0 : next.l0;
 
             if (style.join == StrokeJoin::Bevel)
             {
@@ -293,9 +295,9 @@ namespace nfx::graphics::gl
 
                 const std::uint16_t c = static_cast<std::uint16_t>(mesh.vertices.size());
                 mesh.vertices.push_back(makeVertex(joinPoint, style));
-                mesh.indices.push_back(isLeftTurn ? prev.l1 : next.r0);
-                mesh.indices.push_back(isLeftTurn ? next.l0 : prev.r1);
-                mesh.indices.push_back(c);
+                mesh.indices.push_back(outerPrev);
+                mesh.indices.push_back(isLeftTurn ? outerNext : c);
+                mesh.indices.push_back(isLeftTurn ? c : outerNext);
                 continue;
             }
 
@@ -319,14 +321,23 @@ namespace nfx::graphics::gl
                     }
                     const std::uint16_t c = static_cast<std::uint16_t>(mesh.vertices.size());
                     mesh.vertices.push_back(makeVertex(joinPoint, style));
-                    mesh.indices.push_back(isLeftTurn ? prev.l1 : next.r0);
-                    mesh.indices.push_back(isLeftTurn ? next.l0 : prev.r1);
-                    mesh.indices.push_back(c);
+                    mesh.indices.push_back(outerPrev);
+                    mesh.indices.push_back(isLeftTurn ? outerNext : c);
+                    mesh.indices.push_back(isLeftTurn ? c : outerNext);
                     continue;
                 }
 
                 const Point2 delta = sub(miterPoint, joinPoint);
                 const float miterLen = std::sqrt(dot(delta, delta));
+
+                const Point2 outerDir0 = normalize(sub(pOuter0, joinPoint));
+                const Point2 outerDir1 = normalize(sub(pOuter1, joinPoint));
+                const Point2 outerBisector = normalize(add(outerDir0, outerDir1));
+                if ((outerBisector.x != 0.0f || outerBisector.y != 0.0f) && dot(delta, outerBisector) < 0.0f)
+                {
+                    miterPoint = add(joinPoint, scale(outerBisector, miterLen));
+                }
+
                 const float maxMiter = halfWidth * style.miterLimit;
                 if (miterLen > maxMiter)
                 {
@@ -342,13 +353,13 @@ namespace nfx::graphics::gl
                     }
                     const std::uint16_t c = static_cast<std::uint16_t>(mesh.vertices.size());
                     mesh.vertices.push_back(makeVertex(joinPoint, style));
-                    mesh.indices.push_back(isLeftTurn ? prev.l1 : next.r0);
-                    mesh.indices.push_back(isLeftTurn ? next.l0 : prev.r1);
-                    mesh.indices.push_back(c);
+                    mesh.indices.push_back(outerPrev);
+                    mesh.indices.push_back(isLeftTurn ? outerNext : c);
+                    mesh.indices.push_back(isLeftTurn ? c : outerNext);
                     continue;
                 }
 
-                if (mesh.vertices.size() + 1 > kMaxU16IndexableVertices)
+                if (mesh.vertices.size() + 2 > kMaxU16IndexableVertices)
                 {
                     logError(
                         "StrokeTessellator",
@@ -360,9 +371,29 @@ namespace nfx::graphics::gl
 
                 const std::uint16_t m = static_cast<std::uint16_t>(mesh.vertices.size());
                 mesh.vertices.push_back(makeVertex(miterPoint, style));
-                mesh.indices.push_back(isLeftTurn ? prev.l1 : next.r0);
-                mesh.indices.push_back(isLeftTurn ? next.l0 : prev.r1);
-                mesh.indices.push_back(m);
+                const std::uint16_t c = static_cast<std::uint16_t>(mesh.vertices.size());
+                mesh.vertices.push_back(makeVertex(joinPoint, style));
+
+                if (isLeftTurn)
+                {
+                    mesh.indices.push_back(outerPrev);
+                    mesh.indices.push_back(m);
+                    mesh.indices.push_back(c);
+
+                    mesh.indices.push_back(c);
+                    mesh.indices.push_back(m);
+                    mesh.indices.push_back(outerNext);
+                }
+                else
+                {
+                    mesh.indices.push_back(outerPrev);
+                    mesh.indices.push_back(c);
+                    mesh.indices.push_back(m);
+
+                    mesh.indices.push_back(c);
+                    mesh.indices.push_back(outerNext);
+                    mesh.indices.push_back(m);
+                }
                 continue;
             }
 
@@ -373,7 +404,7 @@ namespace nfx::graphics::gl
                 const float theta = std::atan2(cross(start, end), dot(start, end));
                 const std::size_t arcSegments = roundSegments(theta);
 
-                if (mesh.vertices.size() + arcSegments + 1 > kMaxU16IndexableVertices)
+                if (mesh.vertices.size() + arcSegments > kMaxU16IndexableVertices)
                 {
                     logError(
                         "StrokeTessellator",
@@ -385,6 +416,9 @@ namespace nfx::graphics::gl
 
                 const std::uint16_t center = static_cast<std::uint16_t>(mesh.vertices.size());
                 mesh.vertices.push_back(makeVertex(joinPoint, style));
+
+                const std::uint16_t startBoundary = outerPrev;
+                const std::uint16_t endBoundary = outerNext;
 
                 const float angle0 = std::atan2(start.y, start.x);
                 const float angle1 = std::atan2(end.y, end.x);
@@ -398,8 +432,8 @@ namespace nfx::graphics::gl
                     deltaAngle -= 2.0f * std::numbers::pi_v<float>;
                 }
 
-                std::uint16_t prevArc = 0;
-                for (std::size_t s = 0; s <= arcSegments; ++s)
+                std::uint16_t prevArc = startBoundary;
+                for (std::size_t s = 1; s < arcSegments; ++s)
                 {
                     const float t = static_cast<float>(s) / static_cast<float>(arcSegments);
                     const float angle = angle0 + deltaAngle * t;
@@ -408,15 +442,16 @@ namespace nfx::graphics::gl
                     const std::uint16_t idx = static_cast<std::uint16_t>(mesh.vertices.size());
                     mesh.vertices.push_back(makeVertex(arcPoint, style));
 
-                    if (s > 0)
-                    {
-                        mesh.indices.push_back(center);
-                        mesh.indices.push_back(isLeftTurn ? prevArc : idx);
-                        mesh.indices.push_back(isLeftTurn ? idx : prevArc);
-                    }
+                    mesh.indices.push_back(center);
+                    mesh.indices.push_back(isLeftTurn ? prevArc : idx);
+                    mesh.indices.push_back(isLeftTurn ? idx : prevArc);
 
                     prevArc = idx;
                 }
+
+                mesh.indices.push_back(center);
+                mesh.indices.push_back(isLeftTurn ? prevArc : endBoundary);
+                mesh.indices.push_back(isLeftTurn ? endBoundary : prevArc);
                 continue;
             }
 
@@ -432,9 +467,138 @@ namespace nfx::graphics::gl
 
             const std::uint16_t c = static_cast<std::uint16_t>(mesh.vertices.size());
             mesh.vertices.push_back(makeVertex(joinPoint, style));
-            mesh.indices.push_back(isLeftTurn ? prev.l1 : next.r0);
-            mesh.indices.push_back(isLeftTurn ? next.l0 : prev.r1);
-            mesh.indices.push_back(c);
+            mesh.indices.push_back(outerPrev);
+            mesh.indices.push_back(isLeftTurn ? outerNext : c);
+            mesh.indices.push_back(isLeftTurn ? c : outerNext);
+        }
+
+        if (!polyline.closed)
+        {
+            const SegmentData& first = segments.front();
+            const SegmentData& last = segments.back();
+
+            if (style.cap == StrokeCap::Square)
+            {
+                if (mesh.vertices.size() + 4 > kMaxU16IndexableVertices)
+                {
+                    logError(
+                        "StrokeTessellator",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        "Polyline stroke exceeds uint16 index capacity during Square cap. Returning empty mesh");
+                    return {};
+                }
+
+                const Point2 startOffset = scale(first.dir, -halfWidth);
+                const Point2 startLeftExt = add(first.left0, startOffset);
+                const Point2 startRightExt = add(first.right0, startOffset);
+
+                const std::uint16_t startLeftExtIdx = static_cast<std::uint16_t>(mesh.vertices.size());
+                mesh.vertices.push_back(makeVertex(startLeftExt, style));
+                const std::uint16_t startRightExtIdx = static_cast<std::uint16_t>(mesh.vertices.size());
+                mesh.vertices.push_back(makeVertex(startRightExt, style));
+
+                mesh.indices.push_back(startLeftExtIdx);
+                mesh.indices.push_back(startRightExtIdx);
+                mesh.indices.push_back(first.l0);
+                mesh.indices.push_back(startRightExtIdx);
+                mesh.indices.push_back(first.r0);
+                mesh.indices.push_back(first.l0);
+
+                const Point2 endOffset = scale(last.dir, halfWidth);
+                const Point2 endLeftExt = add(last.left1, endOffset);
+                const Point2 endRightExt = add(last.right1, endOffset);
+
+                const std::uint16_t endLeftExtIdx = static_cast<std::uint16_t>(mesh.vertices.size());
+                mesh.vertices.push_back(makeVertex(endLeftExt, style));
+                const std::uint16_t endRightExtIdx = static_cast<std::uint16_t>(mesh.vertices.size());
+                mesh.vertices.push_back(makeVertex(endRightExt, style));
+
+                mesh.indices.push_back(last.l1);
+                mesh.indices.push_back(last.r1);
+                mesh.indices.push_back(endLeftExtIdx);
+                mesh.indices.push_back(last.r1);
+                mesh.indices.push_back(endRightExtIdx);
+                mesh.indices.push_back(endLeftExtIdx);
+            }
+            else if (style.cap == StrokeCap::Round)
+            {
+                const std::size_t arcSegments = roundSegments(std::numbers::pi_v<float>);
+                const std::size_t capVerticesPerEnd = arcSegments;
+                if (mesh.vertices.size() + capVerticesPerEnd * 2 > kMaxU16IndexableVertices)
+                {
+                    logError(
+                        "StrokeTessellator",
+                        internal::runtime::ErrorLevel::Warn,
+                        internal::runtime::ErrorKind::Recoverable,
+                        "Polyline stroke exceeds uint16 index capacity during Round cap. Returning empty mesh");
+                    return {};
+                }
+
+                auto emitRoundCap = [&](const Point2& center,
+                                        const Point2& capDir,
+                                        std::uint16_t startBoundary,
+                                        std::uint16_t endBoundary,
+                                        const char* overflowMsg) -> bool {
+                    if (mesh.vertices.size() + capVerticesPerEnd > kMaxU16IndexableVertices)
+                    {
+                        logError(
+                            "StrokeTessellator",
+                            internal::runtime::ErrorLevel::Warn,
+                            internal::runtime::ErrorKind::Recoverable,
+                            overflowMsg);
+                        return false;
+                    }
+
+                    const std::uint16_t centerIdx = static_cast<std::uint16_t>(mesh.vertices.size());
+                    mesh.vertices.push_back(makeVertex(center, style));
+
+                    const Point2 capLeft{ -capDir.y, capDir.x };
+                    std::uint16_t prev = startBoundary;
+                    for (std::size_t s = 1; s < arcSegments; ++s)
+                    {
+                        const float t = static_cast<float>(s) / static_cast<float>(arcSegments);
+                        const float angle = -0.5f * std::numbers::pi_v<float> + std::numbers::pi_v<float> * t;
+                        const Point2 arcPoint =
+                            add(center,
+                                add(scale(capDir, std::cos(angle) * halfWidth),
+                                    scale(capLeft, std::sin(angle) * halfWidth)));
+
+                        const std::uint16_t idx = static_cast<std::uint16_t>(mesh.vertices.size());
+                        mesh.vertices.push_back(makeVertex(arcPoint, style));
+
+                        mesh.indices.push_back(centerIdx);
+                        mesh.indices.push_back(prev);
+                        mesh.indices.push_back(idx);
+                        prev = idx;
+                    }
+
+                    mesh.indices.push_back(centerIdx);
+                    mesh.indices.push_back(prev);
+                    mesh.indices.push_back(endBoundary);
+                    return true;
+                };
+
+                if (!emitRoundCap(
+                        first.p0,
+                        scale(first.dir, -1.0f),
+                        first.l0,
+                        first.r0,
+                        "Polyline stroke exceeds uint16 index capacity during Round cap. Returning empty mesh"))
+                {
+                    return {};
+                }
+
+                if (!emitRoundCap(
+                        last.p1,
+                        last.dir,
+                        last.r1,
+                        last.l1,
+                        "Polyline stroke exceeds uint16 index capacity during Round cap. Returning empty mesh"))
+                {
+                    return {};
+                }
+            }
         }
 
         return mesh;

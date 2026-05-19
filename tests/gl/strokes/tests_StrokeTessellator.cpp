@@ -236,8 +236,8 @@ TEST_SUITE("StrokeTessellator")
         for (const auto& v : mesh.vertices)
         {
             // Miter join: analytical intersection of outer tangent lines offset by halfWidth=0.5
-            // For segments (0,0)->(1,0) and (1,0)->(2,1), the intersection point is ≈ (0.793, 0.5)
-            if (v.x == doctest::Approx(0.792893218f).epsilon(0.001f) && v.y == doctest::Approx(0.5f).epsilon(0.001f))
+            // For segments (0,0)->(1,0) and (1,0)->(2,1), the outer-side intersection point is ≈ (1.207, -0.5)
+            if (v.x == doctest::Approx(1.20710678f).epsilon(0.001f) && v.y == doctest::Approx(-0.5f).epsilon(0.001f))
             {
                 foundMiter = true;
                 break;
@@ -288,14 +288,130 @@ TEST_SUITE("StrokeTessellator")
         bool foundArcPoint = false;
         for (const auto& v : mesh.vertices)
         {
-            // Quarter-circle arc at 45°: joinPoint=(1,0), radius=0.5
-            // Expected arc point: (1 + 0.5*cos(45°), 0 + 0.5*sin(45°)) ≈ (1.3536, 0.3536)
-            if (v.x == doctest::Approx(0.6464466f).epsilon(0.05f) && v.y == doctest::Approx(0.3535534f).epsilon(0.05f))
+            // Quarter-circle arc at -45° on the outer side: joinPoint=(1,0), radius=0.5
+            // Expected arc point: (1 + 0.5*cos(45°), 0 - 0.5*sin(45°)) ≈ (1.3536, -0.3536)
+            if (v.x == doctest::Approx(1.3535534f).epsilon(0.05f) && v.y == doctest::Approx(-0.3535534f).epsilon(0.05f))
             {
                 foundArcPoint = true;
                 break;
             }
         }
         CHECK(foundArcPoint);
+    }
+
+    TEST_CASE("round join near U-turn emits half-circle arc")
+    {
+        const StrokeTessellator tess;
+        StrokeStyle style;
+        style.join = StrokeJoin::Round;
+
+        // Near U-turn at (1, 0): almost opposite direction with tiny positive Y to keep left-turn sign stable
+        const float points[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.001f };
+        const StrokePolyline2D polyline{ points, 3, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK(mesh.vertices.size() > 9);
+        CHECK(mesh.indices.size() > 15);
+
+        bool foundHalfCircleMid = false;
+        for (const auto& v : mesh.vertices)
+        {
+            // Midpoint of the expected near-semicircle arc (radius=0.5) is around (1.5, 0.0)
+            if (v.x == doctest::Approx(1.5f).epsilon(0.08f) && v.y == doctest::Approx(0.0f).epsilon(0.08f))
+            {
+                foundHalfCircleMid = true;
+                break;
+            }
+        }
+        CHECK(foundHalfCircleMid);
+    }
+
+    TEST_CASE("square caps extend stroke by half width at both ends")
+    {
+        const StrokeTessellator tess;
+        StrokeStyle style;
+        style.cap = StrokeCap::Square;
+
+        const float points[] = { 0.0f, 0.0f, 2.0f, 0.0f };
+        const StrokePolyline2D polyline{ points, 2, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK(mesh.vertices.size() == 8);
+        CHECK(mesh.indices.size() == 18);
+
+        bool hasStartLeftExt = false;
+        bool hasStartRightExt = false;
+        bool hasEndLeftExt = false;
+        bool hasEndRightExt = false;
+
+        for (const auto& v : mesh.vertices)
+        {
+            if (v.x == doctest::Approx(-0.5f).epsilon(0.001f) && v.y == doctest::Approx(0.5f).epsilon(0.001f))
+            {
+                hasStartLeftExt = true;
+            }
+            if (v.x == doctest::Approx(-0.5f).epsilon(0.001f) && v.y == doctest::Approx(-0.5f).epsilon(0.001f))
+            {
+                hasStartRightExt = true;
+            }
+            if (v.x == doctest::Approx(2.5f).epsilon(0.001f) && v.y == doctest::Approx(0.5f).epsilon(0.001f))
+            {
+                hasEndLeftExt = true;
+            }
+            if (v.x == doctest::Approx(2.5f).epsilon(0.001f) && v.y == doctest::Approx(-0.5f).epsilon(0.001f))
+            {
+                hasEndRightExt = true;
+            }
+        }
+
+        CHECK(hasStartLeftExt);
+        CHECK(hasStartRightExt);
+        CHECK(hasEndLeftExt);
+        CHECK(hasEndRightExt);
+    }
+
+    TEST_CASE("round caps add semicircle geometry at both endpoints")
+    {
+        const StrokeTessellator tess;
+        StrokeStyle style;
+        style.cap = StrokeCap::Round;
+
+        const float points[] = { 0.0f, 0.0f, 2.0f, 0.0f };
+        const StrokePolyline2D polyline{ points, 2, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK(mesh.vertices.size() > 22);
+        CHECK(mesh.indices.size() > 60);
+        CHECK(mesh.indices.size() == (mesh.vertices.size() - 2) * 3);
+
+        bool hasStartCenter = false;
+        bool hasEndCenter = false;
+        bool extendsBeforeStart = false;
+        bool extendsAfterEnd = false;
+
+        for (const auto& v : mesh.vertices)
+        {
+            if (v.x == doctest::Approx(0.0f).epsilon(0.001f) && v.y == doctest::Approx(0.0f).epsilon(0.001f))
+            {
+                hasStartCenter = true;
+            }
+            if (v.x == doctest::Approx(2.0f).epsilon(0.001f) && v.y == doctest::Approx(0.0f).epsilon(0.001f))
+            {
+                hasEndCenter = true;
+            }
+            if (v.x < -0.1f)
+            {
+                extendsBeforeStart = true;
+            }
+            if (v.x > 2.1f)
+            {
+                extendsAfterEnd = true;
+            }
+        }
+
+        CHECK(hasStartCenter);
+        CHECK(hasEndCenter);
+        CHECK(extendsBeforeStart);
+        CHECK(extendsAfterEnd);
     }
 }
