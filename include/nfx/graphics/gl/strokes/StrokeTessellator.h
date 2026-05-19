@@ -26,7 +26,7 @@ namespace nfx::graphics::gl
          * \brief Tessellates one polyline stroke into a CPU-side triangle mesh.
          * \param polyline Polyline input.
          * \param style Stroke style.
-         * \return Tessellated mesh. May be empty on invalid input.
+         * \return Tessellated mesh. Returns empty on invalid input or when the mesh exceeds the uint16 index range.
          */
         [[nodiscard]] StrokeMesh2D tessellate(const StrokePolyline2D& polyline, const StrokeStyle& style) const;
     };
