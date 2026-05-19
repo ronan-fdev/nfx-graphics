@@ -27,6 +27,7 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/pipeline/passes/PresentPass.cpp
     src/gl/pipeline/passes/SpotShadowPass.cpp
     src/gl/pipeline/passes/SkyboxPass.cpp
+    src/gl/pipeline/passes/StrokePass.cpp
     src/gl/pipeline/passes/TextPass.cpp
     src/gl/pipeline/passes/TransparentPass.cpp
     src/gl/pipeline/passes/WboitPass.cpp

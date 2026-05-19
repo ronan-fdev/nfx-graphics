@@ -14,6 +14,7 @@
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"
+#include "nfx/graphics/gl/pipeline/passes/StrokePass.h"
 #include "nfx/graphics/gl/pipeline/passes/TextPass.h"
 #include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
@@ -37,6 +38,7 @@ namespace nfx::graphics::gl
         {
             Shadows = 0,
             Opaque,
+            Stroke3D,
             Environment,
             Transparent,
             Overlays,
@@ -63,6 +65,10 @@ namespace nfx::graphics::gl
                 if (dynamic_cast<const GeometryPass*>(&pass))
                 {
                     return PassStage::Opaque;
+                }
+                if (dynamic_cast<const StrokePass*>(&pass))
+                {
+                    return PassStage::Stroke3D;
                 }
                 if (dynamic_cast<const SkyboxPass*>(&pass) || dynamic_cast<const EnvironmentPass*>(&pass))
                 {

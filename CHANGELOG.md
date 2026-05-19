@@ -76,6 +76,8 @@
 
 - `TextPass`: screen-space text overlay pass with text item lifecycle and target framebuffer wiring
 
+- `StrokePass`: world-space 3D stroke rendering pass with CPU tessellation intake (`addStroke`), runtime item lifecycle (`remove`, `clear`), and initial GL runtime smoke coverage
+
 - `RenderCommand`: draw command: mesh + material handles, transform, primitive topology, instance count and sort key
 - `RenderQueue`: per-frame draw command queue with sortKey assignment, stable sort by key, submission order preservation and clear
 

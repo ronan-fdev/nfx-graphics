@@ -12,10 +12,8 @@
 #include <nfx/graphics/gl/resources/TextureCubeCache.h>
 
 #include "../test_helpers/GLContextFixture.h"
+#include "../test_helpers/HeadlessDetection.h"
 #include "../../gl/test_helpers/StderrCapture.h"
-
-#include <cstdlib>
-#include <cstring>
 
 #ifndef NFX_GRAPHICS_ENABLE_GL_CONTEXT_TESTS
     #error "GL runtime tests require NFX_GRAPHICS_ENABLE_GL_CONTEXT_TESTS"
@@ -35,31 +33,6 @@ namespace
         nfx::graphics::gl::RenderResources resources{ meshes, materials, shaders, textures2D, texturesCube, samplers };
     };
 
-    [[nodiscard]] bool isX11HeadlessSoftwareSession() noexcept
-    {
-#ifdef __linux__
-        const char* display = std::getenv("DISPLAY");
-        const char* software = std::getenv("LIBGL_ALWAYS_SOFTWARE");
-
-        // On Xvfb + Mesa software, PresentPass can fail with MIT-SHM BadMatch.
-        // We keep Present enabled elsewhere and bypass it only in this headless setup.
-        return display != nullptr && display[0] != '\0' && software != nullptr && std::strcmp(software, "1") == 0;
-#else
-        return false;
-#endif
-    }
-
-    void disablePresentPassWhenX11Headless(nfx::graphics::gl::ForwardRenderPath& path)
-    {
-        if (!isX11HeadlessSoftwareSession())
-        {
-            return;
-        }
-
-        auto* present = path.renderer().pass("Present");
-        REQUIRE(present != nullptr);
-        present->setEnabled(false);
-    }
 } // namespace
 
 TEST_SUITE("ForwardRenderPathRuntime")
@@ -100,7 +73,7 @@ TEST_SUITE("ForwardRenderPathRuntime")
         ResourceFixture resources;
         nfx::graphics::gl::ForwardRenderPath path;
         path.initialize(resources.resources);
-        disablePresentPassWhenX11Headless(path);
+        nfx::tests::disablePresentPassWhenX11Headless(path);
 
         nfx::graphics::gl::FrameData frame;
         const nfx::graphics::gl::ViewportRect viewport{ 0, 0, 640, 360 };
@@ -123,7 +96,7 @@ TEST_SUITE("ForwardRenderPathRuntime")
         ResourceFixture resources;
         nfx::graphics::gl::ForwardRenderPath path;
         path.initialize(resources.resources);
-        disablePresentPassWhenX11Headless(path);
+        nfx::tests::disablePresentPassWhenX11Headless(path);
 
         nfx::graphics::gl::FrameData frame;
         path.render(frame, 0, -42);
@@ -143,7 +116,7 @@ TEST_SUITE("ForwardRenderPathRuntime")
         ResourceFixture resources;
         nfx::graphics::gl::ForwardRenderPath path;
         path.initialize(resources.resources);
-        disablePresentPassWhenX11Headless(path);
+        nfx::tests::disablePresentPassWhenX11Headless(path);
 
         nfx::graphics::gl::FrameData frame;
         path.render(frame, 320, 200);

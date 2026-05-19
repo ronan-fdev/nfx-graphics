@@ -9,6 +9,7 @@
 #include "nfx/graphics/gl/pipeline/passes/Polygon2DPass.h"
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
+#include "nfx/graphics/gl/pipeline/passes/StrokePass.h"
 #include "nfx/graphics/gl/pipeline/passes/TextPass.h"
 #include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/WboitPass.h"
@@ -111,6 +112,19 @@ namespace nfx::graphics::gl
         m_outlineColor[1] = color[1];
         m_outlineColor[2] = color[2];
         m_outlineThickness = thickness;
+    }
+
+    StrokePass* ForwardRenderPath::addStrokePass(std::string name)
+    {
+        if (isReservedName(name) || m_renderer.pass(name) != nullptr)
+        {
+            reportDuplicateOrReservedPassName("addStrokePass", name);
+            assert(false && "ForwardRenderPath::addStrokePass: duplicate or reserved pass name");
+            return nullptr;
+        }
+
+        m_strokePass = m_renderer.createPass<StrokePass>(std::move(name));
+        return m_strokePass;
     }
 
     void ForwardRenderPath::initialize(RenderResources& resources)
@@ -295,6 +309,11 @@ namespace nfx::graphics::gl
             m_environmentPass->setTargetTextures(color, depth);
         }
 
+        if (m_strokePass)
+        {
+            m_strokePass->setTargetTextures(color, depth);
+        }
+
         if (m_transparentPass)
         {
             // WboitPass and TransparentPass have different wiring APIs
@@ -361,7 +380,6 @@ namespace nfx::graphics::gl
                 poly2d->setTargetTextures(color, depth);
                 wiredOverlay = true;
             }
-
             if (!wiredOverlay)
             {
                 char msg[192];

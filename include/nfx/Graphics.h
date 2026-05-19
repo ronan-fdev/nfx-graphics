@@ -41,6 +41,7 @@
 #include "nfx/graphics/gl/pipeline/passes/PresentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/RenderPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SkyboxPass.h"
+#include "nfx/graphics/gl/pipeline/passes/StrokePass.h"
 #include "nfx/graphics/gl/pipeline/passes/TextPass.h"
 #include "nfx/graphics/gl/pipeline/passes/SpotShadowPass.h"
 #include "nfx/graphics/gl/pipeline/passes/TransparentPass.h"

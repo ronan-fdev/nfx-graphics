@@ -20,6 +20,7 @@ namespace nfx::graphics::gl
     class PresentPass;
     class RenderPass;
     class SkyboxPass;
+    class StrokePass;
 
     /**
      * \brief Carries the color and depth texture handles that connect render passes.
@@ -54,6 +55,7 @@ namespace nfx::graphics::gl
      *       ->setResolution(tex2dCache, 2048, 2048);
      *
      *   path.setSkybox(cubemapCache, skyboxHandle);
+     *   path.addStrokePass("Stroke");
      *   path.enableTransparency<WboitPass>();
      *
      *   path.addOverlay<GridPass>("Grid")
@@ -141,6 +143,16 @@ namespace nfx::graphics::gl
                 return m_renderer.createPass<TTransparent>("Transparent");
             };
         }
+
+        /**
+         * \brief Adds a world-space 3D stroke pass and returns a non-owning pointer.
+         *
+         * Wired to the GeometryPass color/depth output automatically.
+         *
+         * \param name Human-readable pass name. Must be unique across all registered passes.
+         * \return Non-owning pointer to the created pass, or nullptr when the name is invalid.
+         */
+        StrokePass* addStrokePass(std::string name);
 
         /**
          * \brief Adds an overlay pass (GridPass, AxesPass, custom...) and returns a non-owning pointer.
@@ -322,6 +334,7 @@ namespace nfx::graphics::gl
         // Optional passes
         SkyboxPass* m_skyboxPass = nullptr;
         EnvironmentPass* m_environmentPass = nullptr;
+        StrokePass* m_strokePass = nullptr;
         RenderPass* m_transparentPass = nullptr;
         OutlinePass* m_outlinePass = nullptr;
         std::vector<RenderPass*> m_overlayPasses;

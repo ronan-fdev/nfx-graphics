@@ -4,6 +4,7 @@
 #include <nfx/graphics/gl/pipeline/Renderer.h>
 #include <nfx/graphics/gl/pipeline/frame/RenderResources.h>
 #include <nfx/graphics/gl/pipeline/passes/RenderPass.h>
+#include <nfx/graphics/gl/pipeline/passes/StrokePass.h>
 #include <nfx/graphics/gl/resources/MaterialCache.h>
 #include <nfx/graphics/gl/resources/MeshCache.h>
 #include <nfx/graphics/gl/resources/SamplerCache.h>
@@ -12,7 +13,10 @@
 #include <nfx/graphics/gl/resources/TextureCubeCache.h>
 
 #include "../test_helpers/GLContextFixture.h"
+#include "../test_helpers/HeadlessDetection.h"
 #include "../../gl/test_helpers/StderrCapture.h"
+
+#include <utility>
 
 #ifndef NFX_GRAPHICS_ENABLE_GL_CONTEXT_TESTS
     #error "GL runtime tests require NFX_GRAPHICS_ENABLE_GL_CONTEXT_TESTS"
@@ -96,6 +100,38 @@ namespace
             pos += needle.size();
         }
         return count;
+    }
+
+    [[nodiscard]] std::pair<nfx::graphics::gl::Texture2DHandle, nfx::graphics::gl::Texture2DHandle>
+    makeOffscreenTargets(ResourceFixture& resources, int width = 256, int height = 256)
+    {
+        nfx::graphics::gl::Texture2D::Params colorParams;
+        colorParams.generateMipmaps = false;
+        colorParams.minFilter = nfx::graphics::gl::Texture2D::Filter::Linear;
+        colorParams.magFilter = nfx::graphics::gl::Texture2D::Filter::Linear;
+        colorParams.internalFormat = nfx::graphics::gl::Texture2D::InternalFormat::RGBA8;
+
+        nfx::graphics::gl::Texture2D::Params depthParams;
+        depthParams.generateMipmaps = false;
+        depthParams.minFilter = nfx::graphics::gl::Texture2D::Filter::Nearest;
+        depthParams.magFilter = nfx::graphics::gl::Texture2D::Filter::Nearest;
+        depthParams.internalFormat = nfx::graphics::gl::Texture2D::InternalFormat::Depth24;
+
+        auto color = nfx::graphics::gl::Texture2D::allocate(width, height, colorParams);
+        auto depth = nfx::graphics::gl::Texture2D::allocate(width, height, depthParams);
+
+        return { resources.textures2D.add(std::move(color)), resources.textures2D.add(std::move(depth)) };
+    }
+
+    void setStrokePassTargetWhenX11Headless(nfx::graphics::gl::StrokePass& pass, ResourceFixture& resources)
+    {
+        if (!nfx::tests::isX11HeadlessSoftwareSession())
+        {
+            return;
+        }
+
+        const auto [targetColor, targetDepth] = makeOffscreenTargets(resources);
+        pass.setTargetTextures(targetColor, targetDepth);
     }
 } // namespace
 
@@ -232,5 +268,186 @@ TEST_SUITE("PipelineRuntime")
         const std::string output = capture.str();
         CHECK(countSubstringOccurrences(output, warningMsg) == 1);
         CHECK(renderer.stats().totalFrames == 2);
+    }
+
+    TEST_CASE("StrokePass emits at least one draw call under real GL context")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        auto* pass = renderer.createPass<nfx::graphics::gl::StrokePass>("stroke-pass");
+        REQUIRE(pass != nullptr);
+        setStrokePassTargetWhenX11Headless(*pass, resources);
+
+        const float points[] = { 0.0f, 0.0f, 64.0f, 0.0f, 64.0f, 64.0f };
+        nfx::graphics::gl::StrokeItemDesc2D stroke;
+        stroke.xy = std::span<const float>{ points, 6 };
+        stroke.pointCount = 3;
+        stroke.closed = false;
+        stroke.style.join = nfx::graphics::gl::StrokeJoin::Round;
+        stroke.style.cap = nfx::graphics::gl::StrokeCap::Round;
+        const auto handle = pass->addStroke(stroke);
+        REQUIRE(handle.isValid());
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+        renderer.setViewport(nfx::graphics::gl::ViewportRect{ 0, 0, 256, 256 });
+        renderer.render();
+
+        CHECK(renderer.frameStats().passesExecuted >= 1);
+        CHECK(renderer.frameStats().drawCalls >= 1);
+    }
+
+    TEST_CASE("StrokePass applies viewport origin under real GL context")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        auto* pass = renderer.createPass<nfx::graphics::gl::StrokePass>("stroke-pass-viewport-origin");
+        REQUIRE(pass != nullptr);
+        setStrokePassTargetWhenX11Headless(*pass, resources);
+
+        const float points[] = { 0.0f, 0.0f, 64.0f, 0.0f, 64.0f, 64.0f };
+        nfx::graphics::gl::StrokeItemDesc2D stroke;
+        stroke.xy = std::span<const float>{ points, 6 };
+        stroke.pointCount = 3;
+        stroke.closed = false;
+        const auto handle = pass->addStroke(stroke);
+        REQUIRE(handle.isValid());
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+        const nfx::graphics::gl::ViewportRect viewport{ 13, 21, 192, 144 };
+        renderer.setViewport(viewport);
+        renderer.render();
+
+        GLint glViewportState[4] = { 0, 0, 0, 0 };
+        const auto& gl = nfx::graphics::gl::Context::current().functions();
+        gl.glGetIntegerv(GL_VIEWPORT, glViewportState);
+
+        CHECK(glViewportState[0] == viewport.x);
+        CHECK(glViewportState[1] == viewport.y);
+        CHECK(glViewportState[2] == viewport.width);
+        CHECK(glViewportState[3] == viewport.height);
+    }
+
+    TEST_CASE("StrokePass with no valid stroke emits zero draw calls under real GL context")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        auto* pass = renderer.createPass<nfx::graphics::gl::StrokePass>("stroke-pass-empty");
+        REQUIRE(pass != nullptr);
+        setStrokePassTargetWhenX11Headless(*pass, resources);
+
+        const float invalidPoints[] = { 0.0f, 0.0f };
+        nfx::graphics::gl::StrokeItemDesc2D invalidStroke;
+        invalidStroke.xy = std::span<const float>{ invalidPoints, 2 };
+        invalidStroke.pointCount = 1;
+        invalidStroke.closed = false;
+
+        const auto handle = pass->addStroke(invalidStroke);
+        CHECK_FALSE(handle.isValid());
+        CHECK(pass->strokeCount() == 0);
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+        renderer.setViewport(nfx::graphics::gl::ViewportRect{ 0, 0, 256, 256 });
+        renderer.render();
+
+        CHECK(renderer.frameStats().passesExecuted >= 1);
+        CHECK(renderer.frameStats().drawCalls == 0);
+        CHECK(pass->runtimeStats().drawCalls == 0);
+    }
+
+    TEST_CASE("StrokePass draw count is stable across frames under real GL context")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        auto* pass = renderer.createPass<nfx::graphics::gl::StrokePass>("stroke-pass-stable");
+        REQUIRE(pass != nullptr);
+        setStrokePassTargetWhenX11Headless(*pass, resources);
+
+        const float points[] = { 0.0f, 0.0f, 64.0f, 0.0f, 64.0f, 64.0f };
+        nfx::graphics::gl::StrokeItemDesc2D stroke;
+        stroke.xy = std::span<const float>{ points, 6 };
+        stroke.pointCount = 3;
+        stroke.closed = false;
+        const auto handle = pass->addStroke(stroke);
+        REQUIRE(handle.isValid());
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+        renderer.setViewport(nfx::graphics::gl::ViewportRect{ 0, 0, 256, 256 });
+
+        renderer.render();
+        CHECK(pass->runtimeStats().drawCalls == 1);
+
+        renderer.render();
+        CHECK(pass->runtimeStats().drawCalls == 1);
+
+        renderer.render();
+        CHECK(pass->runtimeStats().drawCalls == 1);
+    }
+
+    TEST_CASE("StrokePass remove reduces draw count under real GL context")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        auto* pass = renderer.createPass<nfx::graphics::gl::StrokePass>("stroke-pass-remove");
+        REQUIRE(pass != nullptr);
+        setStrokePassTargetWhenX11Headless(*pass, resources);
+
+        const float points[] = { 0.0f, 0.0f, 64.0f, 0.0f, 64.0f, 64.0f };
+        nfx::graphics::gl::StrokeItemDesc2D stroke;
+        stroke.xy = std::span<const float>{ points, 6 };
+        stroke.pointCount = 3;
+        stroke.closed = false;
+
+        const auto h1 = pass->addStroke(stroke);
+        const auto h2 = pass->addStroke(stroke);
+        REQUIRE(h1.isValid());
+        REQUIRE(h2.isValid());
+        CHECK(pass->strokeCount() == 2);
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+        renderer.setViewport(nfx::graphics::gl::ViewportRect{ 0, 0, 256, 256 });
+
+        renderer.render();
+        CHECK(pass->runtimeStats().drawCalls == 2);
+
+        pass->remove(h1);
+        CHECK(pass->strokeCount() == 1);
+
+        renderer.render();
+        CHECK(pass->runtimeStats().drawCalls == 1);
     }
 }
