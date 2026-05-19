@@ -13,6 +13,9 @@ add_executable(nfx-graphics-gl-tests
     core/tests_VertexLayout.cpp
 
     material/tests_Material.cpp
+    mesh/tests_Mesh.cpp
+    mesh/tests_MeshData.cpp
+    mesh/tests_Primitive.cpp
 
     pipeline/tests_Bindings.cpp
     pipeline/tests_CullingUtils.cpp
@@ -31,9 +34,6 @@ add_executable(nfx-graphics-gl-tests
     pipeline/tests_ViewportRect.cpp
     pipeline/tests_ViewportValidation.cpp
 
-    mesh/tests_Mesh.cpp
-    mesh/tests_MeshData.cpp
-    mesh/tests_Primitive.cpp
 
     resources/tests_ResourceCache.cpp
 
@@ -41,6 +41,8 @@ add_executable(nfx-graphics-gl-tests
     scene/tests_OrbitCamera.cpp
 
     shaders/tests_ShaderFeatures.cpp
+
+    strokes/tests_StrokeTessellator.cpp
 
     text/tests_TextTypes.cpp
 )

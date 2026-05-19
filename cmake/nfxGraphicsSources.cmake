@@ -10,15 +10,10 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/material/Pbr.cpp
     src/gl/material/Unlit.cpp
     src/gl/material/Material.cpp
-    src/gl/resources/FontCache.cpp
-    src/gl/resources/MaterialCache.cpp
-    src/gl/resources/MeshCache.cpp
-    src/gl/resources/SamplerCache.cpp
-    src/gl/resources/ShaderCache.cpp
-    src/gl/resources/Texture2DCache.cpp
-    src/gl/resources/TextureCubeCache.cpp
+
     src/gl/mesh/Mesh.cpp
     src/gl/mesh/Primitive.cpp
+
     src/gl/pipeline/passes/AxesPass.cpp
     src/gl/pipeline/passes/DirectionalShadowPass.cpp
     src/gl/pipeline/passes/EnvironmentPass.cpp
@@ -39,4 +34,14 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/pipeline/Renderer.cpp
     src/gl/pipeline/RenderState.cpp
     src/gl/pipeline/RenderTarget.cpp
+
+    src/gl/resources/FontCache.cpp
+    src/gl/resources/MaterialCache.cpp
+    src/gl/resources/MeshCache.cpp
+    src/gl/resources/SamplerCache.cpp
+    src/gl/resources/ShaderCache.cpp
+    src/gl/resources/Texture2DCache.cpp
+    src/gl/resources/TextureCubeCache.cpp
+
+    src/gl/strokes/StrokeTessellator.cpp
 )

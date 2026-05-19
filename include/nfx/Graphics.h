@@ -76,6 +76,14 @@
 #include "nfx/graphics/gl/scene/lights/PunctualLight.h"
 #include "nfx/graphics/gl/scene/lights/SpotLight.h"
 
+// Strokes
+#include "nfx/graphics/gl/strokes/StrokeTessellator.h"
+#include "nfx/graphics/gl/strokes/StrokeTypes.h"
+
+// Text
+#include "nfx/graphics/gl/text/Font.h"
+#include "nfx/graphics/gl/text/TextTypes.h"
+
 // Math
 #include "nfx/graphics/math/geometry/Bounds.h"
 #include "nfx/graphics/math/geometry/Frustum.h"

@@ -116,6 +116,16 @@
 - `PointLight`: descriptor with raw/typed `create()` and raw/typed `toGpuData()` overloads for SSBO packing
 - `SpotLight`: descriptor with raw/typed `create()` and raw/typed `toGpuData()` overloads for SSBO packing
 
+##### Strokes
+
+- `StrokeTypes`: CPU-side stroke input/output types (`StrokeJoin`, `StrokeCap`, `StrokeStyle`, `StrokePolyline2D`, `StrokeVertex2D`, `StrokeMesh2D`)
+- `StrokeTessellator`: CPU-side stroke tessellator class with validation and tessellation methods (`isValidStrokeStyle`, `tessellate`)
+
+##### Text
+
+- `Font`: runtime font resource (`atlas`, global `FontMetrics`, glyph map, kerning map) with glyph lookup and kerning fallback helpers
+- `TextTypes`: text runtime payloads (`FontMetrics`, `Glyph`, `GlyphPlacement`, `TextStyle`) used by `TextPass` and font resources
+
 #### Math library
 
 - `nfx::graphics::math` static library: Vec3, Mat4, and geometry helpers
@@ -186,6 +196,10 @@
 - `gl/scene/tests_OrbitCamera`: validates std140 GpuData layout and size, viewProj correctness, and orbit state geometry
 
 - `gl/shaders/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
+
+- `gl/strokes/tests_StrokeTessellator`: validates default stroke style invariants, invalid style rejection, and empty-mesh fallback on invalid polyline input
+
+- `gl/text/tests_TextTypes`: validates default text-type invariants (`FontHandle`, `TextItemHandle`, `FontMetrics`, `Glyph`) and missing-kerning fallback behavior
 
 - `gl-runtime/core/tests_CoreRuntimeSmoke`: runtime smoke coverage for core GL resources (textures, renderbuffer, sampler, shader program)
 - `gl-runtime/core/tests_GLContextFixture`: cross-platform OpenGL context initialization and version validation

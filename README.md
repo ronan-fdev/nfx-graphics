@@ -64,9 +64,11 @@ nfx-graphics/
 │       │   │   ├── RenderState.h         # Pipeline state descriptor
 │       │   │   └── RenderTarget.h        # High-level framebuffer wrapper
 │       │   ├── resources/                # Resource caches (meshes, shaders, textures, fonts)
-│       │   └── scene/
-│       │       ├── cameras/              # Camera types and orbit camera
-│       │       └── lights/               # Camera Light descriptors
+│       │   ├── scene/
+│       │   │   ├── cameras/              # Camera types and orbit camera
+│       │   │   └── lights/               # Camera Light descriptors
+│       │   ├── strokes/                  # CPU stroke tessellation with miter/round/bevel joins
+│       │   └── text/                     # Font and text rendering with TextPass overlay
 │       ├── math/                         # Matrices, vectors, quaternions, geometry
 │       └── EmbeddedResource.h            # Runtime access to resources embedded at build time
 ├── resources/                            # Pipeline GLSL sources
