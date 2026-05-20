@@ -238,6 +238,8 @@
 - `basic-model-import-material-maps`: embedded OBJ model import with diffuse, normal, and specular texture maps
 - `basic-tessellation`: dynamic triangle patch tessellation sample using vertex + tessellation + fragment shaders
 
+- `curves-rendering-stroke-showcase`: world-space 3D stroke showcase with joins, caps, closed convex/concave shapes, and on-screen labels
+
 - `direct-rendering-geometry-pass`: GeometryPass pipeline sample with 3 submitted commands, per-frame FrameData upload, and orbit camera controls
 - `direct-rendering-viewport-overlays`: three-pass pipeline sample (GeometryPass + GridPass + AxesPass) with infinite grid and world-axes overlay
 - `direct-rendering-transparent-pass`: two-pass pipeline sample (GeometryPass + TransparentPass) with back-to-front sorted alpha-blended spheres

@@ -41,6 +41,7 @@ target_link_libraries(nfx-sample-common
 )
 
 add_subdirectory(basic)
+add_subdirectory(curves-rendering)
 add_subdirectory(direct-rendering)
 add_subdirectory(forward-rendering)
 add_subdirectory(text-rendering)
