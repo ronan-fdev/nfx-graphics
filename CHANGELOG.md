@@ -130,11 +130,12 @@
 
 #### Math library
 
-- `nfx::graphics::math` static library: Vec3, Mat4, and geometry helpers
+- `nfx::graphics::math` static library: Vec2, Vec3, Quat, Mat3, Mat4, and geometry helpers
 
 - `Mat3`: helpers for 3x3 identity/scale/rotation and inverse-transpose normal matrix computation
 - `Mat4`: helpers for 4x4 matrix transforms, projection, view, and multiplication
 - `Quat`: quaternion type with angle-axis construction, multiplication, normalization, and vector rotation
+- `Vec2`: helpers for length, dot product, 2D cross product (pseudo-z scalar), normalization, and subtraction
 - `Vec3`: helpers for length, dot/cross products, normalization, and subtraction
 
 - `Bounds`: AABB and Sphere bounding volume types
@@ -215,6 +216,7 @@
 - `math/tests_Mat3`: validates mat3 identity/scale/rotation helpers and inverse-transpose normal-matrix behavior
 - `math/tests_Mat4`: validates matrix identity/transform/projection/view helpers and matrix multiplication behavior
 - `math/tests_Quat`: quaternion construction/normalization/composition/vector-rotation checks
+- `math/tests_Vec2`: validates length, dot product, 2D cross product sign and anti-commutativity, normalization, and vector subtraction helpers
 - `math/tests_Vec3`: validates length, dot/cross, normalization, and vector subtraction helpers
 
 #### Samples

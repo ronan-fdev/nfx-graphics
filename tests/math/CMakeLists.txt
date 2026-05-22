@@ -9,6 +9,7 @@ add_executable(nfx-math-tests
     tests_Mat3.cpp
     tests_Mat4.cpp
     tests_Quat.cpp
+    tests_Vec2.cpp
     tests_Vec3.cpp
 )
 
