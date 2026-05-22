@@ -2,6 +2,7 @@
 
 #include <nfx/Graphics.h>
 
+#include <cmath>
 #include <vector>
 
 using namespace nfx::graphics::gl;
@@ -427,5 +428,46 @@ TEST_SUITE("StrokeTessellator2D")
         CHECK(hasEndCenter);
         CHECK(extendsBeforeStart);
         CHECK(extendsAfterEnd);
+    }
+
+    TEST_CASE("NaN coordinates return empty mesh safely")
+    {
+        const StrokeTessellator2D tess;
+        const StrokeStyle style;
+
+        const float nan = std::numeric_limits<float>::quiet_NaN();
+        const float points[] = { 0.0f, 0.0f, nan, 0.0f };
+        const StrokePolyline2D polyline{ points, 2, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK(mesh.vertices.empty());
+        CHECK(mesh.indices.empty());
+    }
+
+    TEST_CASE("Inf coordinates return empty mesh safely")
+    {
+        const StrokeTessellator2D tess;
+        const StrokeStyle style;
+
+        const float inf = std::numeric_limits<float>::infinity();
+        const float points[] = { 0.0f, 0.0f, inf, 0.0f };
+        const StrokePolyline2D polyline{ points, 2, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK(mesh.vertices.empty());
+        CHECK(mesh.indices.empty());
+    }
+
+    TEST_CASE("zero-length polyline (all identical points) returns empty mesh")
+    {
+        const StrokeTessellator2D tess;
+        const StrokeStyle style;
+
+        const float points[] = { 1.5f, 2.5f, 1.5f, 2.5f, 1.5f, 2.5f };
+        const StrokePolyline2D polyline{ points, 3, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK(mesh.vertices.empty());
+        CHECK(mesh.indices.empty());
     }
 }

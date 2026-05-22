@@ -28,6 +28,11 @@ namespace nfx::graphics::gl
             return nearlyEqual(a.x, b.x) && nearlyEqual(a.y, b.y);
         }
 
+        [[nodiscard]] bool isFinitePoint(const math::Vec2& p) noexcept
+        {
+            return std::isfinite(p.x) && std::isfinite(p.y);
+        }
+
         [[nodiscard]] std::uint8_t toU8(float v) noexcept
         {
             const float clamped = std::clamp(v, 0.0f, 1.0f);
@@ -120,6 +125,10 @@ namespace nfx::graphics::gl
         for (std::size_t i = 0; i < polyline.pointCount; ++i)
         {
             const math::Vec2 p{ polyline.xy[i * 2], polyline.xy[i * 2 + 1] };
+            if (!isFinitePoint(p))
+            {
+                return mesh;
+            }
             if (!points.empty() && samePoint(points.back(), p))
             {
                 continue;
