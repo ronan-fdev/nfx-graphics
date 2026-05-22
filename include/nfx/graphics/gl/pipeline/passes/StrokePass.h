@@ -8,7 +8,7 @@
 #include "nfx/graphics/gl/core/buffers/Buffer.h"
 #include "nfx/graphics/gl/core/buffers/VertexArray.h"
 #include "nfx/graphics/gl/core/shaders/ShaderProgram.h"
-#include "nfx/graphics/gl/strokes/StrokeTessellator.h"
+#include "nfx/graphics/gl/strokes/StrokeTessellator2D.h"
 #include "nfx/graphics/math/Mat4.h"
 #include "RenderPass.h"
 
@@ -110,7 +110,7 @@ namespace nfx::graphics::gl
         Buffer m_vbo{ Buffer::Target::VertexAttributesArray };
         VertexArray m_vao;
 
-        StrokeTessellator m_tessellator;
+        StrokeTessellator2D m_tessellator;
         std::vector<StrokeItem> m_items;
         std::uint64_t m_nextId = 1;
     };

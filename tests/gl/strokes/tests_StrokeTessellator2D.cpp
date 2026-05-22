@@ -6,11 +6,11 @@
 
 using namespace nfx::graphics::gl;
 
-TEST_SUITE("StrokeTessellator")
+TEST_SUITE("StrokeTessellator2D")
 {
     TEST_CASE("stroke style defaults are valid")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
         CHECK(style.width == doctest::Approx(1.0f));
         CHECK(style.join == StrokeJoin::Miter);
@@ -25,7 +25,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("invalid stroke style is rejected")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.width = 0.0f;
         CHECK_FALSE(tess.isValidStrokeStyle(style));
@@ -37,7 +37,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("invalid polyline returns empty mesh")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
 
         CHECK(tess.tessellate({}, style).vertices.empty());
@@ -52,7 +52,21 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("sub-unit positive width tessellates")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
+        StrokeStyle style;
+        style.width = 0.5f;
+
+        const float points[] = { 0.0f, 0.0f, 2.0f, 0.0f };
+        const StrokePolyline2D polyline{ points, 2, false };
+
+        const StrokeMesh2D mesh = tess.tessellate(polyline, style);
+        CHECK_FALSE(mesh.vertices.empty());
+        CHECK_FALSE(mesh.indices.empty());
+    }
+
+    TEST_CASE("sub-unit positive width tessellates")
+    {
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.width = 0.5f;
 
@@ -66,7 +80,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("sub-unit positive width tessellates for closed polyline")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.width = 0.5f;
 
@@ -81,7 +95,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("sub-unit positive width tessellates with round join and cap")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.width = 0.5f;
         style.join = StrokeJoin::Round;
@@ -97,7 +111,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("single segment tessellates to one quad")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
         const float points[] = { 0.0f, 0.0f, 2.0f, 0.0f };
         const StrokePolyline2D polyline{ points, 2, false };
@@ -118,7 +132,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("two aligned segments tessellate without bevel join")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
         const float points[] = { 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f };
         const StrokePolyline2D polyline{ points, 3, false };
@@ -130,7 +144,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("right angle polyline adds one bevel join triangle")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.join = StrokeJoin::Bevel;
         const float points[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f };
@@ -143,7 +157,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("right turn join keeps front-facing winding")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.join = StrokeJoin::Bevel;
 
@@ -175,7 +189,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("closed polyline creates joins at all corners")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
         const float points[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f };
         const StrokePolyline2D polyline{ points, 3, true };
@@ -188,7 +202,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("coincident points are skipped")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
         const float points[] = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
         const StrokePolyline2D polyline{ points, 3, false };
@@ -200,7 +214,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("overflow of uint16 vertex budget returns empty mesh")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         const StrokeStyle style;
 
         constexpr std::size_t pointCount = 17000;
@@ -220,7 +234,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("miter join inserts corner vertex near analytical intersection")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.join = StrokeJoin::Miter;
         style.miterLimit = 8.0f;
@@ -248,7 +262,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("sharp miter join falls back to bevel when limit is exceeded")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.join = StrokeJoin::Miter;
         style.miterLimit = 1.1f;
@@ -274,7 +288,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("round join emits arc vertices around the corner")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.join = StrokeJoin::Round;
 
@@ -301,7 +315,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("round join near U-turn emits half-circle arc")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.join = StrokeJoin::Round;
 
@@ -328,7 +342,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("square caps extend stroke by half width at both ends")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.cap = StrokeCap::Square;
 
@@ -372,7 +386,7 @@ TEST_SUITE("StrokeTessellator")
 
     TEST_CASE("round caps add semicircle geometry at both endpoints")
     {
-        const StrokeTessellator tess;
+        const StrokeTessellator2D tess;
         StrokeStyle style;
         style.cap = StrokeCap::Round;
 

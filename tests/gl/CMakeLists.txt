@@ -42,7 +42,7 @@ add_executable(nfx-graphics-gl-tests
 
     shaders/tests_ShaderFeatures.cpp
 
-    strokes/tests_StrokeTessellator.cpp
+    strokes/tests_StrokeTessellator2D.cpp
 
     text/tests_TextTypes.cpp
 )

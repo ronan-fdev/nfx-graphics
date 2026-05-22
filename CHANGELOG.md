@@ -121,7 +121,7 @@
 ##### Strokes
 
 - `StrokeTypes`: CPU-side stroke input/output types (`StrokeJoin`, `StrokeCap`, `StrokeStyle`, `StrokePolyline2D`, `StrokeVertex2D`, `StrokeMesh2D`)
-- `StrokeTessellator`: CPU-side stroke tessellator class with validation and tessellation methods (`isValidStrokeStyle`, `tessellate`)
+- `StrokeTessellator2D`: CPU-side stroke tessellator class with validation and tessellation methods (`isValidStrokeStyle`, `tessellate`)
 
 ##### Text
 
@@ -200,7 +200,7 @@
 
 - `gl/shaders/tests_ShaderFeatures`: shader feature bitmask operations, define generation, and debug string formatting
 
-- `gl/strokes/tests_StrokeTessellator`: validates default stroke style invariants, invalid style rejection, and empty-mesh fallback on invalid polyline input
+- `gl/strokes/tests_StrokeTessellator2D`: validates default stroke style invariants, invalid style rejection, and empty-mesh fallback on invalid polyline input
 
 - `gl/text/tests_TextTypes`: validates default text-type invariants (`FontHandle`, `TextItemHandle`, `FontMetrics`, `Glyph`) and missing-kerning fallback behavior
 

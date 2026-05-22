@@ -78,7 +78,7 @@
 #include "nfx/graphics/gl/scene/lights/SpotLight.h"
 
 // Strokes
-#include "nfx/graphics/gl/strokes/StrokeTessellator.h"
+#include "nfx/graphics/gl/strokes/StrokeTessellator2D.h"
 #include "nfx/graphics/gl/strokes/StrokeTypes.h"
 
 // Text

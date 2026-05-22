@@ -1,4 +1,4 @@
-#include "nfx/graphics/gl/strokes/StrokeTessellator.h"
+#include "nfx/graphics/gl/strokes/StrokeTessellator2D.h"
 
 #include "nfx/graphics/math/Vec2.h"
 #include "internal/runtime/Error.h"
@@ -86,7 +86,7 @@ namespace nfx::graphics::gl
         }
     } // namespace
 
-    bool StrokeTessellator::isValidStrokeStyle(const StrokeStyle& style) const noexcept
+    bool StrokeTessellator2D::isValidStrokeStyle(const StrokeStyle& style) const noexcept
     {
         if (style.width <= 0.0f)
         {
@@ -99,7 +99,7 @@ namespace nfx::graphics::gl
         return true;
     }
 
-    StrokeMesh2D StrokeTessellator::tessellate(const StrokePolyline2D& polyline, const StrokeStyle& style) const
+    StrokeMesh2D StrokeTessellator2D::tessellate(const StrokePolyline2D& polyline, const StrokeStyle& style) const
     {
         StrokeMesh2D mesh;
         if (!isValidStrokeStyle(style))
@@ -185,7 +185,7 @@ namespace nfx::graphics::gl
             if (mesh.vertices.size() + 4 > kMaxU16IndexableVertices)
             {
                 logError(
-                    "StrokeTessellator",
+                    "StrokeTessellator2D",
                     internal::runtime::ErrorLevel::Warn,
                     internal::runtime::ErrorKind::Recoverable,
                     "Polyline stroke exceeds uint16 index capacity during segment expansion. Returning empty mesh");
@@ -248,7 +248,7 @@ namespace nfx::graphics::gl
                 if (mesh.vertices.size() + 1 > kMaxU16IndexableVertices)
                 {
                     logError(
-                        "StrokeTessellator",
+                        "StrokeTessellator2D",
                         internal::runtime::ErrorLevel::Warn,
                         internal::runtime::ErrorKind::Recoverable,
                         "Polyline stroke exceeds uint16 index capacity during Bevel join. Returning empty mesh");
@@ -274,7 +274,7 @@ namespace nfx::graphics::gl
                     if (mesh.vertices.size() + 1 > kMaxU16IndexableVertices)
                     {
                         logError(
-                            "StrokeTessellator",
+                            "StrokeTessellator2D",
                             internal::runtime::ErrorLevel::Warn,
                             internal::runtime::ErrorKind::Recoverable,
                             "Polyline stroke exceeds uint16 index capacity during Miter fallback Bevel join. Returning "
@@ -306,7 +306,7 @@ namespace nfx::graphics::gl
                     if (mesh.vertices.size() + 1 > kMaxU16IndexableVertices)
                     {
                         logError(
-                            "StrokeTessellator",
+                            "StrokeTessellator2D",
                             internal::runtime::ErrorLevel::Warn,
                             internal::runtime::ErrorKind::Recoverable,
                             "Polyline stroke exceeds uint16 index capacity during Miter fallback Bevel join. Returning "
@@ -324,7 +324,7 @@ namespace nfx::graphics::gl
                 if (mesh.vertices.size() + 2 > kMaxU16IndexableVertices)
                 {
                     logError(
-                        "StrokeTessellator",
+                        "StrokeTessellator2D",
                         internal::runtime::ErrorLevel::Warn,
                         internal::runtime::ErrorKind::Recoverable,
                         "Polyline stroke exceeds uint16 index capacity during Miter join. Returning empty mesh");
@@ -369,7 +369,7 @@ namespace nfx::graphics::gl
                 if (mesh.vertices.size() + arcSegments > kMaxU16IndexableVertices)
                 {
                     logError(
-                        "StrokeTessellator",
+                        "StrokeTessellator2D",
                         internal::runtime::ErrorLevel::Warn,
                         internal::runtime::ErrorKind::Recoverable,
                         "Polyline stroke exceeds uint16 index capacity during Round join. Returning empty mesh");
@@ -420,7 +420,7 @@ namespace nfx::graphics::gl
             if (mesh.vertices.size() + 1 > kMaxU16IndexableVertices)
             {
                 logError(
-                    "StrokeTessellator",
+                    "StrokeTessellator2D",
                     internal::runtime::ErrorLevel::Warn,
                     internal::runtime::ErrorKind::Recoverable,
                     "Polyline stroke exceeds uint16 index capacity. Returning empty mesh");
@@ -444,7 +444,7 @@ namespace nfx::graphics::gl
                 if (mesh.vertices.size() + 4 > kMaxU16IndexableVertices)
                 {
                     logError(
-                        "StrokeTessellator",
+                        "StrokeTessellator2D",
                         internal::runtime::ErrorLevel::Warn,
                         internal::runtime::ErrorKind::Recoverable,
                         "Polyline stroke exceeds uint16 index capacity during Square cap. Returning empty mesh");
@@ -490,7 +490,7 @@ namespace nfx::graphics::gl
                 if (mesh.vertices.size() + capVerticesPerEnd * 2 > kMaxU16IndexableVertices)
                 {
                     logError(
-                        "StrokeTessellator",
+                        "StrokeTessellator2D",
                         internal::runtime::ErrorLevel::Warn,
                         internal::runtime::ErrorKind::Recoverable,
                         "Polyline stroke exceeds uint16 index capacity during Round cap. Returning empty mesh");
@@ -505,7 +505,7 @@ namespace nfx::graphics::gl
                     if (mesh.vertices.size() + capVerticesPerEnd > kMaxU16IndexableVertices)
                     {
                         logError(
-                            "StrokeTessellator",
+                            "StrokeTessellator2D",
                             internal::runtime::ErrorLevel::Warn,
                             internal::runtime::ErrorKind::Recoverable,
                             overflowMsg);

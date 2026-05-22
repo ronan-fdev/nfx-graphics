@@ -44,5 +44,5 @@ set(NFX_GRAPHICS_SOURCES
     src/gl/resources/Texture2DCache.cpp
     src/gl/resources/TextureCubeCache.cpp
 
-    src/gl/strokes/StrokeTessellator.cpp
+    src/gl/strokes/StrokeTessellator2D.cpp
 )

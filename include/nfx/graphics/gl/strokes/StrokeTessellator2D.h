@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file StrokeTessellator.h
+ * \file StrokeTessellator2D.h
  * \brief Declares CPU-side stroke tessellation helpers.
  */
 
@@ -12,7 +12,7 @@ namespace nfx::graphics::gl
     /**
      * \brief CPU-side stroke tessellator.
      */
-    class StrokeTessellator final
+    class StrokeTessellator2D final
     {
     public:
         /**
