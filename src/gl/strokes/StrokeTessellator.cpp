@@ -1,11 +1,13 @@
 #include "nfx/graphics/gl/strokes/StrokeTessellator.h"
 
+#include "nfx/graphics/math/Vec2.h"
 #include "internal/runtime/Error.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <numbers>
 #include <vector>
 
@@ -13,20 +15,15 @@ namespace nfx::graphics::gl
 {
     namespace
     {
-        constexpr std::size_t kMaxU16IndexableVertices = 65535;
-
-        struct Point2
-        {
-            float x = 0.0f;
-            float y = 0.0f;
-        };
+        constexpr std::size_t kMaxU16IndexableVertices =
+            static_cast<std::size_t>(std::numeric_limits<std::uint16_t>::max());
 
         [[nodiscard]] bool nearlyEqual(float a, float b) noexcept
         {
             return std::fabs(a - b) <= 1.0e-6f;
         }
 
-        [[nodiscard]] bool samePoint(const Point2& a, const Point2& b) noexcept
+        [[nodiscard]] bool samePoint(const math::Vec2& a, const math::Vec2& b) noexcept
         {
             return nearlyEqual(a.x, b.x) && nearlyEqual(a.y, b.y);
         }
@@ -37,7 +34,7 @@ namespace nfx::graphics::gl
             return static_cast<std::uint8_t>(std::lround(clamped * 255.0f));
         }
 
-        [[nodiscard]] StrokeVertex2D makeVertex(const Point2& p, const StrokeStyle& style) noexcept
+        [[nodiscard]] StrokeVertex2D makeVertex(const math::Vec2& p, const StrokeStyle& style) noexcept
         {
             StrokeVertex2D v;
             v.x = p.x;
@@ -50,7 +47,7 @@ namespace nfx::graphics::gl
         }
 
         [[nodiscard]] bool computeDirAndNormal(
-            const Point2& a, const Point2& b, float halfWidth, Point2& dir, Point2& normal)
+            const math::Vec2& a, const math::Vec2& b, float halfWidth, math::Vec2& dir, math::Vec2& normal)
         {
             const float dx = b.x - a.x;
             const float dy = b.y - a.y;
@@ -65,53 +62,18 @@ namespace nfx::graphics::gl
             return true;
         }
 
-        [[nodiscard]] Point2 add(const Point2& a, const Point2& b) noexcept
-        {
-            return { a.x + b.x, a.y + b.y };
-        }
-
-        [[nodiscard]] Point2 sub(const Point2& a, const Point2& b) noexcept
-        {
-            return { a.x - b.x, a.y - b.y };
-        }
-
-        [[nodiscard]] Point2 scale(const Point2& p, float s) noexcept
-        {
-            return { p.x * s, p.y * s };
-        }
-
-        [[nodiscard]] float dot(const Point2& a, const Point2& b) noexcept
-        {
-            return a.x * b.x + a.y * b.y;
-        }
-
-        [[nodiscard]] float cross(const Point2& a, const Point2& b) noexcept
-        {
-            return a.x * b.y - a.y * b.x;
-        }
-
-        [[nodiscard]] Point2 normalize(const Point2& p) noexcept
-        {
-            const float len = std::sqrt(p.x * p.x + p.y * p.y);
-            if (len <= 1.0e-6f)
-            {
-                return { 0.0f, 0.0f };
-            }
-            return { p.x / len, p.y / len };
-        }
-
         [[nodiscard]] bool intersectLines(
-            const Point2& p0, const Point2& d0, const Point2& p1, const Point2& d1, Point2& out)
+            const math::Vec2& p0, const math::Vec2& d0, const math::Vec2& p1, const math::Vec2& d1, math::Vec2& out)
         {
-            const float denom = cross(d0, d1);
+            const float denom = math::vec2cross(d0, d1);
             if (std::fabs(denom) <= 1.0e-6f)
             {
                 return false;
             }
 
-            const Point2 delta = sub(p1, p0);
-            const float t = cross(delta, d1) / denom;
-            out = add(p0, scale(d0, t));
+            const math::Vec2 delta = math::vec2sub(p1, p0);
+            const float t = math::vec2cross(delta, d1) / denom;
+            out = math::vec2add(p0, math::vec2mul(d0, t));
             return true;
         }
 
@@ -153,11 +115,11 @@ namespace nfx::graphics::gl
             return mesh;
         }
 
-        std::vector<Point2> points;
+        std::vector<math::Vec2> points;
         points.reserve(polyline.pointCount + (polyline.closed ? 1 : 0));
         for (std::size_t i = 0; i < polyline.pointCount; ++i)
         {
-            const Point2 p{ polyline.xy[i * 2], polyline.xy[i * 2 + 1] };
+            const math::Vec2 p{ polyline.xy[i * 2], polyline.xy[i * 2 + 1] };
             if (!points.empty() && samePoint(points.back(), p))
             {
                 continue;
@@ -183,14 +145,14 @@ namespace nfx::graphics::gl
 
         struct SegmentData
         {
-            Point2 p0;
-            Point2 p1;
-            Point2 dir;
-            Point2 normal;
-            Point2 left0;
-            Point2 right0;
-            Point2 left1;
-            Point2 right1;
+            math::Vec2 p0;
+            math::Vec2 p1;
+            math::Vec2 dir;
+            math::Vec2 normal;
+            math::Vec2 left0;
+            math::Vec2 right0;
+            math::Vec2 left1;
+            math::Vec2 right1;
             std::uint16_t l0 = 0;
             std::uint16_t r0 = 0;
             std::uint16_t l1 = 0;
@@ -210,10 +172,10 @@ namespace nfx::graphics::gl
                 continue;
             }
 
-            const Point2 l0{ seg.p0.x + seg.normal.x, seg.p0.y + seg.normal.y };
-            const Point2 r0{ seg.p0.x - seg.normal.x, seg.p0.y - seg.normal.y };
-            const Point2 l1{ seg.p1.x + seg.normal.x, seg.p1.y + seg.normal.y };
-            const Point2 r1{ seg.p1.x - seg.normal.x, seg.p1.y - seg.normal.y };
+            const math::Vec2 l0{ seg.p0.x + seg.normal.x, seg.p0.y + seg.normal.y };
+            const math::Vec2 r0{ seg.p0.x - seg.normal.x, seg.p0.y - seg.normal.y };
+            const math::Vec2 l1{ seg.p1.x + seg.normal.x, seg.p1.y + seg.normal.y };
+            const math::Vec2 r1{ seg.p1.x - seg.normal.x, seg.p1.y - seg.normal.y };
 
             seg.left0 = l0;
             seg.right0 = r0;
@@ -263,11 +225,11 @@ namespace nfx::graphics::gl
                 polyline.closed ? segments[(i + segments.size() - 1) % segments.size()] : segments[i - 1];
             const SegmentData& next = segments[i];
 
-            const Point2 joinPoint = next.p0;
-            const Point2 outerPrevLeft = prev.left1;
-            const Point2 outerNextLeft = next.left0;
-            const Point2 outerPrevRight = prev.right1;
-            const Point2 outerNextRight = next.right0;
+            const math::Vec2 joinPoint = next.p0;
+            const math::Vec2 outerPrevLeft = prev.left1;
+            const math::Vec2 outerNextLeft = next.left0;
+            const math::Vec2 outerPrevRight = prev.right1;
+            const math::Vec2 outerNextRight = next.right0;
 
             const float turnCross = prev.dir.x * next.dir.y - prev.dir.y * next.dir.x;
             if (std::fabs(turnCross) <= 1.0e-6f)
@@ -276,8 +238,8 @@ namespace nfx::graphics::gl
             }
 
             const bool isLeftTurn = turnCross > 0.0f;
-            const Point2& pOuter0 = isLeftTurn ? outerPrevRight : outerPrevLeft;
-            const Point2& pOuter1 = isLeftTurn ? outerNextRight : outerNextLeft;
+            const math::Vec2& pOuter0 = isLeftTurn ? outerPrevRight : outerPrevLeft;
+            const math::Vec2& pOuter1 = isLeftTurn ? outerNextRight : outerNextLeft;
             const std::uint16_t outerPrev = isLeftTurn ? prev.r1 : prev.l1;
             const std::uint16_t outerNext = isLeftTurn ? next.r0 : next.l0;
 
@@ -303,9 +265,9 @@ namespace nfx::graphics::gl
 
             if (style.join == StrokeJoin::Miter)
             {
-                Point2 miterDir0 = prev.dir;
-                Point2 miterDir1 = next.dir;
-                Point2 miterPoint;
+                math::Vec2 miterDir0 = prev.dir;
+                math::Vec2 miterDir1 = next.dir;
+                math::Vec2 miterPoint;
                 const bool ok = intersectLines(pOuter0, miterDir0, pOuter1, miterDir1, miterPoint);
                 if (!ok)
                 {
@@ -327,15 +289,15 @@ namespace nfx::graphics::gl
                     continue;
                 }
 
-                const Point2 delta = sub(miterPoint, joinPoint);
-                const float miterLen = std::sqrt(dot(delta, delta));
+                const math::Vec2 delta = math::vec2sub(miterPoint, joinPoint);
+                const float miterLen = std::sqrt(math::vec2dot(delta, delta));
 
-                const Point2 outerDir0 = normalize(sub(pOuter0, joinPoint));
-                const Point2 outerDir1 = normalize(sub(pOuter1, joinPoint));
-                const Point2 outerBisector = normalize(add(outerDir0, outerDir1));
-                if ((outerBisector.x != 0.0f || outerBisector.y != 0.0f) && dot(delta, outerBisector) < 0.0f)
+                const math::Vec2 outerDir0 = math::vec2normalize(math::vec2sub(pOuter0, joinPoint));
+                const math::Vec2 outerDir1 = math::vec2normalize(math::vec2sub(pOuter1, joinPoint));
+                const math::Vec2 outerBisector = math::vec2normalize(math::vec2add(outerDir0, outerDir1));
+                if ((outerBisector.x != 0.0f || outerBisector.y != 0.0f) && math::vec2dot(delta, outerBisector) < 0.0f)
                 {
-                    miterPoint = add(joinPoint, scale(outerBisector, miterLen));
+                    miterPoint = math::vec2add(joinPoint, math::vec2mul(outerBisector, miterLen));
                 }
 
                 const float maxMiter = halfWidth * style.miterLimit;
@@ -399,9 +361,9 @@ namespace nfx::graphics::gl
 
             if (style.join == StrokeJoin::Round)
             {
-                const Point2 start = normalize(sub(pOuter0, joinPoint));
-                const Point2 end = normalize(sub(pOuter1, joinPoint));
-                const float theta = std::atan2(cross(start, end), dot(start, end));
+                const math::Vec2 start = math::vec2normalize(math::vec2sub(pOuter0, joinPoint));
+                const math::Vec2 end = math::vec2normalize(math::vec2sub(pOuter1, joinPoint));
+                const float theta = std::atan2(math::vec2cross(start, end), math::vec2dot(start, end));
                 const std::size_t arcSegments = roundSegments(theta);
 
                 if (mesh.vertices.size() + arcSegments > kMaxU16IndexableVertices)
@@ -437,8 +399,8 @@ namespace nfx::graphics::gl
                 {
                     const float t = static_cast<float>(s) / static_cast<float>(arcSegments);
                     const float angle = angle0 + deltaAngle * t;
-                    const Point2 arcPoint{ joinPoint.x + std::cos(angle) * halfWidth,
-                                           joinPoint.y + std::sin(angle) * halfWidth };
+                    const math::Vec2 arcPoint{ joinPoint.x + std::cos(angle) * halfWidth,
+                                               joinPoint.y + std::sin(angle) * halfWidth };
                     const std::uint16_t idx = static_cast<std::uint16_t>(mesh.vertices.size());
                     mesh.vertices.push_back(makeVertex(arcPoint, style));
 
@@ -489,9 +451,9 @@ namespace nfx::graphics::gl
                     return {};
                 }
 
-                const Point2 startOffset = scale(first.dir, -halfWidth);
-                const Point2 startLeftExt = add(first.left0, startOffset);
-                const Point2 startRightExt = add(first.right0, startOffset);
+                const math::Vec2 startOffset = math::vec2mul(first.dir, -halfWidth);
+                const math::Vec2 startLeftExt = math::vec2add(first.left0, startOffset);
+                const math::Vec2 startRightExt = math::vec2add(first.right0, startOffset);
 
                 const std::uint16_t startLeftExtIdx = static_cast<std::uint16_t>(mesh.vertices.size());
                 mesh.vertices.push_back(makeVertex(startLeftExt, style));
@@ -505,9 +467,9 @@ namespace nfx::graphics::gl
                 mesh.indices.push_back(first.r0);
                 mesh.indices.push_back(first.l0);
 
-                const Point2 endOffset = scale(last.dir, halfWidth);
-                const Point2 endLeftExt = add(last.left1, endOffset);
-                const Point2 endRightExt = add(last.right1, endOffset);
+                const math::Vec2 endOffset = math::vec2mul(last.dir, halfWidth);
+                const math::Vec2 endLeftExt = math::vec2add(last.left1, endOffset);
+                const math::Vec2 endRightExt = math::vec2add(last.right1, endOffset);
 
                 const std::uint16_t endLeftExtIdx = static_cast<std::uint16_t>(mesh.vertices.size());
                 mesh.vertices.push_back(makeVertex(endLeftExt, style));
@@ -535,8 +497,8 @@ namespace nfx::graphics::gl
                     return {};
                 }
 
-                auto emitRoundCap = [&](const Point2& center,
-                                        const Point2& capDir,
+                auto emitRoundCap = [&](const math::Vec2& center,
+                                        const math::Vec2& capDir,
                                         std::uint16_t startBoundary,
                                         std::uint16_t endBoundary,
                                         const char* overflowMsg) -> bool {
@@ -553,16 +515,17 @@ namespace nfx::graphics::gl
                     const std::uint16_t centerIdx = static_cast<std::uint16_t>(mesh.vertices.size());
                     mesh.vertices.push_back(makeVertex(center, style));
 
-                    const Point2 capLeft{ -capDir.y, capDir.x };
+                    const math::Vec2 capLeft{ -capDir.y, capDir.x };
                     std::uint16_t prev = startBoundary;
                     for (std::size_t s = 1; s < arcSegments; ++s)
                     {
                         const float t = static_cast<float>(s) / static_cast<float>(arcSegments);
                         const float angle = -0.5f * std::numbers::pi_v<float> + std::numbers::pi_v<float> * t;
-                        const Point2 arcPoint =
-                            add(center,
-                                add(scale(capDir, std::cos(angle) * halfWidth),
-                                    scale(capLeft, std::sin(angle) * halfWidth)));
+                        const math::Vec2 arcPoint = math::vec2add(
+                            center,
+                            math::vec2add(
+                                math::vec2mul(capDir, std::cos(angle) * halfWidth),
+                                math::vec2mul(capLeft, std::sin(angle) * halfWidth)));
 
                         const std::uint16_t idx = static_cast<std::uint16_t>(mesh.vertices.size());
                         mesh.vertices.push_back(makeVertex(arcPoint, style));
@@ -581,7 +544,7 @@ namespace nfx::graphics::gl
 
                 if (!emitRoundCap(
                         first.p0,
-                        scale(first.dir, -1.0f),
+                        math::vec2mul(first.dir, -1.0f),
                         first.l0,
                         first.r0,
                         "Polyline stroke exceeds uint16 index capacity during Round cap. Returning empty mesh"))
