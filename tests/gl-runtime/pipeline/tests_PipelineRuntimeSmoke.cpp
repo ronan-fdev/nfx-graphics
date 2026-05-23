@@ -16,6 +16,9 @@
 #include "../test_helpers/HeadlessDetection.h"
 #include "../../gl/test_helpers/StderrCapture.h"
 
+#include <array>
+#include <cstddef>
+#include <string>
 #include <utility>
 
 #ifndef NFX_GRAPHICS_ENABLE_GL_CONTEXT_TESTS
@@ -67,6 +70,38 @@ namespace
         void execute(nfx::graphics::gl::RenderResources&) override
         {
             observedViewport = currentViewport();
+            ++executeCalls;
+        }
+
+        void end() override { ++endCalls; }
+    };
+
+    struct RasterStateCapturePass final : nfx::graphics::gl::RenderPass
+    {
+        explicit RasterStateCapturePass(std::string name, const nfx::graphics::gl::RasterRegionState& state)
+            : RenderPass(std::move(name))
+        {
+            setRasterRegionState(state);
+        }
+
+        int beginCalls = 0;
+        int executeCalls = 0;
+        int endCalls = 0;
+        std::array<GLint, 4> viewport = { 0, 0, 0, 0 };
+        std::array<GLint, 4> scissor = { 0, 0, 0, 0 };
+        bool scissorEnabled = false;
+
+    protected:
+        bool initialize() override { return true; }
+
+        void begin() override { ++beginCalls; }
+
+        void execute(nfx::graphics::gl::RenderResources&) override
+        {
+            const auto& gl = nfx::graphics::gl::Context::current().functions();
+            gl.glGetIntegerv(GL_VIEWPORT, viewport.data());
+            gl.glGetIntegerv(GL_SCISSOR_BOX, scissor.data());
+            scissorEnabled = (gl.glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE);
             ++executeCalls;
         }
 
@@ -239,6 +274,111 @@ TEST_SUITE("PipelineRuntime")
         CHECK(pass->beginCalls == 2);
         CHECK(pass->executeCalls == 2);
         CHECK(pass->endCalls == 2);
+    }
+
+    TEST_CASE("Explicit raster-region viewport and scissor are applied during runtime render")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        nfx::graphics::gl::RasterRegionState raster;
+        raster.viewportPolicy = nfx::graphics::gl::ViewportPolicy::Explicit;
+        raster.explicitViewport = nfx::graphics::gl::ViewportRect{ 17, 19, 111, 77 };
+        raster.scissorPolicy = nfx::graphics::gl::ScissorPolicy::Explicit;
+        raster.explicitScissor = nfx::graphics::gl::ScissorRect{ 23, 29, 41, 31 };
+
+        auto* pass = renderer.createPass<RasterStateCapturePass>("raster-capture-explicit", raster);
+        REQUIRE(pass != nullptr);
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+
+        // Should not override explicit raster state owned by the pass
+        renderer.setViewport(nfx::graphics::gl::ViewportRect{ 0, 0, 256, 256 });
+        renderer.render();
+
+        CHECK(pass->executeCalls == 1);
+        CHECK(pass->viewport[0] == 17);
+        CHECK(pass->viewport[1] == 19);
+        CHECK(pass->viewport[2] == 111);
+        CHECK(pass->viewport[3] == 77);
+        CHECK(pass->scissorEnabled);
+        CHECK(pass->scissor[0] == 23);
+        CHECK(pass->scissor[1] == 29);
+        CHECK(pass->scissor[2] == 41);
+        CHECK(pass->scissor[3] == 31);
+    }
+
+    TEST_CASE("Disabled scissor policy disables GL scissor test during runtime render")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        nfx::graphics::gl::RasterRegionState raster;
+        raster.viewportPolicy = nfx::graphics::gl::ViewportPolicy::InheritView;
+        raster.scissorPolicy = nfx::graphics::gl::ScissorPolicy::Disabled;
+
+        auto* pass = renderer.createPass<RasterStateCapturePass>("raster-capture-no-scissor", raster);
+        REQUIRE(pass != nullptr);
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+        renderer.setViewport(nfx::graphics::gl::ViewportRect{ 5, 7, 200, 120 });
+        renderer.render();
+
+        CHECK(pass->executeCalls == 1);
+        CHECK_FALSE(pass->scissorEnabled);
+    }
+
+    TEST_CASE("Explicit raster policy is stable across pass order without global viewport override")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        const auto& gl = nfx::graphics::gl::Context::current().functions();
+        gl.glViewport(0, 0, 256, 256);
+
+        nfx::graphics::gl::Renderer renderer;
+        ResourceFixture resources;
+
+        nfx::graphics::gl::RasterRegionState first;
+        first.viewportPolicy = nfx::graphics::gl::ViewportPolicy::Explicit;
+        first.explicitViewport = nfx::graphics::gl::ViewportRect{ 0, 0, 32, 32 };
+        first.scissorPolicy = nfx::graphics::gl::ScissorPolicy::Disabled;
+
+        nfx::graphics::gl::RasterRegionState second;
+        second.viewportPolicy = nfx::graphics::gl::ViewportPolicy::Explicit;
+        second.explicitViewport = nfx::graphics::gl::ViewportRect{ 64, 64, 128, 128 };
+        second.scissorPolicy = nfx::graphics::gl::ScissorPolicy::Disabled;
+
+        auto* passA = renderer.createPass<RasterStateCapturePass>("raster-stability-a", first);
+        auto* passB = renderer.createPass<RasterStateCapturePass>("raster-stability-b", second);
+        REQUIRE(passA != nullptr);
+        REQUIRE(passB != nullptr);
+
+        renderer.initialize(resources.resources);
+        renderer.setFrameData(nfx::graphics::gl::FrameData{});
+
+        nfx::tests::StderrCapture capture;
+        renderer.render();
+
+        const std::string output = capture.str();
+        CHECK(output.find("raster resolution failed") == std::string::npos);
+        CHECK(passA->executeCalls == 1);
+        CHECK(passB->executeCalls == 1);
+        CHECK(renderer.frameStats().passesExecuted == 2);
     }
 
     TEST_CASE("validatePermutations logs a warning once under real GL context")
