@@ -247,6 +247,7 @@
 - `direct-rendering-transparent-pass`: two-pass pipeline sample (GeometryPass + TransparentPass) with back-to-front sorted alpha-blended spheres
 - `direct-rendering-postprocess-pass`: post-process sample with left-click effect cycling (neutral, mono scanlines, chromatic grain)
 - `direct-rendering-wboit-pass`: weighted blended OIT sample (GeometryPass + WboitPass)
+- `direct-rendering-raster-policy-showcase`: raster policy sample showing FullTarget, InheritView, Explicit viewport, and MatchViewport scissor with on-screen legend
 
 - `forward-rendering-directional-shadow-pass`: directional-light shadow mapping with orbiting rocks and textured terrain floor
 - `forward-rendering-spot-shadow-pass`: spot-light shadow mapping with one levitating rock and three orbiting light markers
