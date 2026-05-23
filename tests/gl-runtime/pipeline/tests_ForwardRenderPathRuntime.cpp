@@ -3,6 +3,7 @@
 #include <nfx/graphics/gl/core/Context.h>
 #include <nfx/graphics/gl/pipeline/ForwardRenderPath.h>
 #include <nfx/graphics/gl/pipeline/frame/RenderResources.h>
+#include <nfx/graphics/gl/pipeline/passes/RenderPass.h>
 #include <nfx/graphics/gl/pipeline/passes/GeometryPass.h>
 #include <nfx/graphics/gl/resources/MaterialCache.h>
 #include <nfx/graphics/gl/resources/MeshCache.h>
@@ -31,6 +32,31 @@ namespace
         nfx::graphics::gl::SamplerCache samplers;
 
         nfx::graphics::gl::RenderResources resources{ meshes, materials, shaders, textures2D, texturesCube, samplers };
+    };
+
+    struct AutoWiredOverlayPass final : nfx::graphics::gl::RenderPass
+    {
+        explicit AutoWiredOverlayPass(std::string name)
+            : RenderPass(std::move(name))
+        {}
+
+        nfx::graphics::gl::Texture2DHandle wiredColor;
+        nfx::graphics::gl::Texture2DHandle wiredDepth;
+        int executeCalls = 0;
+
+        [[nodiscard]] bool setAutoWiredTargets(
+            nfx::graphics::gl::Texture2DHandle color, nfx::graphics::gl::Texture2DHandle depth) override
+        {
+            wiredColor = color;
+            wiredDepth = depth;
+            return true;
+        }
+
+    private:
+        bool initialize() override { return true; }
+        void begin() override { resetRuntimeStats(); }
+        void execute(nfx::graphics::gl::RenderResources&) override { ++executeCalls; }
+        void end() override {}
     };
 
 } // namespace
@@ -127,5 +153,58 @@ TEST_SUITE("ForwardRenderPathRuntime")
         CHECK(path.geometryPass().outputWidth() == 640);
         CHECK(path.geometryPass().outputHeight() == 360);
         CHECK(path.stats().totalFrames == 2);
+    }
+
+    TEST_CASE("custom overlay auto-wiring runs without unknown overlay warnings")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        ResourceFixture resources;
+        nfx::graphics::gl::ForwardRenderPath path;
+        auto* overlay = path.addOverlay<AutoWiredOverlayPass>("AutoWiredOverlay");
+        REQUIRE(overlay != nullptr);
+
+        path.initialize(resources.resources);
+        nfx::tests::disablePresentPassWhenX11Headless(path);
+
+        nfx::tests::StderrCapture capture;
+        path.render(nfx::graphics::gl::FrameData{}, 640, 360, nfx::graphics::gl::ViewportRect{ 0, 0, 640, 360 });
+
+        const std::string out = capture.str();
+        CHECK(out.find("has no known auto-wiring path") == std::string::npos);
+        CHECK(overlay->wiredColor.isValid());
+        CHECK(overlay->wiredDepth.isValid());
+        CHECK(overlay->executeCalls >= 1);
+    }
+
+    TEST_CASE("custom overlay auto-wiring survives resize with explicit viewport render")
+    {
+        nfx::tests::GLContextFixture fixture;
+        REQUIRE(fixture.available());
+        REQUIRE(nfx::graphics::gl::Context::initialize());
+        REQUIRE(nfx::graphics::gl::Context::isInitialized());
+
+        ResourceFixture resources;
+        nfx::graphics::gl::ForwardRenderPath path;
+        auto* overlay = path.addOverlay<AutoWiredOverlayPass>("AutoWiredOverlayResize");
+        REQUIRE(overlay != nullptr);
+
+        path.initialize(resources.resources);
+        nfx::tests::disablePresentPassWhenX11Headless(path);
+
+        path.render(nfx::graphics::gl::FrameData{}, 320, 200, nfx::graphics::gl::ViewportRect{ 0, 0, 160, 100 });
+        const auto colorA = overlay->wiredColor;
+        const auto depthA = overlay->wiredDepth;
+
+        path.render(nfx::graphics::gl::FrameData{}, 960, 540, nfx::graphics::gl::ViewportRect{ 50, 30, 480, 270 });
+
+        CHECK(overlay->wiredColor.isValid());
+        CHECK(overlay->wiredDepth.isValid());
+        CHECK(overlay->wiredColor != colorA);
+        CHECK(overlay->wiredDepth != depthA);
+        CHECK(overlay->executeCalls >= 2);
     }
 }

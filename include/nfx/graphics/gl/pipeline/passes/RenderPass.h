@@ -92,6 +92,23 @@ namespace nfx::graphics::gl
          */
         [[nodiscard]] const PassRuntimeStats& runtimeStats() const noexcept { return m_runtimeStats; }
 
+        /**
+         * \brief Optional auto-wiring hook used by ForwardRenderPath.
+         *
+         * Passes may override this to consume the geometry color/depth outputs
+         * without requiring hardcoded type checks in ForwardRenderPath.
+         *
+         * \param color Geometry color output handle.
+         * \param depth Geometry depth output handle.
+         * \return True when the pass consumed the targets, false otherwise.
+         */
+        [[nodiscard]] virtual bool setAutoWiredTargets(Texture2DHandle color, Texture2DHandle depth)
+        {
+            (void)color;
+            (void)depth;
+            return false;
+        }
+
     protected:
         /**
          * \brief Creates a render pass with a fixed display name.

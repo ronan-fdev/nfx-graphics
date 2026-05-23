@@ -358,7 +358,7 @@ namespace nfx::graphics::gl
                 continue;
             }
 
-            bool wiredOverlay = false;
+            bool wiredOverlay = overlay->setAutoWiredTargets(color, depth);
             if (auto* grid = dynamic_cast<GridPass*>(overlay))
             {
                 grid->setTargetTextures(color, depth);
