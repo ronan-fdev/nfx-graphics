@@ -280,6 +280,19 @@ namespace nfx::graphics::gl
             m_frameStats.gpuFrameMs = 0.0f;
         }
 
+        GLint frameViewport[4] = { 0, 0, 1, 1 };
+        gl.glGetIntegerv(VIEWPORT, frameViewport);
+
+        SurfaceExtent frameTargetExtent{ std::max(frameViewport[2], 1), std::max(frameViewport[3], 1) };
+        if (m_viewport && m_viewport->x >= 0 && m_viewport->y >= 0)
+        {
+            frameTargetExtent.width = std::max(frameTargetExtent.width, m_viewport->right());
+            frameTargetExtent.height = std::max(frameTargetExtent.height, m_viewport->top());
+        }
+
+        const ViewportRect frameViewViewport =
+            m_viewport ? *m_viewport : ViewportRect{ 0, 0, frameTargetExtent.width, frameTargetExtent.height };
+
         bool abortFrame = false;
 
         for (auto& passPtr : m_passes)
@@ -304,22 +317,11 @@ namespace nfx::graphics::gl
                 continue; // initialization failed, skip
             }
 
-            GLint activeViewport[4] = { 0, 0, 1, 1 };
-            gl.glGetIntegerv(VIEWPORT, activeViewport);
-
             RasterResolutionInput rasterInput;
-            rasterInput.targetExtent = { std::max(activeViewport[2], 1), std::max(activeViewport[3], 1) };
-            rasterInput.viewViewport =
-                m_viewport ? *m_viewport
-                           : ViewportRect{ 0, 0, rasterInput.targetExtent.width, rasterInput.targetExtent.height };
+            rasterInput.targetExtent = frameTargetExtent;
+            rasterInput.viewViewport = frameViewViewport;
 
             rasterInput.policy = passPtr->rasterRegionState();
-
-            if (m_viewport && m_viewport->x >= 0 && m_viewport->y >= 0)
-            {
-                rasterInput.targetExtent.width = std::max(rasterInput.targetExtent.width, m_viewport->right());
-                rasterInput.targetExtent.height = std::max(rasterInput.targetExtent.height, m_viewport->top());
-            }
 
             const RasterResolutionResult raster =
                 detail::resolveRasterState(rasterInput, toRasterValidationMode(m_validationMode));

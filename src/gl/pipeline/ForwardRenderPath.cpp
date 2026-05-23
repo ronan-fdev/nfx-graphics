@@ -1,5 +1,6 @@
 #include "nfx/graphics/gl/pipeline/ForwardRenderPath.h"
 
+#include "nfx/graphics/gl/core/Context.h"
 #include "nfx/graphics/gl/pipeline/passes/AxesPass.h"
 #include "nfx/graphics/gl/pipeline/passes/EnvironmentPass.h"
 #include "nfx/graphics/gl/pipeline/passes/GeometryPass.h"
@@ -226,6 +227,9 @@ namespace nfx::graphics::gl
             m_geometryPass->setOutputSize(m_resources->textures2D, safeW, safeH);
             rewireTargets();
         }
+
+        const auto& gl = Context::current().functions();
+        gl.glViewport(0, 0, static_cast<GLsizei>(safeW), static_cast<GLsizei>(safeH));
 
         m_renderer.setFrameData(frame);
         m_renderer.resetViewport();
